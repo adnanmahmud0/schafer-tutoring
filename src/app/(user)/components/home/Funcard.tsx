@@ -20,7 +20,7 @@ export default function Funcard() {
         title: "To request",
         description: "Tell us which subject you need help with and when you're available.",
         image: "/boy1.png",
-        bgColor: "bg-[#FFC2E2]",
+        bgColor: "bg-[#8396DE]",
         imageClass: "h-full w-auto object-contain",
       },
       {
@@ -28,7 +28,7 @@ export default function Funcard() {
         title: "To get to know",
         description: "We'll connect you with the right teacher.",
         image: "/girl1.png",
-        bgColor: "bg-[#FFE8AF]",
+        bgColor: "bg-[#83C1DE]",
         imageClass: "w-full h-full object-cover"
       },
       {
@@ -36,7 +36,7 @@ export default function Funcard() {
         title: "Get started",
         description: "Improve your grades and build confidence.",
         image: "/girl2.png",
-        bgColor: "bg-[#9AEAC0]",
+        bgColor: "bg-[#6490F8]",
         imageClass: "object-cover"
       }
     ],
@@ -75,7 +75,7 @@ export default function Funcard() {
           {cards.map((card, i) => (
             <div
               key={i}
-              className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 flex flex-col h-[440px]"
+              className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 flex flex-col h-[467px]"
             >
               {/* Text Part */}
               <div className="p-6 pt-8 flex flex-col justify-start flex-1">
@@ -90,7 +90,7 @@ export default function Funcard() {
                 <img
                   src={card.image || "/placeholder.svg"}
                   alt={card.title}
-                  className="absolute bottom-0 right-4 h-full w-auto object-contain z-10"
+                  className="absolute bottom-0 flex justify-self-center h-[297px] w-auto object-contain z-10"
                 />
               </div>
             </div>

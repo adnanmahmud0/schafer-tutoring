@@ -10,7 +10,7 @@ const DesktopMenu = () => {
       >
         Lehrer werden
       </Link>
-      <Button className="bg-[#0B31BD] hover:bg-[#092A9E] text-white font-semibold text-lg px-8 py-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+      <Button className="bg-[#0B31BD] hover:bg-[#092A9E] text-white font-semibold rounded-[12px] text-lg px-8 py-6  shadow-lg hover:shadow-xl transition-all duration-300">
         Anmelden
       </Button>
     </div>
