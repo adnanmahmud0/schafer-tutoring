@@ -2,7 +2,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
 import Link from "next/link";
 
 // ---------- //
@@ -42,8 +41,8 @@ const Banner = () => {
                     <Button
                       className={`${
                         btn.type === "primary"
-                          ? "bg-white hover:bg-gray-50 text-blue-600"
-                          : "border-2 w-full border-white text-white hover:bg-white hover:text-blue-600"
+                          ? "bg-white hover:bg-gray-50 text-black"
+                          : "border-2 w-full bg-transparent text-white"
                       } px-8 py-3 rounded-lg font-semibold transition-colors`}
                     >
                       {btn.text}
@@ -54,8 +53,8 @@ const Banner = () => {
                     key={idx}
                     className={`${
                       btn.type === "primary"
-                        ? "bg-white hover:bg-gray-50 text-blue-600"
-                        : "border-2 w-full border-white text-white hover:bg-white hover:text-blue-600"
+                        ? "bg-white hover:bg-gray-50 text-black"
+                        : "border-2 w-full bg-transparent text-white"
                     } px-8 py-3 rounded-lg font-semibold transition-colors`}
                   >
                     {btn.text}
@@ -68,9 +67,9 @@ const Banner = () => {
           {/* Right Image */}
           <div className="hidden md:block absolute right-0 bottom-0">
             <img
-              src="/images/home/girl-student.png"
+              src="/images/home/bannerimg.png"
               alt="Girl student"
-              className="w-full h-full object-cover object-bottom"
+              className="w-[466px] h-full object-cover object-bottom"
             />
           </div>
         </div>

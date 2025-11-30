@@ -1,17 +1,17 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import Image from "next/image";
 
 const testimonials = [
-  "/testi1.jpg",
-  "/testi1.jpg",
-  "/testi1.jpg",
-  "/testi1.jpg",
-  "/testi1.jpg",
-  "/testi1.jpg",
-  "/testi1.jpg",
+  "/frame1.png",
+  "/frame2.png",
+  "/frame3.png",
+  "/frame4.png",
+  "/frame5.png",
+  "/frame6.png",
+  "/frame7.png",
 ];
 
 const faqs = [
@@ -43,40 +43,15 @@ const faqs = [
 ];
 
 export default function Testimonial() {
-  const [isHovered, setIsHovered] = useState(false);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [openIndex, setOpenIndex] = useState<number | null>(0);
-  const [currentOffset, setCurrentOffset] = useState(0);
-  const trackRef = useRef<HTMLDivElement | null>(null);
 
-  // Auto-slide + infinite loop
-  useEffect(() => {
-    if (isHovered) return;
-
-    const interval = setInterval(() => {
-      setCurrentOffset((prev) => prev + 1);
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [isHovered]);
-
-  // Smooth reset when reaching end
-  useEffect(() => {
-    if (currentOffset >= testimonials.length) {
-      setTimeout(() => {
-        if (trackRef.current) {
-          trackRef.current.style.transition = "none";
-          trackRef.current.style.transform = "translateX(0)";
-          setCurrentOffset(0);
-        }
-      }, 700);
-    } else if (trackRef.current) {
-      trackRef.current.style.transition = "transform 0.7s ease-in-out";
-    }
-  }, [currentOffset]);
+  // Default center (index 3 for 7 images)
+  const defaultActiveIndex = 3;
 
   return (
     <>
-      {/* Testimonial Carousel Section */}
+      {/* Testimonial Section */}
       <section className="w-full pt-16 md:pt-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-10 md:space-y-12">
@@ -97,43 +72,43 @@ export default function Testimonial() {
               quality
             </h2>
 
-            {/* Infinite Carousel */}
-            <div
-              className="overflow-hidden py-8"
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-            >
-              <div
-                ref={trackRef}
-                className="flex gap-4 sm:gap-6 md:gap-8"
-                style={{
-                  transform: `translateX(-${currentOffset * 140}px)`,
-                  transition:
-                    currentOffset === 0 ? "none" : "transform 0.7s ease-in-out",
-                }}
-              >
-                {[...testimonials, ...testimonials].map((src, index) => {
-                  const position =
-                    (index - currentOffset + testimonials.length) %
-                    testimonials.length;
-                  const isCenter = position === 2;
+            {/* Static Images with Focus Effect */}
+            <div className="py-8">
+              <div className="flex gap-6 md:gap-8 justify-center items-end flex-wrap">
+                {testimonials.map((src, index) => {
+                  const isActive =
+                    hoveredIndex !== null ? hoveredIndex === index : index === defaultActiveIndex;
 
                   return (
                     <div
                       key={`${src}-${index}`}
-                      className={`shrink-0 transition-all duration-700 ease-out ${
-                        isCenter
-                          ? "scale-125 -translate-y-8 shadow-2xl z-10"
-                          : "scale-90 opacity-60"
-                      }`}
+                      className="shrink-0 transition-all duration-500 ease-out group"
+                      onMouseEnter={() => setHoveredIndex(index)}
+                      onMouseLeave={() => setHoveredIndex(null)}
                     >
-                      <div className="w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 rounded-2xl overflow-hidden border-4 border-white shadow-xl relative">
+                      <div
+                        className={`
+                          w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36
+                          rounded-2xl overflow-hidden relative
+                          transition-all duration-500 ease-out
+                          cursor-pointer
+                          ${isActive ? "-translate-y-8" : "translate-y-0"}
+                          ${isActive ? "shadow-xl" : ""}
+                        `}
+                      >
                         <Image
                           src={src}
                           alt="Student"
                           fill
-                          className="object-cover"
+                          className={`
+                            object-cover transition-all duration-500
+                            ${isActive ? "blur-0 scale-100" : "blur-in-2xl scale-95"}
+                          `}
                         />
+                        {/* Optional overlay for extra depth */}
+                        {!isActive && (
+                          <div className="absolute inset-0 bg-white/30" />
+                        )}
                       </div>
                     </div>
                   );
@@ -146,7 +121,7 @@ export default function Testimonial() {
 
       {/* FAQ Section */}
       <section className="bg-[#FBFCFC] py-16 md:py-20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-[#0B31BD]">
               Häufig gestellte Fragen
@@ -165,7 +140,6 @@ export default function Testimonial() {
                   key={index}
                   className="bg-white rounded-2xl shadow-sm border-2 border-[#85C2DE] overflow-hidden"
                 >
-                  {/* Question Button */}
                   <button
                     onClick={() => setOpenIndex(isOpen ? null : index)}
                     className="w-full px-5 py-4 sm:px-6 sm:py-5 flex items-center justify-between text-left hover:bg-gray-50 transition-colors duration-200"
@@ -181,7 +155,6 @@ export default function Testimonial() {
                     />
                   </button>
 
-                  {/* Answer */}
                   <div
                     className={`overflow-hidden transition-all duration-500 ease-in-out ${
                       isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
