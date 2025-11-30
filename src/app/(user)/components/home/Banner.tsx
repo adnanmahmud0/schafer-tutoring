@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -65,13 +66,11 @@ const Banner = () => {
           </div>
 
           {/* Right Image */}
-          <div className="hidden md:block relative w-full h-[500px]">
-            <Image
-              src={bannerData.image}
-              alt={bannerData.imageAlt}
-              fill
-              className="object-cover object-bottom"
-              priority
+          <div className="hidden md:block absolute right-0 bottom-0">
+            <img
+              src="/images/home/girl-student.png"
+              alt="Girl student"
+              className="w-full h-full object-cover object-bottom"
             />
           </div>
         </div>

@@ -224,7 +224,7 @@ export default function TutorPrice() {
               key={plan.id}
               className="bg-white border border-gray-200 p-3 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition"
             >
-              <div className="bg-liner-to-r from-[#2563EB] via-[#3B82F6] to-[#6366F1] text-white px-4 py-2 rounded-lg mb-6">
+              <div className="bg-linear-to-r from-[#2563EB] via-[#3B82F6] to-[#6366F1] text-white px-4 py-2 rounded-lg mb-6">
                 <h3 className="text-lg font-semibold">{plan.name}</h3>
               </div>
               <div className="space-y-4">
