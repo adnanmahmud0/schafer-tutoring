@@ -1,31 +1,38 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import { ChevronRight, Upload } from 'lucide-react';
-import Link from 'next/link';
-
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 const FreeTrialStudent = () => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    subject: '',
-    grade: '',
-    schoolType: '',
-    learningGoals: '',
+    subject: "",
+    grade: "",
+    schoolType: "",
+    learningGoals: "",
     documents: null,
-    studentFirstName: '',
-    studentLastName: '',
+    studentFirstName: "",
+    studentLastName: "",
     isUnder18: false,
-    guardianFirstName: '',
-    guardianLastName: '',
-    guardianPhone: '',
-    email: '',
-    password: '',
-    agreeToPolicy: false
+    guardianFirstName: "",
+    guardianLastName: "",
+    guardianPhone: "",
+    email: "",
+    password: "",
+    agreeToPolicy: false,
   });
 
   // Load SweetAlert2 CDN
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/sweetalert2@11";
     script.async = true;
     document.body.appendChild(script);
 
@@ -36,16 +43,16 @@ const FreeTrialStudent = () => {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
   const handleFileChange = (e) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      documents: e.target.files[0]
+      documents: e.target.files[0],
     }));
   };
 
@@ -62,7 +69,12 @@ const FreeTrialStudent = () => {
   };
 
   const validateStep3 = () => {
-    if (!formData.studentFirstName || !formData.studentLastName || !formData.email || !formData.password) {
+    if (
+      !formData.studentFirstName ||
+      !formData.studentLastName ||
+      !formData.email ||
+      !formData.password
+    ) {
       showSweetAlert(
         "error",
         "Required Fields",
@@ -72,7 +84,11 @@ const FreeTrialStudent = () => {
     }
 
     if (formData.isUnder18) {
-      if (!formData.guardianFirstName || !formData.guardianLastName || !formData.guardianPhone) {
+      if (
+        !formData.guardianFirstName ||
+        !formData.guardianLastName ||
+        !formData.guardianPhone
+      ) {
         showSweetAlert(
           "error",
           "Required Fields",
@@ -89,7 +105,7 @@ const FreeTrialStudent = () => {
     if (step === 1 && !validateStep1()) {
       return;
     }
-    setStep(prev => prev + 1);
+    setStep((prev) => prev + 1);
   };
 
   const showSweetAlert = (type, title, text) => {
@@ -122,9 +138,9 @@ const FreeTrialStudent = () => {
       );
       return;
     }
-    
-    console.log('Form submitted:', formData);
-    
+
+    console.log("Form submitted:", formData);
+
     if (typeof window !== "undefined" && window.Swal) {
       window.Swal.fire({
         icon: "success",
@@ -139,7 +155,7 @@ const FreeTrialStudent = () => {
         },
       }).then((result) => {
         if (result.isConfirmed) {
-          window.location.href = '/free-trial-student-dash';
+          window.location.href = "/free-trial-student-dash";
         }
       });
     }
@@ -159,7 +175,9 @@ const FreeTrialStudent = () => {
           <div className=" px-4 sm:px-6 lg:px-8">
             <div className="flex justify-center h-16">
               <div className="flex items-center">
-                <h1 className="text-3xl font-bold text-[#0B31BD]">Schäfer Tutoring</h1>
+                <h1 className="text-3xl font-bold text-[#0B31BD]">
+                  Schäfer Tutoring
+                </h1>
               </div>
             </div>
           </div>
@@ -177,7 +195,7 @@ const FreeTrialStudent = () => {
               {/* Progress Bar */}
               <div>
                 <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div 
+                  <div
                     className="h-full bg-[#062183] transition-all duration-300"
                     style={{ width: `${(step / 3) * 100}%` }}
                   />
@@ -192,57 +210,80 @@ const FreeTrialStudent = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Subject <span className="text-red-500">*</span>
                       </label>
-                      <select
-                        name="subject"
+                      <Select
                         value={formData.subject}
-                        onChange={handleInputChange}
-                        className="flex h-10 w-full items-center justify-between rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
+                        onValueChange={(value) =>
+                          setFormData({ ...formData, subject: value })
+                        }
                         required
                       >
-                        <option value="">Select your subject</option>
-                        <option value="math">Mathematics</option>
-                        <option value="science">Science</option>
-                        <option value="english">English</option>
-                        <option value="history">History</option>
-                        <option value="languages">Languages</option>
-                      </select>
+                        <SelectTrigger className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm">
+                          <SelectValue placeholder="Select your subject" />
+                        </SelectTrigger>
+
+                        <SelectContent>
+                          <SelectItem value="math">Mathematics</SelectItem>
+                          <SelectItem value="science">Science</SelectItem>
+                          <SelectItem value="english">English</SelectItem>
+                          <SelectItem value="history">History</SelectItem>
+                          <SelectItem value="languages">Languages</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Grade <span className="text-red-500">*</span>
                       </label>
-                      <select
-                        name="grade"
+                      <Select
                         value={formData.grade}
-                        onChange={handleInputChange}
-                        className="flex h-10 w-full items-center justify-between rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
+                        onValueChange={(value) =>
+                          setFormData({ ...formData, grade: value })
+                        }
                         required
                       >
-                        <option value="">Select your grade</option>
-                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(grade => (
-                          <option key={grade} value={grade}>Grade {grade}</option>
-                        ))}
-                      </select>
+                        <SelectTrigger className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm">
+                          <SelectValue placeholder="Select your grade" />
+                        </SelectTrigger>
+
+                        <SelectContent>
+                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(
+                            (grade) => (
+                              <SelectItem key={grade} value={String(grade)}>
+                                Grade {grade}
+                              </SelectItem>
+                            )
+                          )}
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         School Type <span className="text-red-500">*</span>
                       </label>
-                      <select
-                        name="schoolType"
+                      <Select
                         value={formData.schoolType}
-                        onChange={handleInputChange}
-                        className="flex h-10 w-full items-center justify-between rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
+                        onValueChange={(value) =>
+                          setFormData({ ...formData, schoolType: value })
+                        }
                         required
                       >
-                        <option value="">Select your school type</option>
-                        <option value="public">Public School</option>
-                        <option value="private">Private School</option>
-                        <option value="homeschool">Homeschool</option>
-                        <option value="charter">Charter School</option>
-                      </select>
+                        <SelectTrigger className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm">
+                          <SelectValue placeholder="Select your school type" />
+                        </SelectTrigger>
+
+                        <SelectContent>
+                          <SelectItem value="public">Public School</SelectItem>
+                          <SelectItem value="private">
+                            Private School
+                          </SelectItem>
+                          <SelectItem value="homeschool">Homeschool</SelectItem>
+                          <SelectItem value="charter">
+                            Charter School
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     <button
@@ -267,7 +308,7 @@ const FreeTrialStudent = () => {
                         onChange={handleInputChange}
                         placeholder="Enter your learning goals"
                         rows={6}
-                        className="flex min-h-[120px] w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
+                        className="flex min-h-[120px] w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                       />
                     </div>
 
@@ -276,7 +317,7 @@ const FreeTrialStudent = () => {
                         Documents (Optional)
                       </label>
                       <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors bg-white">
-                        <input
+                        <Input
                           type="file"
                           id="file-upload"
                           onChange={handleFileChange}
@@ -320,9 +361,10 @@ const FreeTrialStudent = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          First Name (Student) <span className="text-red-500">*</span>
+                          First Name (Student){" "}
+                          <span className="text-red-500">*</span>
                         </label>
-                        <input
+                        <Input
                           type="text"
                           name="studentFirstName"
                           value={formData.studentFirstName}
@@ -334,9 +376,10 @@ const FreeTrialStudent = () => {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Last name (Student) <span className="text-red-500">*</span>
+                          Last name (Student){" "}
+                          <span className="text-red-500">*</span>
                         </label>
-                        <input
+                        <Input
                           type="text"
                           name="studentLastName"
                           value={formData.studentLastName}
@@ -349,13 +392,14 @@ const FreeTrialStudent = () => {
                     </div>
 
                     <div className="flex items-center">
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         name="isUnder18"
                         checked={formData.isUnder18}
-                        onChange={handleInputChange}
-                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        onCheckedChange={(value) =>
+                          setFormData({ ...formData, isUnder18: value })
+                        }
                       />
+
                       <label className="ml-2 text-sm text-gray-700">
                         Is the student under age 18?
                       </label>
@@ -366,9 +410,10 @@ const FreeTrialStudent = () => {
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                              First Name (Legal Guardian) <span className="text-red-500">*</span>
+                              First Name (Legal Guardian){" "}
+                              <span className="text-red-500">*</span>
                             </label>
-                            <input
+                            <Input
                               type="text"
                               name="guardianFirstName"
                               value={formData.guardianFirstName}
@@ -380,9 +425,10 @@ const FreeTrialStudent = () => {
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Last name (Legal Guardian) <span className="text-red-500">*</span>
+                              Last name (Legal Guardian){" "}
+                              <span className="text-red-500">*</span>
                             </label>
-                            <input
+                            <Input
                               type="text"
                               name="guardianLastName"
                               value={formData.guardianLastName}
@@ -396,9 +442,10 @@ const FreeTrialStudent = () => {
 
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Phone (Legal Guardian) <span className="text-red-500">*</span>
+                            Phone (Legal Guardian){" "}
+                            <span className="text-red-500">*</span>
                           </label>
-                          <input
+                          <Input
                             type="tel"
                             name="guardianPhone"
                             value={formData.guardianPhone}
@@ -415,7 +462,7 @@ const FreeTrialStudent = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Email <span className="text-red-500">*</span>
                       </label>
-                      <input
+                      <Input
                         type="email"
                         name="email"
                         value={formData.email}
@@ -430,7 +477,7 @@ const FreeTrialStudent = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Password <span className="text-red-500">*</span>
                       </label>
-                      <input
+                      <Input
                         type="password"
                         name="password"
                         value={formData.password}
@@ -442,17 +489,20 @@ const FreeTrialStudent = () => {
                     </div>
 
                     <div className="flex items-start">
-                      <input
-                        type="checkbox"
-                        name="agreeToPolicy"
+                      <Checkbox
                         checked={formData.agreeToPolicy}
-                        onChange={handleInputChange}
-                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-0.5"
+                        onCheckedChange={(value) =>
+                          setFormData({ ...formData, agreeToPolicy: value })
+                        }
+                        className="h-4 w-4 mt-0.5"
                         required
                       />
                       <label className="ml-2 text-sm text-gray-700">
-                        I have read and agree to the{' '}
-                        <Link href="/privacy" className="text-blue-600 underline">
+                        I have read and agree to the{" "}
+                        <Link
+                          href="/privacy"
+                          className="text-blue-600 underline"
+                        >
                           Privacy Policy
                         </Link>
                         <span className="text-red-500"> *</span>

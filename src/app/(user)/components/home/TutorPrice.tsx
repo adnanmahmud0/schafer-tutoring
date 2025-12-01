@@ -8,48 +8,12 @@ export default function TutorPrice() {
   const [currentTutorIndex, setCurrentTutorIndex] = useState(0);
 
   const tutors = [
-    {
-      id: 1,
-      name: "Luca",
-      rating: 4.9,
-      specialization: "Soziologie TU Berlin",
-      image: "/luca.png",
-    },
-    {
-      id: 2,
-      name: "Diego",
-      rating: 4.9,
-      specialization: "Soziologie TU Berlin",
-      image: "/diego.png",
-    },
-    {
-      id: 3,
-      name: "Yumi",
-      rating: 5,
-      specialization: "Soziologie TU Berlin",
-      image: "/yumi.png",
-    },
-    {
-      id: 4,
-      name: "Lisa",
-      rating: 5,
-      specialization: "Soziologie TU Berlin",
-      image: "/lisa.png",
-    },
-    {
-      id: 5,
-      name: "Alex",
-      rating: 5,
-      specialization: "Soziologie TU Berlin",
-      image: "/luca.png",
-    },
-    {
-      id: 6,
-      name: "Maria",
-      rating: 5,
-      specialization: "Soziologie TU Berlin",
-      image: "/diego.png",
-    },
+    { id: 1, name: "Luca", rating: 4.9, specialization: "Soziologie TU Berlin", image: "/luca.png" },
+    { id: 2, name: "Diego", rating: 4.9, specialization: "Soziologie TU Berlin", image: "/diego.png" },
+    { id: 3, name: "Yumi", rating: 5, specialization: "Soziologie TU Berlin", image: "/yumi.png" },
+    { id: 4, name: "Lisa", rating: 5, specialization: "Soziologie TU Berlin", image: "/lisa.png" },
+    { id: 5, name: "Alex", rating: 5, specialization: "Soziologie TU Berlin", image: "/luca.png" },
+    { id: 6, name: "Maria", rating: 5, specialization: "Soziologie TU Berlin", image: "/diego.png" },
   ];
 
   const pricingPlans = [
@@ -85,7 +49,7 @@ export default function TutorPrice() {
     },
   ];
 
-  const cardWidth = 224; // w-48 + gap-6
+  const cardWidth = 224; // w-48 (192px) + gap-6 (24px) ≈ 216px → we use 224px for smooth sliding
 
   // Auto-slide
   useEffect(() => {
@@ -103,6 +67,10 @@ export default function TutorPrice() {
     setCurrentTutorIndex((prev) => (prev + 1) % tutors.length);
   };
 
+  // Arrow button classes – written in one line to avoid whitespace hydration issues
+  const arrowBase =
+    "absolute top-1/2 -translate-y-1/2 z-20 p-2 md:p-2.5 bg-white/95 hover:bg-white shadow-md hover:shadow-lg rounded-full transition-all hover:scale-110";
+
   return (
     <section className="w-full">
       {/* Infinite Smooth Carousel */}
@@ -110,45 +78,21 @@ export default function TutorPrice() {
         <div className="relative max-w-7xl mx-auto px-6 py-16 md:py-24">
           <button
             onClick={handlePrevTutor}
-            className="absolute left-2 md:left-4 lg:left-8 top-1/2 -translate-y-1/2 z-20 
-                      p-2 md:p-2.5 bg-white/95 hover:bg-white shadow-md hover:shadow-lg 
-                      rounded-full transition-all hover:scale-110"
+            className={`${arrowBase} left-2 md:left-4 lg:left-8`}
             aria-label="Previous"
           >
-            <svg
-              className="w-5 h-5 md:w-6 md:h-6 text-[#0B31BD]"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2.5}
-                d="M15 19l-7-7 7-7"
-              />
+            <svg className="w-5 h-5 md:w-6 md:h-6 text-[#0B31BD]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
 
           <button
             onClick={handleNextTutor}
-            className="absolute right-2 md:right-4 lg:right-8 top-1/2 -translate-y-1/2 z-20 
-                      p-2 md:p-2.5 bg-white/95 hover:bg-white shadow-md hover:shadow-lg 
-                      rounded-full transition-all hover:scale-110"
+            className={`${arrowBase} right-2 md:right-4 lg:right-8`}
             aria-label="Next"
           >
-            <svg
-              className="w-5 h-5 md:w-6 md:h-6 text-[#0B31BD]"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2.5}
-                d="M9 5l7 7-7 7"
-              />
+            <svg className="w-5 h-5 md:w-6 md:h-6 text-[#0B31BD]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
             </svg>
           </button>
 
@@ -172,22 +116,14 @@ export default function TutorPrice() {
                       />
                     </div>
                     <div className="py-4 px-3 text-center">
-                      <h3 className="text-lg md:text-xl font-bold text-[#0B31BD]">
-                        {tutor.name}
-                      </h3>
+                      <h3 className="text-lg md:text-xl font-bold text-[#0B31BD]">{tutor.name}</h3>
                       <div className="flex items-center justify-center gap-1 mt-2">
-                        <span className="text-sm md:text-base font-bold text-[#0B31BD]">
-                          {tutor.rating}
-                        </span>
+                        <span className="text-sm md:text-base font-bold text-[#0B31BD]">{tutor.rating}</span>
                         <div className="flex gap-0.5">
                           {[...Array(5)].map((_, i) => (
                             <svg
                               key={i}
-                              className={`w-4 h-4 md:w-5 md:h-5 ${
-                                i < Math.floor(tutor.rating)
-                                  ? "text-yellow-400"
-                                  : "text-gray-300"
-                              }`}
+                              className={`w-4 h-4 md:w-5 md:h-5 ${i < Math.floor(tutor.rating) ? "text-yellow-400" : "text-gray-300"}`}
                               fill="currentColor"
                               viewBox="0 0 20 20"
                             >
@@ -196,9 +132,7 @@ export default function TutorPrice() {
                           ))}
                         </div>
                       </div>
-                      <p className="text-xs md:text-sm text-gray-600 mt-2">
-                        {tutor.specialization}
-                      </p>
+                      <p className="text-xs md:text-sm text-gray-600 mt-2">{tutor.specialization}</p>
                     </div>
                   </div>
                 </div>
@@ -213,8 +147,7 @@ export default function TutorPrice() {
         <div className="text-center mb-12">
           <h2 className="text-5xl font-bold text-[#0B31BD] mb-4">Preise</h2>
           <p className="text-[#061651] text-lg">
-            Flexible Tarife für jedes Lernziel, inklusive kostenloser
-            Probestunde.
+            Flexible Tarife für jedes Lernziel, inklusive kostenloser Probestunde.
           </p>
         </div>
 
@@ -224,49 +157,36 @@ export default function TutorPrice() {
               key={plan.id}
               className="bg-white border border-gray-200 p-3 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition"
             >
-              <div className="bg-linear-to-r from-[#2563EB] via-[#3B82F6] to-[#6366F1] text-white px-4 py-2 rounded-lg mb-6">
+              <div className="bg-gradient-to-r from-[#2563EB] via-[#3B82F6] to-[#6366F1] text-white px-4 py-2 rounded-lg mb-6">
                 <h3 className="text-lg font-semibold">{plan.name}</h3>
               </div>
               <div className="space-y-4">
                 <div>
                   <p className="text-xs text-gray-500">Preis pro Stunde</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {plan.pricePerHour}
-                  </p>
-                  <hr className="my-2 text-[#F4F6F9] font-semibold" />
+                  <p className="text-2xl font-bold text-gray-900">{plan.pricePerHour}</p>
+                  <hr className="my-2 border-t border-[#F4F6F9]" />
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">Laufzeit</p>
-                  <p className="text-sm font-semibold text-gray-900">
-                    {plan.courseDuration}
-                  </p>
-                  <hr className="my-2 text-[#F4F6F9] font-semibold" />
+                  <p className="text-sm font-semibold text-gray-900">{plan.courseDuration}</p>
+                  <hr className="my-2 border-t border-[#F4F6F9]" />
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">Einheiten</p>
-                  <p className="text-sm font-semibold text-gray-900">
-                    {plan.selectedHours}
-                  </p>
-                  <p className="text-sm text-gray-900 font-semibold mt-1">
-                    {plan.selectedHoursDetails}
-                  </p>
-                  <hr className="my-2 text-[#F4F6F9] font-semibold" />
+                  <p className="text-sm font-semibold text-gray-900">{plan.selectedHours}</p>
+                  <p className="text-sm text-gray-900 font-semibold mt-1">{plan.selectedHoursDetails}</p>
+                  <hr className="my-2 border-t border-[#F4F6F9]" />
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">Terminvereinbarung</p>
-                  <p className="text-sm font-semibold text-gray-900">
-                    {plan.termType}
-                  </p>
-                  <hr className="my-2 text-[#F4F6F9] font-semibold" />
+                  <p className="text-sm font-semibold text-gray-900">{plan.termType}</p>
+                  <hr className="my-2 border-t border-[#F4F6F9]" />
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">Empfohlen für</p>
                   <ul className="mt-2 space-y-1">
                     {plan.inclusions.map((inclusion, idx) => (
-                      <li
-                        key={idx}
-                        className="text-sm font-semibold text-gray-900"
-                      >
+                      <li key={idx} className="text-sm font-semibold text-gray-900">
                         • {inclusion}
                       </li>
                     ))}
