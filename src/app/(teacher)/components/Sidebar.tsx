@@ -6,14 +6,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const menuItems = [
-  { label: "Overview", href: "/dashboard" },
+  { label: "Overview", href: "/teacher" },
   { label: "Requests", href: "/requests" },
   { label: "Messages", href: "/messages" },
   { label: "Earnings", href: "/earnings" },
   { label: "Profile",  href: "/profile" },
 ];
 
-export default function Sidebar() {
+function Sidebar() {
   const pathname = usePathname();
 
   return (
@@ -59,3 +59,5 @@ export default function Sidebar() {
     </aside>
   );
 }
+
+export default Sidebar;
