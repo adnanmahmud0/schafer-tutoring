@@ -4,6 +4,7 @@
 import { Bell, Menu } from "lucide-react";
 import { useState } from "react";
 import MobileMenu from "./MobileMenu"; 
+import Link from "next/link";
 
 export default function TopNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -22,7 +23,6 @@ export default function TopNavbar() {
             <Menu className="w-6 h-6 text-gray-700" />
           </button>
 
-          {/* Page Title - একদম লেফট সাইডে */}
           <h2 className="text-4xl font-bold text-[#0B31BD]">
             Schäfer Tutoring
           </h2>
@@ -31,7 +31,9 @@ export default function TopNavbar() {
         {/* Right: Notification + Avatar */}
         <div className="flex items-center gap-4">
           <button className="relative p-2 hover:bg-gray-100 rounded-full transition">
-            <Bell className="w-7 h-7 text-gray-700" />
+            <Link href="/teacher/messages">
+              <Bell className="w-7 h-7 text-gray-700" />
+            </Link>
             <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
           </button>
 
