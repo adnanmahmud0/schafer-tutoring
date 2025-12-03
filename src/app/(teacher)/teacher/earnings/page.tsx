@@ -54,7 +54,7 @@ export default function EarningsPage() {
     setIsEditDialogOpen(false);
   };
 
-  const handleInputChange = (field, value) => {
+  const handleInputChange = (field: string, value: string) => {
     setEditFormData({ ...editFormData, [field]: value });
   };
 

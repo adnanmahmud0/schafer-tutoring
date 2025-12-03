@@ -31,7 +31,7 @@ export default function TopNavbar() {
         {/* Right: Notification + Avatar */}
         <div className="flex items-center gap-4">
           <button className="relative p-2 hover:bg-gray-100 rounded-full transition">
-            <Link href="/teacher/messages">
+            <Link href="/teacher/notification">
               <Bell className="w-7 h-7 text-gray-700" />
             </Link>
             <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
