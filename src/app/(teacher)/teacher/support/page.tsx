@@ -8,9 +8,9 @@ import {
 } from '@/components/ui/collapsible';
 
 export default function SupportPage() {
-  const [openItems, setOpenItems] = useState({});
+const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
 
-  const toggleItem = (id) => {
+  const toggleItem = (id: string) => {
     setOpenItems((prev) => ({
       ...prev,
       [id]: !prev[id],
@@ -118,7 +118,7 @@ export default function SupportPage() {
                       {faq.question}
                     </span>
                     <ChevronDown
-                      className={`w-5 h-5 text-gray-600 transition-transform duration-300 flex-shrink-0 ml-4 ${
+                      className={`w-5 h-5 text-gray-600 transition-transform duration-300 shrink-0 ml-4 ${
                         openItems[faq.id] ? 'rotate-180' : ''
                       }`}
                     />
