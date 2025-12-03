@@ -3,7 +3,7 @@
 
 import { Bell, Menu } from "lucide-react";
 import { useState } from "react";
-import MobileMenu from "./MobileMenu"; 
+import MobileMenu from "../../../components/dashboard/MobileMenu"; 
 import Link from "next/link";
 
 export default function TopNavbar() {
