@@ -61,7 +61,7 @@ export default function Requests() {
   );
 
   return (
-    <div className="p-6 bg-white">
+    <div className=" bg-white rounded-lg shadow-sm mx-auto p-6 space-y-6">
       {/* Tabs */}
       <div className="flex gap-8 border-b mb-6">
         <button
