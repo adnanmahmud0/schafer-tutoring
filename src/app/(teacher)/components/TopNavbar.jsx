@@ -3,7 +3,7 @@
 
 import { Bell, Menu } from "lucide-react";
 import { useState } from "react";
-import MobileMenu from "../../../components/dashboard/MobileMenu"; 
+import MobileMenu from "../../../components/dashboard/MobileMenu";
 import Link from "next/link";
 
 export default function TopNavbar() {
@@ -11,8 +11,8 @@ export default function TopNavbar() {
 
   return (
     <>
-      <header className="h-24 bg-white fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 md:px-6">
-        
+      <header className="h-24 bg-white fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 md:px-6">
+
         {/* Left: Hamburger (mobile) + Page Title (always left) */}
         <div className="flex items-center gap-4">
           {/* Mobile Hamburger */}
@@ -44,8 +44,8 @@ export default function TopNavbar() {
               </div>
             </div>
             <div>
-                <h3 className="font-semibold">John Doe</h3>
-                <p>Tutor</p>
+              <h3 className="font-semibold">John Doe</h3>
+              <p>Tutor</p>
             </div>
           </div>
         </div>

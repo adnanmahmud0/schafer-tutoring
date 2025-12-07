@@ -7,10 +7,10 @@ import { X, LayoutDashboard, FileText, MessageCircle, DollarSign, User, LogOut }
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Overview", href: "/teacher/dashboard" },
-  { icon: FileText,        label: "Requests", href: "/teacher/requests" },
-  { icon: MessageCircle,   label: "Messages", href: "/teacher/messages" },
-  { icon: DollarSign,      label: "Earnings", href: "/teacher/earnings" },
-  { icon: User,            label: "Profile",  href: "/teacher/profile" },
+  { icon: FileText, label: "Requests", href: "/teacher/requests" },
+  { icon: MessageCircle, label: "Messages", href: "/teacher/messages" },
+  { icon: DollarSign, label: "Earnings", href: "/teacher/earnings" },
+  { icon: User, label: "Profile", href: "/teacher/profile" },
 ];
 
 export default function MobileMenu({ isOpen, onClose }) {
@@ -21,7 +21,7 @@ export default function MobileMenu({ isOpen, onClose }) {
   return (
     <>
       {/* Backdrop */}
-      <div 
+      <div
         className="fixed inset-0 bg-black/50 z-50 lg:hidden"
         onClick={onClose}
       />
@@ -46,11 +46,10 @@ export default function MobileMenu({ isOpen, onClose }) {
                 key={item.href}
                 href={item.href}
                 onClick={onClose}  // Close menu after click
-                className={`flex items-center gap-3 px-4 py-4 rounded-lg transition-all ${
-                  isActive
-                    ? "bg-white text-[#0B31BD] font-semibold shadow-lg"
-                    : "hover:bg-white/10"
-                }`}
+                className={`flex items-center gap-3 px-4 py-4 rounded-lg transition-all ${isActive
+                  ? "bg-white text-[#0B31BD] font-semibold shadow-lg"
+                  : "hover:bg-white/10"
+                  }`}
               >
                 <Icon className={`w-6 h-6 ${isActive ? "text-[#0B31BD]" : "text-white/80"}`} />
                 <span className="text-lg">{item.label}</span>
