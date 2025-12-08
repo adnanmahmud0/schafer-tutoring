@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import PrimaryButton from "@/components/button/PrimaryButton";
 
 const DesktopMenu = () => {

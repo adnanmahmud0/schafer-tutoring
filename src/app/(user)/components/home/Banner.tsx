@@ -2,8 +2,6 @@
 "use client";
 
 import PrimaryButton from "@/components/button/PrimaryButton";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 
 // ---------- //
 // Data block //
