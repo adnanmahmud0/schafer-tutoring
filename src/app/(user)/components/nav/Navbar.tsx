@@ -21,7 +21,7 @@ const Navbar = () => {
           <div className="shrink-0">
             <Link
               href="/"
-              className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#0B31BD] tracking-tight hover:opacity-90 transition"
+              className="text-2xl sm:text-3xl font-bold text-[#0B31BD] tracking-tight hover:opacity-90 transition"
               onClick={closeMenu}
             >
               Schäfer Tutoring
