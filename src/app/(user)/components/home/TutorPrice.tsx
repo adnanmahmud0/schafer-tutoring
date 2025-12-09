@@ -1,8 +1,8 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import PrimaryButton from "@/components/button/PrimaryButton";
 
 export default function TutorPrice() {
   const [currentTutorIndex, setCurrentTutorIndex] = useState(0);
@@ -19,33 +19,33 @@ export default function TutorPrice() {
   const pricingPlans = [
     {
       id: 1,
-      name: "Flexibel",
+      name: "Flexible",
       pricePerHour: "30€",
-      courseDuration: "Keine",
-      selectedHours: "Anzahl wählbar",
-      selectedHoursDetails: "Keine Mindestanzahl",
-      termType: "Flexibel",
-      inclusions: ["Kurzfristige Unterstützung", "Prüfungsvorbereitung"],
+      courseDuration: "None",
+      selectedHours: "Flexible number of sessions ",
+      selectedHoursDetails: "No minimum requirement",
+      termType: "Flexible",
+      inclusions: ["Shortterm support", "Exam preparation"],
     },
     {
       id: 2,
-      name: "Regelmäßig",
+      name: "Regular",
       pricePerHour: "28€",
-      courseDuration: "1 Monat",
-      selectedHours: "Anzahl wählbar",
-      selectedHoursDetails: "Min. 4 Stunden pro Monat",
-      termType: "Flexibel oder regelmäßig",
-      inclusions: ["Unterstützung bei Hausaufgaben", "Unterrichtsbegleitung"],
+      courseDuration: "1 Month",
+      selectedHours: "Flexible number of sessions",
+      selectedHoursDetails: "Min. 4 hours per month",
+      termType: "Flexible or recurring",
+      inclusions: ["Homework support,", "continuous learning"],
     },
     {
       id: 3,
-      name: "Langfristig",
+      name: "Longterm",
       pricePerHour: "25€",
-      courseDuration: "3 Monate",
-      selectedHours: "Anzahl wählbar",
-      selectedHoursDetails: "Min. 4 Stunden pro Monat",
+      courseDuration: "3 Months",
+      selectedHours: "Flexible number of sessions",
+      selectedHoursDetails: "Min. 4 hours per month",
       termType: "Flexibel oder regelmäßig",
-      inclusions: ["Langfristige Unterstützung", "Grundlagenwiederholen"],
+      inclusions: ["Longterm support","foundation building"],
     },
   ];
 
@@ -67,15 +67,19 @@ export default function TutorPrice() {
     setCurrentTutorIndex((prev) => (prev + 1) % tutors.length);
   };
 
-  // Arrow button classes – written in one line to avoid whitespace hydration issues
   const arrowBase =
     "absolute top-1/2 -translate-y-1/2 z-20 p-2 md:p-2.5 bg-white/95 hover:bg-white shadow-md hover:shadow-lg rounded-full transition-all hover:scale-110";
 
   return (
     <section className="w-full">
       {/* Infinite Smooth Carousel */}
-      <div className="mb-20 bg-[#FBFCFC] relative">
-        <div className="relative max-w-7xl mx-auto px-6 py-16 md:py-24">
+      <div className=" bg-[#F7F7F7] relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-5xl font-bold text-[#0B31BD] pt-20 mb-6">Our Tutors</h2>
+          <p className="text-lg text-[#061651]">Every tutor goes through a two-step selection process..</p>
+          <p className="text-lg text-[#061651]">We make sure they don’t just teach - they motivate, listen, and support each student individually.</p>
+        </div>
+        <div className="relative mx-auto pt-[54px] pb-[74px]">
           <button
             onClick={handlePrevTutor}
             className={`${arrowBase} left-2 md:left-4 lg:left-8`}
@@ -143,51 +147,51 @@ export default function TutorPrice() {
       </div>
 
       {/* Pricing Section */}
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-5xl font-bold text-[#0B31BD] mb-4">Preise</h2>
-          <p className="text-[#061651] text-lg">
-            Flexible Tarife für jedes Lernziel, inklusive kostenloser Probestunde.
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mt-0">
+          <h2 className="text-[44px] font-bold text-[#0B31BD] mt-20 mb-[15px]">Pricing</h2>
+          <p className="text-[#061651] text-lg mb-[43px]">
+            Our plans are designed to adapt to you, flexible, fair, and suited to your current situation.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-[65px]">
           {pricingPlans.map((plan) => (
             <div
               key={plan.id}
-              className="bg-white border border-gray-200 p-3 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition"
+              className="bg-white border border-gray-200 p-3 rounded-[28px] overflow-hidden shadow-sm hover:shadow-lg transition"
             >
-              <div className="bg-gradient-to-r from-[#2563EB] via-[#3B82F6] to-[#6366F1] text-white px-4 py-2 rounded-lg mb-6">
+              <div className="bg-linear-to-r from-[#2563EB] via-[#3B82F6] to-[#6366F1] text-white px-4 py-2 rounded-lg mb-6">
                 <h3 className="text-lg font-semibold">{plan.name}</h3>
               </div>
               <div className="space-y-4">
                 <div>
-                  <p className="text-xs text-gray-500">Preis pro Stunde</p>
+                  <p className="text-xs text-gray-500">Price per hour</p>
                   <p className="text-2xl font-bold text-gray-900">{plan.pricePerHour}</p>
-                  <hr className="my-2 border-t border-[#F4F6F9]" />
+                  <hr className="my-4 border-t border-[#F4F6F9]" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Laufzeit</p>
+                  <p className="text-xs text-gray-500">Duration</p>
                   <p className="text-sm font-semibold text-gray-900">{plan.courseDuration}</p>
-                  <hr className="my-2 border-t border-[#F4F6F9]" />
+                  <hr className="my-4 border-t border-[#F4F6F9]" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Einheiten</p>
+                  <p className="text-xs text-gray-500">Sessions</p>
                   <p className="text-sm font-semibold text-gray-900">{plan.selectedHours}</p>
                   <p className="text-sm text-gray-900 font-semibold mt-1">{plan.selectedHoursDetails}</p>
-                  <hr className="my-2 border-t border-[#F4F6F9]" />
+                  <hr className="my-4 border-t border-[#F4F6F9]" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Terminvereinbarung</p>
+                  <p className="text-xs text-gray-500">Scheduling</p>
                   <p className="text-sm font-semibold text-gray-900">{plan.termType}</p>
-                  <hr className="my-2 border-t border-[#F4F6F9]" />
+                  <hr className="my-4 border-t border-[#F4F6F9]" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Empfohlen für</p>
+                  <p className="text-xs text-gray-500">Recommended for</p>
                   <ul className="mt-2 space-y-1">
                     {plan.inclusions.map((inclusion, idx) => (
                       <li key={idx} className="text-sm font-semibold text-gray-900">
-                        • {inclusion}
+                        {inclusion}
                       </li>
                     ))}
                   </ul>
@@ -197,10 +201,8 @@ export default function TutorPrice() {
           ))}
         </div>
 
-        <div className="flex justify-center">
-          <Button className="bg-[#0B31BD] px-8 py-6 text-xl rounded-xl hover:bg-[#092A9E] text-white">
-            Kostenlose Probestunde
-          </Button>
+        <div className="flex justify-center mb-20">
+          <PrimaryButton className="w-[368px]" href="/register" name="Try for free" />
         </div>
       </div>
     </section>

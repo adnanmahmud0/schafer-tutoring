@@ -60,10 +60,10 @@ export default function ConversationSidebar({
   };
 
   return (
-    <div className="w-56 border-r border-border bg-card flex flex-col h-full ">
+    <div className="w-56 border-r border-border bg-card flex flex-col h-full mt-24 md:mt-0">
       {/* Header */}
-      <div className="p-4 border-b border-border">
-        <div className="relative ">
+      <div className="p-4.5 border-b border-border">
+        <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Search conversations"
@@ -85,7 +85,7 @@ export default function ConversationSidebar({
             }`}
           >
             <div className="flex items-start gap-3">
-              <Avatar className="w-10 h-10 flex-shrink-0 mt-1">
+              <Avatar className="w-10 h-10 shrink-0 mt-1">
                 <AvatarFallback className="bg-primary text-primary-foreground">
                   {conversation.avatar}
                 </AvatarFallback>
@@ -96,7 +96,7 @@ export default function ConversationSidebar({
                     {conversation.name}
                   </h3>
                   {!conversation.isRead && (
-                    <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground truncate">
@@ -111,7 +111,7 @@ export default function ConversationSidebar({
         ))}
       </div>
 
-      <div className="border-t border-border p-3">
+      <div className="border-t border-border p-[15.2px]">
         <button
           onClick={handleSupportClick}
           className={`w-full flex items-center gap-3 rounded-lg px-3 py-3 transition-colors ${

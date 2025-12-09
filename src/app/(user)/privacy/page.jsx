@@ -12,7 +12,7 @@ const Privacy = () => {
           <p className="text-sm text-gray-600 mb-8">Effective Date: [Insert Date]</p>
 
           <p className="text-gray-700 mb-8">
-            Schäfer Tutoring ("we," "us," or "our") values your trust and is committed to protecting your personal information. This Privacy Policy explains how we collect, use, and safeguard your data when you use our platform, mobile applications, or related services (together, the "Service").
+            {`Schäfer Tutoring ("we," "us," or "our") values your trust and is committed to protecting your personal information. This Privacy Policy explains how we collect, use, and safeguard your data when you use our platform, mobile applications, or related services (together, the "Service").`}
           </p>
 
           {/* Section 1 */}
@@ -120,7 +120,7 @@ const Privacy = () => {
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">9. Changes to This Policy</h2>
             <ul className="list-disc ml-6 space-y-1 text-gray-700">
-              <li>We may update this Privacy Policy from time to time. Any changes will be posted with a revised "Effective Date."</li>
+              <li>{`We may update this Privacy Policy from time to time. Any changes will be posted with a revised "Effective Date."`}</li>
             </ul>
           </section>
 
