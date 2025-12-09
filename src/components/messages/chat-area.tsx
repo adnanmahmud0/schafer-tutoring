@@ -1,12 +1,15 @@
 "use client";
 
+import { useState } from "react";
+
 import React from "react";
 
 import { Send, Paperclip, Calendar, Menu } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import ScheduleModal from "./schedule-modal";
+import SessionProposal from "./session-proposal";
 
 interface Message {
   id: string;
@@ -16,6 +19,10 @@ interface Message {
   message: string;
   time: string;
   isOwn: boolean;
+  sessionProposal?: {
+    date: string;
+    time: string;
+  };
 }
 
 interface ChatAreaProps {
@@ -122,6 +129,7 @@ export default function ChatArea({
   const [messages, setMessages] = useState<Message[]>(
     conversationData[conversationId]?.messages || []
   );
+  const [isScheduleOpen, setIsScheduleOpen] = useState(false);
 
   const currentConversation = conversationData[conversationId] || {
     name: "Chat",
@@ -152,7 +160,31 @@ export default function ChatArea({
     }
   };
 
-  // Watch conversation changes
+  const handleSchedule = (date: string, time: string) => {
+    const scheduleMessage: Message = {
+      id: (messages.length + 1).toString(),
+      sender: "user",
+      senderName: "You",
+      avatar: "U",
+      message: "Session proposal",
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      isOwn: true,
+      sessionProposal: {
+        date,
+        time,
+      },
+    };
+    setMessages([...messages, scheduleMessage]);
+  };
+
+  const handleSessionAction = (messageId: string, action: string) => {
+    console.log(`[v0] Session ${action} for message ${messageId}`);
+    // This can be extended to handle Accept/Reschedule/Decline logic
+  };
+
   React.useEffect(() => {
     handleSelectConversation(conversationId);
   }, [conversationId]);
@@ -193,7 +225,7 @@ export default function ChatArea({
             }`}
           >
             <div
-              className={`flex gap-3 max-w-xs md:max-w-md ${
+              className={`flex gap-3 ${
                 message.isOwn ? "flex-row-reverse" : ""
               }`}
             >
@@ -205,18 +237,35 @@ export default function ChatArea({
                 </Avatar>
               )}
               <div className={message.isOwn ? "text-right" : ""}>
-                <div
-                  className={`rounded-lg px-4 py-2 ${
-                    message.isOwn
-                      ? "bg-accent text-accent-foreground rounded-br-none"
-                      : "bg-card border border-border rounded-bl-none"
-                  }`}
-                >
-                  <p className="text-sm break-words">{message.message}</p>
-                </div>
-                <span className="text-xs text-muted-foreground mt-1 block">
-                  {message.time}
-                </span>
+                {message.sessionProposal ? (
+                  <SessionProposal
+                    date={message.sessionProposal.date}
+                    time={message.sessionProposal.time}
+                    onAccept={() => handleSessionAction(message.id, "accepted")}
+                    onReschedule={() => {
+                      setIsScheduleOpen(true);
+                      handleSessionAction(message.id, "reschedule");
+                    }}
+                    onDecline={() =>
+                      handleSessionAction(message.id, "declined")
+                    }
+                  />
+                ) : (
+                  <>
+                    <div
+                      className={`rounded-lg px-4 py-2 ${
+                        message.isOwn
+                          ? "bg-accent text-accent-foreground rounded-br-none"
+                          : "bg-card border border-border rounded-bl-none"
+                      }`}
+                    >
+                      <p className="text-sm break-words">{message.message}</p>
+                    </div>
+                    <span className="text-xs text-muted-foreground mt-1 block">
+                      {message.time}
+                    </span>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -244,6 +293,7 @@ export default function ChatArea({
             size="sm"
             variant="ghost"
             className="hidden sm:flex flex-shrink-0 gap-1 text-accent hover:bg-accent/10 h-8"
+            onClick={() => setIsScheduleOpen(true)}
           >
             <Calendar className="w-3 h-3" />
             <span className="text-xs">Schedule</span>
@@ -257,6 +307,13 @@ export default function ChatArea({
           </Button>
         </div>
       </div>
+
+      {/* Schedule Modal */}
+      <ScheduleModal
+        isOpen={isScheduleOpen}
+        onClose={() => setIsScheduleOpen(false)}
+        onSchedule={handleSchedule}
+      />
     </div>
   );
 }

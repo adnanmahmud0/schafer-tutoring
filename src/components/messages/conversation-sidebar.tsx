@@ -60,10 +60,10 @@ export default function ConversationSidebar({
   };
 
   return (
-    <div className="w-56 border-r border-border bg-card flex flex-col h-full ">
+    <div className="w-56 border-r border-border bg-card flex flex-col h-full mt-24 md:mt-0">
       {/* Header */}
-      <div className="p-4 border-b border-border">
-        <div className="relative ">
+      <div className="p-4.5 border-b border-border">
+        <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Search conversations"
@@ -111,7 +111,7 @@ export default function ConversationSidebar({
         ))}
       </div>
 
-      <div className="border-t border-border p-3">
+      <div className="border-t border-border p-[15.2px]">
         <button
           onClick={handleSupportClick}
           className={`w-full flex items-center gap-3 rounded-lg px-3 py-3 transition-colors ${

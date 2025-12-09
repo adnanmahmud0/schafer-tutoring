@@ -9,10 +9,10 @@ export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
+    <div className="flex h-[calc(100vh-150px)] bg-background overflow-hidden">
       {/* Sidebar - hidden on mobile, visible on larger screens */}
       <div
-        className={`fixed inset-0 z-40 bg-background md:hidden ${
+        className={`fixed inset-0 z-40 bg-black/50 md:hidden ${
           sidebarOpen ? "block" : "hidden"
         }`}
         onClick={() => setSidebarOpen(false)}
