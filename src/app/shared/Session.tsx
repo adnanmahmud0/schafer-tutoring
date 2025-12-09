@@ -1,7 +1,8 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import React, { useState } from "react";
-import { Calendar, Clock, Star, X, Mic, Square, Check } from "lucide-react";
+import { Calendar, Clock, Star, Mic, Square, Check } from "lucide-react";
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";

@@ -12,7 +12,7 @@ const Terms = () => {
           <p className="text-sm text-gray-600 mb-8">Effective Date: [Insert Date]</p>
 
           <p className="text-gray-700 mb-8">
-            Welcome to Schäfer Tutoring! These Terms and Conditions ("Terms") govern your use of our platform, mobile applications, and related services (collectively, the "Service"). By accessing or using Schäfer Tutoring, you agree to be bound by these Terms. If you do not agree, please do not use our Service.
+            {`Welcome to Schäfer Tutoring! These Terms and Conditions ("Terms") govern your use of our platform, mobile applications, and related services (collectively, the "Service"). By accessing or using Schäfer Tutoring, you agree to be bound by these Terms. If you do not agree, please do not use our Service.`}
           </p>
 
           {/* Section 1 */}
@@ -39,7 +39,7 @@ const Terms = () => {
           {/* Section 3 */}
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">3. User Accounts</h2>
-            
+
             <div className="space-y-3">
               <div>
                 <p className="font-medium text-gray-800 mb-2">a. Account Registration</p>
@@ -62,7 +62,7 @@ const Terms = () => {
           {/* Section 4 */}
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">4. User Responsibilities</h2>
-            
+
             <div className="space-y-3">
               <div>
                 <p className="font-medium text-gray-800 mb-2">a. Task Posters</p>
@@ -96,7 +96,7 @@ const Terms = () => {
           {/* Section 5 */}
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">5. Payments and Fees</h2>
-            
+
             <div className="space-y-3">
               <div>
                 <p className="font-medium text-gray-800 mb-2">a. Service Fees</p>
@@ -132,7 +132,7 @@ const Terms = () => {
               <li>Use the Service for any illegal or unauthorized purpose.</li>
               <li>Post tasks that involve illegal activities, harassment, or harm to others.</li>
               <li>Scrape, copy, or misuse platform data.</li>
-              <li>Interfere with or disrupt the Service's functionality.</li>
+              <li>{`Interfere with or disrupt the Service's functionality.`}</li>
               <li>Create multiple accounts to manipulate reviews or ratings.</li>
             </ul>
           </section>
@@ -177,7 +177,7 @@ const Terms = () => {
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">11. Changes to Terms</h2>
             <ul className="list-disc ml-6 space-y-1 text-gray-700">
-              <li>We may update these Terms from time to time. Changes will be posted with a revised "Effective Date."</li>
+              <li>{`We may update these Terms from time to time. Changes will be posted with a revised "Effective Date."`}</li>
               <li>Continued use of the Service after changes constitutes acceptance of the updated Terms.</li>
             </ul>
           </section>
