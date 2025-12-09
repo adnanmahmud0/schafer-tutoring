@@ -52,7 +52,7 @@ export default function Testimonial() {
   return (
     <>
       {/* Testimonial Section */}
-      <section className="w-full pt-16 md:pt-20 bg-white">
+      <section className="w-full bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-10 md:space-y-12">
             <Image
