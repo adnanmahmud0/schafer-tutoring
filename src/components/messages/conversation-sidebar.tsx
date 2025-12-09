@@ -85,7 +85,7 @@ export default function ConversationSidebar({
             }`}
           >
             <div className="flex items-start gap-3">
-              <Avatar className="w-10 h-10 flex-shrink-0 mt-1">
+              <Avatar className="w-10 h-10 shrink-0 mt-1">
                 <AvatarFallback className="bg-primary text-primary-foreground">
                   {conversation.avatar}
                 </AvatarFallback>
@@ -96,7 +96,7 @@ export default function ConversationSidebar({
                     {conversation.name}
                   </h3>
                   {!conversation.isRead && (
-                    <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground truncate">

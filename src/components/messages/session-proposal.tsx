@@ -35,7 +35,7 @@ export default function SessionProposal({
 
       {/* Date Section */}
       <div className="flex items-start gap-3 mb-3">
-        <Calendar className="w-4 h-4 text-muted-foreground mt-1 flex-shrink-0" />
+        <Calendar className="w-4 h-4 text-muted-foreground mt-1 shrink-0" />
         <div>
           <p className="text-xs text-muted-foreground font-medium">DATE</p>
           <p className="text-sm font-medium text-foreground">
@@ -46,7 +46,7 @@ export default function SessionProposal({
 
       {/* Time Section */}
       <div className="flex items-start gap-3 mb-4">
-        <Clock className="w-4 h-4 text-muted-foreground mt-1 flex-shrink-0" />
+        <Clock className="w-4 h-4 text-muted-foreground mt-1 shrink-0" />
         <div>
           <p className="text-xs text-muted-foreground font-medium">TIME</p>
           <p className="text-sm font-medium text-foreground">{time}</p>

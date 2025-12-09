@@ -230,7 +230,7 @@ export default function ChatArea({
               }`}
             >
               {!message.isOwn && (
-                <Avatar className="w-8 h-8 flex-shrink-0">
+                <Avatar className="w-8 h-8 shrink-0">
                   <AvatarFallback className="bg-primary text-primary-foreground text-xs">
                     {message.avatar}
                   </AvatarFallback>
@@ -259,7 +259,9 @@ export default function ChatArea({
                           : "bg-card border border-border rounded-bl-none"
                       }`}
                     >
-                      <p className="text-sm break-words">{message.message}</p>
+                      <p className="text-sm wrap-break-word">
+                        {message.message}
+                      </p>
                     </div>
                     <span className="text-xs text-muted-foreground mt-1 block">
                       {message.time}
@@ -285,14 +287,14 @@ export default function ChatArea({
           <Button
             variant="ghost"
             size="icon"
-            className="flex-shrink-0 h-8 w-8 text-muted-foreground hover:text-foreground"
+            className="shrink-0 h-8 w-8 text-muted-foreground hover:text-foreground"
           >
             <Paperclip className="w-4 h-4" />
           </Button>
           <Button
             size="sm"
             variant="ghost"
-            className="hidden sm:flex flex-shrink-0 gap-1 text-accent hover:bg-accent/10 h-8"
+            className="hidden sm:flex shrink-0 gap-1 text-accent hover:bg-accent/10 h-8"
             onClick={() => setIsScheduleOpen(true)}
           >
             <Calendar className="w-3 h-3" />
@@ -300,7 +302,7 @@ export default function ChatArea({
           </Button>
           <Button
             size="icon"
-            className="flex-shrink-0 h-8 w-8 bg-accent text-accent-foreground hover:bg-accent/90"
+            className="shrink-0 h-8 w-8 bg-accent text-accent-foreground hover:bg-accent/90"
             onClick={handleSendMessage}
           >
             <Send className="w-4 h-4" />
