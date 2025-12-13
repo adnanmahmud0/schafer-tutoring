@@ -83,11 +83,11 @@ export default function Funcard() {
             </p>
           </div>
         {/* Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-20">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
             {cards.map((card, i) => (
               <div
                 key={i}
-                className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 flex flex-col h-[467px]"
+                className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 flex flex-col h-[420px] md:h-[467px]"
               >
                 {/* Text Part */}
                 <div className="p-6 pt-8 flex flex-col justify-start flex-1">
@@ -110,7 +110,7 @@ export default function Funcard() {
                   <img
                     src={card.image || "/placeholder.svg"}
                     alt={card.title}
-                    className="absolute bottom-0 flex justify-self-center h-[260px] w-auto object-contain z-10"
+                    className="absolute bottom-0 flex justify-self-center h-[230px] lg:h-[260px] w-auto object-contain z-10"
                   />
                 </div>
               </div>
@@ -120,13 +120,13 @@ export default function Funcard() {
       </section>
 
       {/* Approach Section – Responsive */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-[564px] flex items-center">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 md:my-20 lg:my-0 lg:px-8 h-[864px] md:h-[764px] lg:h-[564px] flex items-center">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           <div className="order-1 lg:order-1 flex justify-center lg:justify-start">
             <img
               src={approach.image}
               alt="Student"
-              className=" w-[455px] h-[444px]"
+              className="w-full md:w-[455px] md:h-[444px]"
             />
           </div>
 
@@ -141,7 +141,7 @@ export default function Funcard() {
             <p className="text-[#1F2D62] text-base sm:text-lg leading-relaxed mb-8 max-w-2xl">
               {approach.description}
             </p>
-            <PrimaryButton href="/find" name="Find a tutor"/>
+            <PrimaryButton className="flex justify-self-center lg:justify-self-start" href="/find" name="Find a tutor"/>
           </div>
         </div>
       </section>
