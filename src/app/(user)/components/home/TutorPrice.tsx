@@ -75,7 +75,7 @@ export default function TutorPrice() {
       {/* Infinite Smooth Carousel */}
       <div className=" bg-[#F7F7F7] relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-5xl font-bold text-[#0B31BD] pt-20 mb-6">Our Tutors</h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-[#0B31BD] pt-20 mb-6">Our Tutors</h2>
           <p className="text-lg text-[#061651]">Every tutor goes through a two-step selection process..</p>
           <p className="text-lg text-[#061651]">We make sure they don’t just teach - they motivate, listen, and support each student individually.</p>
         </div>
@@ -149,20 +149,20 @@ export default function TutorPrice() {
       {/* Pricing Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mt-0">
-          <h2 className="text-[44px] font-bold text-[#0B31BD] mt-20 mb-[15px]">Pricing</h2>
+          <h2 className="text-4xl md:text-[44px] font-bold text-[#0B31BD] mt-20 mb-[15px]">Pricing</h2>
           <p className="text-[#061651] text-lg mb-[43px]">
             Our plans are designed to adapt to you, flexible, fair, and suited to your current situation.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-[65px]">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-10 mb-8 md:mb-[65px]">
           {pricingPlans.map((plan) => (
             <div
               key={plan.id}
-              className="bg-white border border-gray-200 p-3 rounded-[28px] overflow-hidden shadow-sm hover:shadow-lg transition"
+              className="bg-white border border-gray-200 p-4 rounded-[28px] overflow-hidden shadow-sm hover:shadow-lg transition"
             >
-              <div className="bg-linear-to-r from-[#2563EB] via-[#3B82F6] to-[#6366F1] text-white px-4 py-2 rounded-lg mb-6">
-                <h3 className="text-lg font-semibold">{plan.name}</h3>
+              <div className="bg-linear-to-r from-[#2563EB] via-[#3B82F6] to-[#6366F1] text-white px-4 py-3 rounded-lg mb-6">
+                <h3 className="text-lg font-semibold flex">{plan.name}</h3>
               </div>
               <div className="space-y-4">
                 <div>
