@@ -176,7 +176,7 @@ export default function TutorPrice() {
                 <button
                   key={plan.id}
                   onClick={() => setCurrentPlanIndex(index)}
-                  className={`flex-shrink-0 px-6 py-2 rounded-2xl font-semibold transition-all min-w-max ${index === currentPlanIndex
+                  className={`shrink-0 px-6 py-2 rounded-2xl font-semibold transition-all min-w-max ${index === currentPlanIndex
                       ? 'bg-[#0B31BD] text-white'
                       : 'bg-white border-2 border-gray-200 text-gray-900'
                     }`}
