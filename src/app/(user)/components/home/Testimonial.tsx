@@ -16,26 +16,36 @@ const testimonials = [
 
 const faqs = [
   {
-    question: "Wie funktioniert die Online-Nachhilfe?",
+    question: "How does online tutoring work?",
     answer:
       "Die Online-Nachhilfe funktioniert ganz einfach über unsere digitale Plattform...",
   },
   {
-    question: "Welche Fächer bieten Sie an?",
+    question: "Which subjects and grade levels are offered?",
     answer: "Wir bieten Nachhilfe in allen gängigen Schulfächern an...",
   },
   {
-    question: "Was verdient ein Tutor?",
+    question: "How are tutors selected?",
     answer:
       "Unsere Tutoren verdienen je nach Erfahrung und Fach zwischen 25–45 € pro Stunde...",
   },
   {
-    question: "Kann ich Stunden kurzfristig absagen?",
+    question: "Can sessions be rescheduled or cancelled?",
     answer:
       "Ja! Kostenfreie Stornierung ist bis 24 Stunden vor Unterrichtsbeginn möglich...",
   },
   {
-    question: "Wie flexibel sind die Unterrichtszeiten?",
+    question: "How long is a typical lesson?",
+    answer:
+      "Sehr flexibel! Unterricht ist 7 Tage die Woche von 8:00 bis 22:00 Uhr möglich...",
+  },
+  {
+    question: "What equipment is required?",
+    answer:
+      "Sehr flexibel! Unterricht ist 7 Tage die Woche von 8:00 bis 22:00 Uhr möglich...",
+  },
+  {
+    question: "Can tutors be changed if needed?",
     answer:
       "Sehr flexibel! Unterricht ist 7 Tage die Woche von 8:00 bis 22:00 Uhr möglich...",
   },
@@ -44,7 +54,7 @@ const faqs = [
 export default function Testimonial() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
-  const [defaultActiveIndex, setDefaultActiveIndex] = useState(3); // default PC/tab
+  const [defaultActiveIndex, setDefaultActiveIndex] = useState(3);
 
   // Set default active index based on screen width
   useEffect(() => {
@@ -68,7 +78,7 @@ export default function Testimonial() {
       {/* Testimonial Section */}
       <section className="w-full bg-white">
         <div className="text-center space-y-10 md:space-y-12">
-          <div className="w-4/5 mx-auto mb-20">
+          <div className="max-w-7xl mx-auto mb-20">
             <Image
               src="/comma.svg"
               alt="quote"
