@@ -146,6 +146,10 @@ const FreeTrialTeacher = () => {
     setStep((prev) => prev + 1);
   };
 
+  const handlePrevStep = () => {
+    setStep((prev) => Math.max(1, prev - 1));
+  };
+
   const showSweetAlert = (type, title, text) => {
     if (typeof window !== "undefined" && window.Swal) {
       window.Swal.fire({
@@ -212,16 +216,14 @@ const FreeTrialTeacher = () => {
         }
       `}</style>
 
-      <div className="min-h-screen">
+      <div className="min-h-screen -mb-20">
         {/* Navbar */}
         <nav className="bg-[#FBFCFC] h-20 shadow-sm">
-          <div className="px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-center h-16">
-              <div className="flex items-center">
-                <h1 className="text-3xl font-bold text-[#0B31BD]">
-                  Schäfer Tutoring
-                </h1>
-              </div>
+          <div className="px-4 sm:px-6 lg:px-8 h-full flex items-center">
+            <div className="flex items-center justify-center w-full">
+              <h1 className="text-3xl font-bold text-[#0B31BD]">
+                Schäfer Tutoring
+              </h1>
             </div>
           </div>
         </nav>
@@ -346,12 +348,21 @@ const FreeTrialTeacher = () => {
                       )}
                     </div>
 
-                    <button
-                      onClick={handleNextStep}
-                      className="w-full max-w-md mx-auto bg-[#0B31BD] text-white py-3 rounded-md font-medium hover:bg-[#062183] transition-colors flex items-center justify-center gap-2"
-                    >
-                      Next Step
-                    </button>
+                    <div className="flex gap-4">
+                      <button
+                        onClick={handlePrevStep}
+                        disabled={step === 1}
+                        className="w-full max-w-md mx-auto bg-gray-300 text-gray-700 py-3 rounded-md font-medium hover:bg-gray-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Back
+                      </button>
+                      <button
+                        onClick={handleNextStep}
+                        className="w-full max-w-md mx-auto bg-[#0B31BD] text-white py-3 rounded-md font-medium hover:bg-[#062183] transition-colors flex items-center justify-center gap-2"
+                      >
+                        Next
+                      </button>
+                    </div>
                   </div>
                 )}
 
@@ -467,12 +478,20 @@ const FreeTrialTeacher = () => {
                       </div>
                     </div>
 
-                    <button
-                      onClick={handleNextStep}
-                      className="w-full max-w-md mx-auto bg-[#0B31BD] text-white py-3 rounded-md font-medium hover:bg-[#062183] transition-colors flex items-center justify-center gap-2"
-                    >
-                      Next Step
-                    </button>
+                    <div className="flex gap-4">
+                      <button
+                        onClick={handlePrevStep}
+                        className="w-full max-w-md mx-auto bg-gray-300 text-gray-700 py-3 rounded-md font-medium hover:bg-gray-400 transition-colors"
+                      >
+                        Back
+                      </button>
+                      <button
+                        onClick={handleNextStep}
+                        className="w-full max-w-md mx-auto bg-[#0B31BD] text-white py-3 rounded-md font-medium hover:bg-[#062183] transition-colors flex items-center justify-center gap-2"
+                      >
+                        Next
+                      </button>
+                    </div>
                   </div>
                 )}
 
@@ -651,12 +670,20 @@ const FreeTrialTeacher = () => {
                       </label>
                     </div>
 
-                    <button
-                      onClick={handleSubmit}
-                      className="w-full max-w-md mx-auto bg-[#0B31BD] text-white py-3 rounded-md font-medium hover:bg-[#062183] transition-colors flex items-center justify-center gap-2"
-                    >
-                      Send the request
-                    </button>
+                    <div className="flex gap-4">
+                      <button
+                        onClick={handlePrevStep}
+                        className="w-full max-w-md mx-auto bg-gray-300 text-gray-700 py-3 rounded-md font-medium hover:bg-gray-400 transition-colors"
+                      >
+                        Back
+                      </button>
+                      <button
+                        onClick={handleSubmit}
+                        className="w-full max-w-md mx-auto bg-[#0B31BD] text-white py-3 rounded-md font-medium hover:bg-[#062183] transition-colors flex items-center justify-center gap-2"
+                      >
+                        Send the request
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>

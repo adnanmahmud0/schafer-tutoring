@@ -61,10 +61,10 @@ export default function Funcard() {
         <div className="flex justify-between items-center h-[150px]">
           {stats.map((stat, i) => (
             <div key={i} className="text-center">
-              <p className="text-xl md:text-3xl font-bold text-[#0B31BD]">
+              <p className="text-xl md:text-2xl font-bold text-[#0B31BD]">
                 {stat.value}
               </p>
-              <p className="text-sm md:text-3xl text-[#0B85BD] font-bold mt-1">
+              <p className="text-sm md:text-2xl text-[#0B85BD] font-bold mt-1">
                 {stat.label}
               </p>
             </div>
@@ -122,7 +122,7 @@ export default function Funcard() {
       {/* Approach Section – Responsive */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 md:my-20 lg:my-0 lg:px-8 h-[864px] md:h-[764px] lg:h-[564px] flex items-center">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          <div className="order-1 lg:order-1 flex justify-center lg:justify-start">
+          <div className="order-2 lg:order-1 flex justify-center lg:justify-start">
             <img
               src={approach.image}
               alt="Student"
@@ -131,7 +131,7 @@ export default function Funcard() {
           </div>
 
           {/* Right Content */}
-          <div className="order-2 lg:order-2 text-center lg:text-left">
+          <div className="order-1 lg:order-2 text-center lg:text-left">
             <p className="text-[#061651] text-[16px] tracking-wide -mb-1">
               {approach.tag}
             </p>
