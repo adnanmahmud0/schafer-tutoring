@@ -46,7 +46,7 @@ export default function TutorPrice() {
       selectedHours: 'Flexible number of sessions',
       selectedHoursDetails: 'Min. 4 hours per month',
       termType: 'Flexibel oder regelmäßig',
-      inclusions: ['Longterm support','foundation building'],
+      inclusions: ['Longterm support', 'foundation building'],
     },
   ];
 
@@ -86,7 +86,9 @@ export default function TutorPrice() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-0">
             <h2 className="text-4xl md:text-5xl font-bold text-[#0B31BD] pt-20 mb-6">Our Tutors</h2>
             <p className="text-lg text-[#061651]">Every tutor goes through a two-step selection process..</p>
-            <p className="text-lg text-[#061651]">We make sure they don't just teach - they motivate, listen, and support each student individually.</p>
+            <p className="text-lg text-[#061651]">
+              {"We make sure they don't just teach - they motivate, listen, and support each student individually."}
+            </p>
           </div>
           <div className="relative pt-[54px] pb-[74px]">
             <button
@@ -174,11 +176,10 @@ export default function TutorPrice() {
                 <button
                   key={plan.id}
                   onClick={() => setCurrentPlanIndex(index)}
-                  className={`flex-shrink-0 px-6 py-2 rounded-2xl font-semibold transition-all min-w-max ${
-                    index === currentPlanIndex
+                  className={`flex-shrink-0 px-6 py-2 rounded-2xl font-semibold transition-all min-w-max ${index === currentPlanIndex
                       ? 'bg-[#0B31BD] text-white'
                       : 'bg-white border-2 border-gray-200 text-gray-900'
-                  }`}
+                    }`}
                 >
                   <div className="text-sm">{plan.name}</div>
                   <div className="text-xs opacity-75">{plan.courseDuration}</div>
@@ -237,7 +238,7 @@ export default function TutorPrice() {
                 <ul className="space-y-2">
                   {pricingPlans[currentPlanIndex].inclusions.map((inclusion, idx) => (
                     <li key={idx} className="text-sm font-semibold text-gray-900">
-                       {inclusion}
+                      {inclusion}
                     </li>
                   ))}
                 </ul>
