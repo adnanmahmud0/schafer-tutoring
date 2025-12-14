@@ -57,7 +57,7 @@ const Footer = () => {
 
         {/* Bottom Copyright */}
         <div className="mt-12 pt-8 border-t border-[#546FD0] text-center">
-          <p className="text-sm text-white/80">
+          <p className="text-sm text-white/60">
             © 2025 Schäfer Tutoring. Alle Rechte vorbehalten.
           </p>
         </div>
