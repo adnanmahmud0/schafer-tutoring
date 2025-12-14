@@ -18,36 +18,36 @@ const faqs = [
   {
     question: "How does online tutoring work?",
     answer:
-      "Die Online-Nachhilfe funktioniert ganz einfach über unsere digitale Plattform...",
+      "All lessons are conducted on an integrated online meeting platform. Tutor and student collaborate in a secure digital room using interactive whiteboards for writing, drawing, and sharing tasks. Teaching takes place live and is individually tailored to the student's learning goals.",
   },
   {
     question: "Which subjects and grade levels are offered?",
-    answer: "Wir bieten Nachhilfe in allen gängigen Schulfächern an...",
+    answer: "A wide range of school subjects from grades 1–13 is available. This includes Math, English, German, Sciences, Languages and more.",
   },
   {
     question: "How are tutors selected?",
     answer:
-      "Unsere Tutoren verdienen je nach Erfahrung und Fach zwischen 25–45 € pro Stunde...",
+      "All tutors undergo a structured two-step screening process. Qualifications, teaching experience, and pedagogical skills are reviewed. Only applicants who demonstrate clear communication and strong individual support are accepted.",
   },
   {
     question: "Can sessions be rescheduled or cancelled?",
     answer:
-      "Ja! Kostenfreie Stornierung ist bis 24 Stunden vor Unterrichtsbeginn möglich...",
+      "Sessions can be rescheduled or cancelled free of charge up to 10 minutes before the scheduled start time.",
   },
   {
     question: "How long is a typical lesson?",
     answer:
-      "Sehr flexibel! Unterricht ist 7 Tage die Woche von 8:00 bis 22:00 Uhr möglich...",
+      "A standard lesson lasts 60 minutes. This duration has proven effective for achieving consistent academic progress.",
   },
   {
     question: "What equipment is required?",
     answer:
-      "Sehr flexibel! Unterricht ist 7 Tage die Woche von 8:00 bis 22:00 Uhr möglich...",
+      "Only basic equipment is needed: laptop, tablet, or smartphone; stable internet connection; microphone; optional camera. No additional software installation is necessary.",
   },
   {
     question: "Can tutors be changed if needed?",
     answer:
-      "Sehr flexibel! Unterricht ist 7 Tage die Woche von 8:00 bis 22:00 Uhr möglich...",
+      "A tutor change is possible at any time if the match is not optimal. In such cases, an alternative tutor is recommended.",
   },
 ];
 

@@ -2,6 +2,8 @@
 "use client";
 
 import PrimaryButton from "@/components/button/PrimaryButton";
+import { motion } from "framer-motion";
+import { ReactLenis } from "lenis/react";
 
 export default function Funcard() {
   const data = {
@@ -12,17 +14,16 @@ export default function Funcard() {
     ],
     heading: {
       title: "How it works",
-      subtitle: "Define your learning needs - we’ll match you with the right tutor.",
+      subtitle: "Define your learning needs - we'll match you with the right tutor.",
     },
     cards: [
       {
         step: "1.",
         title: "Send your request",
         description:
-          "Tell us the subject you need help with and when you’re available.",
+          "Tell us the subject you need help with and when you're available.",
         image: "/boy1.png",
         bgColor: "bg-[#8396DE]",
-        imageClass: "h-full w-auto object-contain",
       },
       {
         step: "2.",
@@ -30,7 +31,6 @@ export default function Funcard() {
         description: "We connect you with a suitable tutor based on your goals.",
         image: "/girl1.png",
         bgColor: "bg-[#83C1DE]",
-        imageClass: "w-full h-full object-cover",
       },
       {
         step: "3.",
@@ -38,43 +38,47 @@ export default function Funcard() {
         description: "Improve your grades and build confidence.",
         image: "/girl2.png",
         bgColor: "bg-[#6490F8]",
-        imageClass: "object-cover",
       },
     ],
     approach: {
       tag: "Our Approach",
-      description:
-        `We match you with a tutor who listens, understands your goals, and adapts to your learning style.
-        With a personalized learning plan, grades improve faster and confidence grows with every lesson.`,
-      buttonText: "Find a Tutor",
+      description: `We match you with a tutor who listens, understands your goals, and adapts to your learning style.
+      With a personalized learning plan, grades improve faster and confidence grows with every lesson.`,
       image: "/boy2.png",
     },
   };
 
   const { stats, heading, cards, approach } = data;
 
+  const stackGapVh = 15;
+  const baseTopVh = 10;
+  const fudgeVh = stackGapVh / 2;
+  const containerMinHeight = `calc(100vh + ${stackGapVh * (cards.length - 1)}vh - ${fudgeVh}vh)`;
+
   return (
     <>
-      {/* Stats + Cards Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-white">
-        {/* Stats */}
-        <div className="flex justify-between items-center h-[150px]">
+      {/* ================= STATS ================= */}
+      <section className="max-w-7xl mx-auto px-4 py-20 bg-white">
+        <div className="flex justify-between">
           {stats.map((stat, i) => (
             <div key={i} className="text-center">
               <p className="text-xl md:text-2xl font-bold text-[#0B31BD]">
                 {stat.value}
               </p>
-              <p className="text-sm md:text-2xl text-[#0B85BD] font-bold mt-1">
+              <p className="text-sm md:text-2xl font-bold text-[#0B85BD] mt-1">
                 {stat.label}
               </p>
             </div>
           ))}
         </div>
       </section>
+
+      {/* ================= HOW IT WORKS ================= */}
       <section className="bg-[#F7F7F7] py-16 lg:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4">
+
           {/* Heading */}
-          <div className="text-center px-4 mb-12">
+          <div className="text-center mb-12">
             <h2 className="text-4xl sm:text-5xl font-bold text-[#0B31BD] mb-2.5">
               {heading.title}
             </h2>
@@ -82,15 +86,66 @@ export default function Funcard() {
               {heading.subtitle}
             </p>
           </div>
-        {/* Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
+
+          {/* ================= MOBILE STACK ================= */}
+          <div className="md:hidden">
+            <ReactLenis root options={{ lerp: 0.1, duration: 2 }}>
+              <div className="relative" style={{ minHeight: containerMinHeight }}>
+
+                {cards.map((card, i) => {
+                  return (
+                    <motion.div
+                      key={i}
+                      style={{
+                        zIndex: i + 1,
+                        top: `${baseTopVh + i * stackGapVh}vh`,
+                      }}
+                      className="sticky flex justify-center mb-6"
+                    >
+                      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 w-[90vw] max-w-sm h-[420px] flex flex-col overflow-hidden">
+
+                        {/* Text */}
+                        <div className="p-6 pt-8 flex-1">
+                          <p className="relative z-20 bg-linear-to-r from-[#0B31BD] to-[#B0BEF2] bg-clip-text text-transparent font-bold text-3xl mb-3">
+                            {card.step}
+                          </p>
+                          <h3 className="text-2xl font-bold text-[#313030] mb-3">
+                            {card.title}
+                          </h3>
+                          <p className="text-[#1F2D62] text-lg leading-relaxed">
+                            {card.description}
+                          </p>
+                        </div>
+
+                        {/* Image */}
+                        <div className="relative h-[200px]">
+                          <div
+                            className={`absolute bottom-0 left-0 right-0 h-[138px] ${card.bgColor}`}
+                          />
+                          <img
+                            src={card.image}
+                            alt={card.title}
+                            className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[230px] z-10"
+                          />
+                        </div>
+
+                      </div>
+                    </motion.div>
+                  );
+                })}
+
+              </div>
+            </ReactLenis>
+          </div>
+
+          {/* ================= DESKTOP GRID ================= */}
+          <div className="hidden md:grid md:grid-cols-3 gap-10">
             {cards.map((card, i) => (
               <div
                 key={i}
-                className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 flex flex-col h-[420px] md:h-[467px]"
+                className="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col h-[467px]"
               >
-                {/* Text Part */}
-                <div className="p-6 pt-8 flex flex-col justify-start flex-1">
+                <div className="p-6 pt-8 flex-1">
                   <p className="bg-linear-to-r from-[#0B31BD] to-[#B0BEF2] bg-clip-text text-transparent font-bold text-3xl mb-3">
                     {card.step}
                   </p>
@@ -101,47 +156,38 @@ export default function Funcard() {
                     {card.description}
                   </p>
                 </div>
-
-                {/* Image + Color Block */}
-                <div className="relative w-full h-[200px]">
+                <div className="relative h-[200px]">
                   <div
                     className={`absolute bottom-0 left-0 right-0 h-[138px] ${card.bgColor}`}
-                  ></div>
+                  />
                   <img
-                    src={card.image || "/placeholder.svg"}
+                    src={card.image}
                     alt={card.title}
-                    className="absolute bottom-0 flex justify-self-center h-[230px] lg:h-[260px] w-auto object-contain z-10"
+                    className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[260px] z-10"
                   />
                 </div>
               </div>
             ))}
           </div>
+
         </div>
       </section>
 
-      {/* Approach Section – Responsive */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 md:my-20 lg:my-0 lg:px-8 h-[864px] md:h-[764px] lg:h-[564px] flex items-center">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          <div className="order-2 lg:order-1 flex justify-center lg:justify-start">
-            <img
-              src={approach.image}
-              alt="Student"
-              className="w-full md:w-[455px] md:h-[444px]"
-            />
-          </div>
-
-          {/* Right Content */}
+      {/* ================= APPROACH ================= */}
+      <section className="max-w-6xl mx-auto px-4 my-20 flex items-center">
+        <div className="grid lg:grid-cols-2 gap-16 items-center">
+          <img src={approach.image} alt="student" className="order-2 lg:order-1 w-full max-w-md mx-auto" />
           <div className="order-1 lg:order-2 text-center lg:text-left">
-            <p className="text-[#061651] text-[16px] tracking-wide -mb-1">
-              {approach.tag}
-            </p>
-            <h2 className="text-3xl sm:text-[44px] font-bold text-[#0B31BD] leading-tight mb-[21px]">
-              Personal, <span className="text-[#0B85BD]">individual</span>
+            <p className="text-[#061651] mb-1">{approach.tag}</p>
+            <h2 className="text-4xl font-bold text-[#0B31BD] mb-4">
+              Personal <span className="text-[#0B85BD]">individual</span>
             </h2>
-            <p className="text-[#1F2D62] text-base sm:text-lg leading-relaxed mb-8 max-w-2xl">
+            <p className="text-lg text-[#1F2D62] mb-8">
               {approach.description}
             </p>
-            <PrimaryButton className="flex justify-self-center lg:justify-self-start" href="/find" name="Find a tutor"/>
+            <div className="flex justify-center lg:justify-start">
+              <PrimaryButton href="/find" name="Find a tutor" />
+            </div>
           </div>
         </div>
       </section>
