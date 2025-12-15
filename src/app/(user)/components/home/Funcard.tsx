@@ -187,7 +187,7 @@ export default function Funcard() {
               {approach.description}
             </p>
             <div className="flex justify-center lg:justify-start">
-              <PrimaryButton href="/find" name="Find a tutor" />
+              <PrimaryButton href="/free-trial-student" name="Find a tutor" />
             </div>
           </div>
         </div>

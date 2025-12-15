@@ -356,7 +356,7 @@ export default function TutorPrice() {
         <div className="flex justify-center mb-20">
           <PrimaryButton
             className="w-full md:w-[368px]"
-            href="/register"
+            href="/free-trial-student"
             name="Try for free"
           />
         </div>
