@@ -54,10 +54,6 @@ export default function Funcard() {
 
   const stackGapVh = 15;
   const baseTopVh = 10;
-  const fudgeVh = stackGapVh / 2;
-  const containerMinHeight = `calc(100vh + ${
-    stackGapVh * (cards.length - 1)
-  }vh - ${fudgeVh}vh)`;
 
   return (
     <>
