@@ -14,7 +14,8 @@ export default function Funcard() {
     ],
     heading: {
       title: "How it works",
-      subtitle: "Define your learning needs - we'll match you with the right tutor.",
+      subtitle:
+        "Define your learning needs - we'll match you with the right tutor.",
     },
     cards: [
       {
@@ -28,7 +29,8 @@ export default function Funcard() {
       {
         step: "2.",
         title: "Meet your tutor",
-        description: "We connect you with a suitable tutor based on your goals.",
+        description:
+          "We connect you with a suitable tutor based on your goals.",
         image: "/girl1.png",
         bgColor: "bg-[#83C1DE]",
       },
@@ -52,8 +54,6 @@ export default function Funcard() {
 
   const stackGapVh = 15;
   const baseTopVh = 10;
-  const fudgeVh = stackGapVh / 2;
-  const containerMinHeight = `calc(100vh + ${stackGapVh * (cards.length - 1)}vh - ${fudgeVh}vh)`;
 
   return (
     <>
@@ -76,7 +76,6 @@ export default function Funcard() {
       {/* ================= HOW IT WORKS ================= */}
       <section className="bg-[#F7F7F7] py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4">
-
           {/* Heading */}
           <div className="text-center mb-12">
             <h2 className="text-4xl sm:text-5xl font-bold text-[#0B31BD] mb-2.5">
@@ -90,8 +89,10 @@ export default function Funcard() {
           {/* ================= MOBILE STACK ================= */}
           <div className="md:hidden">
             <ReactLenis root options={{ lerp: 0.1, duration: 2 }}>
-              <div className="relative" style={{ minHeight: containerMinHeight }}>
-
+              <div
+                className="relative"
+                style={{ minHeight: `${cards.length * 60}vh` }}
+              >
                 {cards.map((card, i) => {
                   return (
                     <motion.div
@@ -103,7 +104,6 @@ export default function Funcard() {
                       className="sticky flex justify-center mb-6"
                     >
                       <div className="bg-white rounded-2xl shadow-lg border border-gray-100 w-[90vw] max-w-sm h-[420px] flex flex-col overflow-hidden">
-
                         {/* Text */}
                         <div className="p-6 pt-8 flex-1">
                           <p className="relative z-20 bg-linear-to-r from-[#0B31BD] to-[#B0BEF2] bg-clip-text text-transparent font-bold text-3xl mb-3">
@@ -128,12 +128,10 @@ export default function Funcard() {
                             className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[230px] z-10"
                           />
                         </div>
-
                       </div>
                     </motion.div>
                   );
                 })}
-
               </div>
             </ReactLenis>
           </div>
@@ -158,7 +156,7 @@ export default function Funcard() {
                 </div>
                 <div className="relative h-[200px]">
                   <div
-                    className={`absolute bottom-0 left-0 right-0 h-[138px] ${card.bgColor}`}
+                    className={`absolute rounded-b-xl bottom-0 left-0 right-0 h-[138px] ${card.bgColor}`}
                   />
                   <img
                     src={card.image}
@@ -169,14 +167,17 @@ export default function Funcard() {
               </div>
             ))}
           </div>
-
         </div>
       </section>
 
       {/* ================= APPROACH ================= */}
       <section className="max-w-6xl mx-auto px-4 my-20 flex items-center">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
-          <img src={approach.image} alt="student" className="order-2 lg:order-1 w-full max-w-md mx-auto" />
+          <img
+            src={approach.image}
+            alt="student"
+            className="order-2 lg:order-1 w-full max-w-md mx-auto"
+          />
           <div className="order-1 lg:order-2 text-center lg:text-left">
             <p className="text-[#061651] mb-1">{approach.tag}</p>
             <h2 className="text-4xl font-bold text-[#0B31BD] mb-4">
@@ -186,7 +187,7 @@ export default function Funcard() {
               {approach.description}
             </p>
             <div className="flex justify-center lg:justify-start">
-              <PrimaryButton href="/find" name="Find a tutor" />
+              <PrimaryButton href="/free-trial-student" name="Find a tutor" />
             </div>
           </div>
         </div>
