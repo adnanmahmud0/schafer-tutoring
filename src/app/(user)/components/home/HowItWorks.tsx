@@ -32,7 +32,7 @@ export default function HowItWorks({
           </p>
         </div>
 
-        {/* -------------Mobile mode---------------- */}
+        {/* -------------Mobile mode start---------------- */}
         <div
           className="md:hidden relative"
           style={{ height: `${cards.length * 520}px` }}
@@ -69,7 +69,9 @@ export default function HowItWorks({
             </div>
           ))}
         </div>
-        {/* -------------Desktop mode---------------- */}
+        {/* -------------Mobile mode end---------------- */}
+
+        {/* -------------Desktop mode start---------------- */}
         <div className="hidden md:grid md:grid-cols-3 gap-10">
           {cards.map((card, i) => (
             <div
@@ -100,6 +102,7 @@ export default function HowItWorks({
             </div>
           ))}
         </div>
+        {/* -------------Desktop mode end---------------- */}
       </div>
     </section>
   );
