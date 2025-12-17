@@ -1,14 +1,12 @@
-import React from 'react';
-// import Page1 from './components/Page1';
-import Page2 from './components/Page2';
+"use client";
 
+import dynamic from "next/dynamic";
 
-const page = () => {
-  return (
-    <div>
-      <Page2></Page2>
-    </div>
-  );
-};
+const TeacherDash = dynamic(
+  () => import("./components/Page1"), // or Page2 / main component
+  { ssr: false }
+);
 
-export default page;
+export default function Page() {
+  return <TeacherDash />;
+}
