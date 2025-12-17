@@ -3,7 +3,7 @@
 
 import PrimaryButton from "@/components/button/PrimaryButton";
 import { motion } from "framer-motion";
-import { ReactLenis } from "lenis/react";
+// Removed: import { ReactLenis } from "lenis/react";
 
 export default function Funcard() {
   const data = {
@@ -52,13 +52,10 @@ export default function Funcard() {
 
   const { stats, heading, cards, approach } = data;
 
-  const stackGapVh = 15;
-  const baseTopVh = 10;
-
   return (
     <>
       {/* ================= STATS ================= */}
-      <section className="max-w-7xl mx-auto px-4 py-20 bg-white">
+      <section className="max-w-7xl mx-auto px-4 py-8 md:py-12 bg-white">
         <div className="flex justify-between">
           {stats.map((stat, i) => (
             <div key={i} className="text-center">
@@ -86,54 +83,39 @@ export default function Funcard() {
             </p>
           </div>
 
-          {/* ================= MOBILE STACK ================= */}
-          <div className="md:hidden">
-            <ReactLenis root options={{ lerp: 0.1, duration: 2 }}>
+          {/* ================= MOBILE: Now normal vertical layout ================= */}
+          <div className="md:hidden flex flex-col gap-8">
+            {cards.map((card, i) => (
               <div
-                className="relative"
-                style={{ minHeight: `${cards.length * 60}vh` }}
+                key={i}
+                className="bg-white rounded-2xl shadow-lg border border-gray-100 w-[90vw] max-w-sm mx-auto h-[420px] flex flex-col overflow-hidden"
               >
-                {cards.map((card, i) => {
-                  return (
-                    <motion.div
-                      key={i}
-                      style={{
-                        zIndex: i + 1,
-                        top: `${baseTopVh + i * stackGapVh}vh`,
-                      }}
-                      className="sticky flex justify-center mb-6"
-                    >
-                      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 w-[90vw] max-w-sm h-[420px] flex flex-col overflow-hidden">
-                        {/* Text */}
-                        <div className="p-6 pt-8 flex-1">
-                          <p className="relative z-20 bg-linear-to-r from-[#0B31BD] to-[#B0BEF2] bg-clip-text text-transparent font-bold text-3xl mb-3">
-                            {card.step}
-                          </p>
-                          <h3 className="text-2xl font-bold text-[#313030] mb-3">
-                            {card.title}
-                          </h3>
-                          <p className="text-[#1F2D62] text-lg leading-relaxed">
-                            {card.description}
-                          </p>
-                        </div>
+                {/* Text */}
+                <div className="p-6 pt-8 flex-1">
+                  <p className="relative z-20 bg-linear-to-r from-[#0B31BD] to-[#B0BEF2] bg-clip-text text-transparent font-bold text-3xl mb-3">
+                    {card.step}
+                  </p>
+                  <h3 className="text-2xl font-bold text-[#313030] mb-3">
+                    {card.title}
+                  </h3>
+                  <p className="text-[#1F2D62] text-lg leading-relaxed">
+                    {card.description}
+                  </p>
+                </div>
 
-                        {/* Image */}
-                        <div className="relative h-[200px]">
-                          <div
-                            className={`absolute bottom-0 left-0 right-0 h-[138px] ${card.bgColor}`}
-                          />
-                          <img
-                            src={card.image}
-                            alt={card.title}
-                            className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[230px] z-10"
-                          />
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
+                {/* Image */}
+                <div className="relative h-[200px]">
+                  <div
+                    className={`absolute bottom-0 left-0 right-0 h-[138px] ${card.bgColor}`}
+                  />
+                  <img
+                    src={card.image}
+                    alt={card.title}
+                    className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[230px] z-10"
+                  />
+                </div>
               </div>
-            </ReactLenis>
+            ))}
           </div>
 
           {/* ================= DESKTOP GRID ================= */}

@@ -44,7 +44,6 @@ export default function Requests() {
   const [showModal, setShowModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [introMessage, setIntroMessage] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
   /* =======================
@@ -178,12 +177,6 @@ export default function Requests() {
     setActiveTab("accepted");
   };
 
-  const filteredRequests = allRequests.filter(
-    (req) =>
-      req.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      req.subject.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   /* =======================
      JSX
   ======================= */
@@ -197,81 +190,73 @@ export default function Requests() {
             onClick={() => setActiveTab("all")}
             className={`pb-2 font-medium ${
               activeTab === "all"
-                ? "text-blue-600 border-b-2 border-blue-600"
+                ? "text-[#0B31BD] border-b-2 border-blue-600"
                 : "text-gray-500"
             }`}
           >
-            All requests
+            Open Requests
           </button>
           <button
             onClick={() => setActiveTab("accepted")}
             className={`pb-2 font-medium ${
               activeTab === "accepted"
-                ? "text-blue-600 border-b-2 border-blue-600"
+                ? "text-[#0B31BD] border-b-2 border-blue-600"
                 : "text-gray-500"
             }`}
           >
-            Accepted requests
+            Accepted Requests
           </button>
         </div>
 
-        {/* ALL REQUESTS */}
+        {/* OPEN REQUESTS - Card Grid */}
         {activeTab === "all" && (
-          <>
-            <input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search here..."
-              className="w-full border p-3 rounded-lg"
-            />
-
-            <div className="hidden lg:block">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="py-3 text-left">Name</th>
-                    <th className="py-3 text-left">Subject</th>
-                    <th className="py-3 text-left">Trial</th>
-                    <th className="py-3 text-left">Status</th>
-                    <th className="py-3 text-left">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredRequests.map((req) => (
-                    <tr key={req.id} className="border-b">
-                      <td className="py-3">{req.name}</td>
-                      <td className="py-3">{req.subject}</td>
-                      <td className="py-3">{req.date}</td>
-                      <td className="py-3">{req.status}</td>
-                      <td className="py-3">
-                        <button
-                          onClick={() => handleViewRequest(req)}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-lg"
-                        >
-                          View
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </>
-        )}
-
-        {/* ACCEPTED */}
-        {activeTab === "accepted" && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {acceptedRequests.map((req) => (
+            {allRequests.map((req) => (
               <div key={req.id} className="border p-4 rounded-lg">
                 <h3 className="font-semibold">{req.subject}</h3>
-                <p>{req.school}</p>
-                <p>{req.grade}</p>
-                <button className="mt-3 w-full bg-blue-600 text-white py-2 rounded-lg">
+                <p>{req.name}</p>
+                <p className="text-sm text-gray-600">{req.date}</p>
+                <p className="text-sm font-medium mt-2">{req.status}</p>
+                <button 
+                  onClick={() => handleViewRequest(req)}
+                  className="mt-3 w-full bg-blue-600 text-white py-2 rounded-lg"
+                >
                   View
                 </button>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* ACCEPTED REQUESTS - Table */}
+        {activeTab === "accepted" && (
+          <div className="hidden lg:block">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b">
+                  <th className="py-3 text-left">Subject</th>
+                  <th className="py-3 text-left">School</th>
+                  <th className="py-3 text-left">Grade</th>
+                  <th className="py-3 text-left">Accepted</th>
+                  <th className="py-3 text-left">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {acceptedRequests.map((req) => (
+                  <tr key={req.id} className="border-b">
+                    <td className="py-3">{req.subject}</td>
+                    <td className="py-3">{req.school}</td>
+                    <td className="py-3">{req.grade}</td>
+                    <td className="py-3">{req.daysAgo}</td>
+                    <td className="py-3">
+                      <button className="px-4 py-2 bg-blue-600 text-white rounded-lg">
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
 
