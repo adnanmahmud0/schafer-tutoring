@@ -32,12 +32,10 @@ function FeedbackModal({
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const hasInitialized = useRef(false);
 
-  // এখানে useLayoutEffect ব্যবহার করলাম → কোনো warning আসবে না
   useLayoutEffect(() => {
     if (isOpen && !hasInitialized.current) {
       hasInitialized.current = true;
 
-      // Reset everything
      
 
       // Start timer

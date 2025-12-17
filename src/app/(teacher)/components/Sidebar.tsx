@@ -42,7 +42,7 @@ function Sidebar() {
       </nav>
       
 
-<div className="p-3 sm:p-4 lg:p-6">
+<div className="p-3 sm:p-4 lg:p-6 flex flex-col items-center">
     {/* Support Link */}
   {(() => {
     const isActive = pathname.startsWith("/teacher/support");
