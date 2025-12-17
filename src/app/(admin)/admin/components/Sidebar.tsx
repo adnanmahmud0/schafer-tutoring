@@ -1,4 +1,4 @@
-// src/components/dashboard/Sidebar.jsx
+// src/components/dashboard/Sidebar.tsx
 'use client';
 
 import Image from "next/image";
