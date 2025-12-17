@@ -33,7 +33,7 @@ const menuItems = [
 
 /* ================= COMPONENT ================= */
 
-export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
+export default function MobileMenuTutor({ isOpen, onClose }: MobileMenuProps) {
   const pathname = usePathname();
 
   if (!isOpen) return null;

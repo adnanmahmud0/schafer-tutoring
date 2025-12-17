@@ -3,8 +3,8 @@
 
 import { Bell, Menu } from "lucide-react";
 import { useState } from "react";
-import MobileMenu from "../../../components/dashboard/MobileMenu";
 import Link from "next/link";
+import MobileMenuTutor from "../../../components/dashboard/MobileMenuTutor";
 
 export default function TopNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -52,7 +52,7 @@ export default function TopNavbar() {
       </header>
 
       {/* Mobile Menu */}
-      <MobileMenu isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
+      <MobileMenuTutor isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
     </>
   );
 }
