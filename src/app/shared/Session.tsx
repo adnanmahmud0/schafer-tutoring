@@ -331,21 +331,21 @@ export default function Session() {
             onClick={() => setActiveTab("upcoming")}
             className={`pb-2 sm:pb-2.5 lg:pb-3 font-medium text-xs sm:text-sm whitespace-nowrap transition-colors ${
               activeTab === "upcoming"
-                ? "text-blue-600 border-b-2 border-blue-600"
+                ? "text-[#405ED5] border-b-2 border-blue-600"
                 : "text-gray-600 hover:text-gray-900"
             }`}
           >
-            Upcoming Sessions ({upcomingSessions.length})
+            Upcoming ({upcomingSessions.length})
           </button>
           <button
             onClick={() => setActiveTab("completed")}
             className={`pb-2 sm:pb-2.5 lg:pb-3 font-medium text-xs sm:text-sm whitespace-nowrap transition-colors ${
               activeTab === "completed"
-                ? "text-blue-600 border-b-2 border-blue-600"
+                ? "text-[#405ED5] border-b-2 border-blue-600"
                 : "text-gray-600 hover:text-gray-900"
             }`}
           >
-            Completed Sessions ({completedSessions.length})
+            Completed
           </button>
         </div>
 

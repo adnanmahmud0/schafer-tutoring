@@ -3,15 +3,15 @@
 
 import { Bell, Menu } from "lucide-react";
 import { useState } from "react";
-import MobileMenu from "../../../components/dashboard/MobileMenu"; 
 import Link from "next/link";
+import MobileMenuStudent from "@/components/dashboard/MobileMenuStudent";
 
 export default function TopNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <>
-      <header className="h-24 bg-white fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 md:px-6">
+      <header className="h-16 sm:h-20 lg:h-24 bg-white fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-3 sm:px-4 md:px-16">
         
         {/* Left: Hamburger (mobile) + Page Title (always left) */}
         <div className="flex items-center gap-4">
@@ -23,7 +23,7 @@ export default function TopNavbar() {
             <Menu className="w-6 h-6 text-gray-700" />
           </button>
 
-          <h2 className="text-4xl font-bold text-[#0B31BD]">
+          <h2 className="text-lg sm:text-xl md:text-3xl font-bold text-[#0B31BD]">
             Schäfer Tutoring
           </h2>
         </div>
@@ -52,7 +52,7 @@ export default function TopNavbar() {
       </header>
 
       {/* Mobile Menu */}
-      <MobileMenu isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
+      <MobileMenuStudent isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
     </>
   );
 }
