@@ -254,12 +254,6 @@ const FreeTrialTeacher = () => {
 
   return (
     <>
-      <style jsx global>{`
-        .swal2-container {
-          background-color: transparent !important;
-        }
-      `}</style>
-
       <div className="min-h-screen -mb-20">
         {/* Navbar */}
         <nav className="bg-[#FBFCFC] h-20 shadow-sm">
