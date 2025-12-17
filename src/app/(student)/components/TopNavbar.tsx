@@ -1,4 +1,4 @@
-// src/components/dashboard/TopNavbar.jsx
+// src/components/dashboard/TopNavbar.tsx
 'use client';
 
 import { Bell, Menu } from "lucide-react";

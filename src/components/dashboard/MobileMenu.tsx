@@ -1,9 +1,26 @@
-// src/components/dashboard/MobileMenu.jsx
-'use client';
+"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { X, LayoutDashboard, FileText, MessageCircle, DollarSign, User, LogOut, BookOpen } from "lucide-react";
+import {
+  X,
+  LayoutDashboard,
+  FileText,
+  MessageCircle,
+  DollarSign,
+  User,
+  LogOut,
+  BookOpen,
+} from "lucide-react";
+
+/* ================= TYPES ================= */
+
+interface MobileMenuProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+/* ================= MENU DATA ================= */
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Overview", href: "/teacher/overview" },
@@ -14,7 +31,9 @@ const menuItems = [
   { icon: User, label: "Profile", href: "/teacher/profile" },
 ];
 
-export default function MobileMenu({ isOpen, onClose }) {
+/* ================= COMPONENT ================= */
+
+export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const pathname = usePathname();
 
   if (!isOpen) return null;
@@ -31,8 +50,14 @@ export default function MobileMenu({ isOpen, onClose }) {
       <div className="fixed inset-y-0 left-0 w-72 sm:w-80 max-w-[85vw] bg-[#0B31BD] text-white z-50 flex flex-col lg:hidden">
         {/* Header */}
         <div className="h-14 sm:h-16 flex items-center justify-between px-4 sm:px-6 border-b border-blue-900">
-          <h1 className="text-lg sm:text-xl md:text-2xl font-bold truncate">Schäfer Tutoring</h1>
-          <button onClick={onClose} className="p-1.5 sm:p-2 hover:bg-white/10 rounded-lg flex-shrink-0">
+          <h1 className="text-lg sm:text-xl md:text-2xl font-bold truncate">
+            Schäfer Tutoring
+          </h1>
+
+          <button
+            onClick={onClose}
+            className="p-1.5 sm:p-2 hover:bg-white/10 rounded-lg flex-shrink-0"
+          >
             <X className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
         </div>
@@ -42,19 +67,28 @@ export default function MobileMenu({ isOpen, onClose }) {
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname.startsWith(item.href);
+
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={onClose}
-                className={`flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-3 sm:py-4 rounded-lg transition-all ${isActive
-                  ? "bg-white text-[#0B31BD] font-semibold shadow-lg"
-                  : "hover:bg-white/10"
-                  }`}
+                className={`flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-3 sm:py-4 rounded-lg transition-all ${
+                  isActive
+                    ? "bg-white text-[#0B31BD] font-semibold shadow-lg"
+                    : "hover:bg-white/10"
+                }`}
               >
-                <Icon className={`w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0 ${isActive ? "text-[#0B31BD]" : "text-white/80"}`} />
+                <Icon
+                  className={`w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0 ${
+                    isActive ? "text-[#0B31BD]" : "text-white/80"
+                  }`}
+                />
                 <span className="text-base sm:text-lg">{item.label}</span>
-                {isActive && <div className="ml-auto w-1 h-8 sm:h-10 bg-white rounded-l-full"></div>}
+
+                {isActive && (
+                  <div className="ml-auto w-1 h-8 sm:h-10 bg-white rounded-l-full" />
+                )}
               </Link>
             );
           })}
@@ -62,7 +96,10 @@ export default function MobileMenu({ isOpen, onClose }) {
 
         {/* Logout */}
         <div className="p-3 sm:p-4 border-t border-blue-900">
-          <button className="flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-3 sm:py-4 rounded-lg hover:bg-white/10 w-full text-base sm:text-lg">
+          <button
+            type="button"
+            className="flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-3 sm:py-4 rounded-lg hover:bg-white/10 w-full text-base sm:text-lg"
+          >
             <LogOut className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
             <span>Logout</span>
           </button>

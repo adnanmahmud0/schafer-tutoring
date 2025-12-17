@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useState } from 'react';
 
@@ -30,7 +31,7 @@ const Page2 = () => {
     }
   };
 
-  const handleKeyPress = (e) => {
+  const handleKeyPress = (e: { key: string; shiftKey: any; preventDefault: () => void; }) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
