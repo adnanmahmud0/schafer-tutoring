@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-, "src/app/free-trial-student/page.jsx", "src/app/(teacher)/teacher/requests/page.jsx", "src/app/(teacher)/teacher/overview/page.tsx"  ],
+, "src/app/free-trial-student/page.tsx", "src/app/(teacher)/teacher/requests/page.tsx", "src/app/(teacher)/teacher/overview/page.tsx"  ],
   "exclude": ["node_modules"]
 }
