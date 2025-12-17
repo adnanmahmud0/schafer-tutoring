@@ -4,7 +4,7 @@
 import { Bell, Menu } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
-import MobileMenu from "@/components/dashboard/MobileMenu";
+import MobileMenu from "@/components/dashboard/MobileMenuTutor";
 
 export default function TopNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
