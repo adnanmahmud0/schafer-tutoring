@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ScheduleModal from "./schedule-modal";
 import SessionProposal from "./session-proposal";
+import { Textarea } from "../ui/textarea";
 
 interface Message {
   id: string;
@@ -141,22 +142,12 @@ export default function ChatArea({
     setMessages(conversationData[id]?.messages || []);
   };
 
-  const handleSendMessage = () => {
-    if (inputValue.trim()) {
-      const newMessage: Message = {
-        id: (messages.length + 1).toString(),
-        sender: "user",
-        senderName: "You",
-        avatar: "U",
-        message: inputValue,
-        time: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        isOwn: true,
-      };
-      setMessages([...messages, newMessage]);
-      setInputValue("");
+  const [message, setMessage] = useState("");
+
+  const handleSend = () => {
+    if (message.trim()) {
+      console.log("Sending message:", message);
+      setMessage("");
     }
   };
 
@@ -275,38 +266,47 @@ export default function ChatArea({
       </div>
 
       {/* Input Area */}
-      <div className="border-t border-border bg-card p-4 md:p-6">
-        <div className="flex items-center gap-2 bg-input rounded-lg p-2 border border-border">
-          <Input
-            placeholder="Type your message..."
-            className="flex-1 bg-transparent border-0 focus:outline-none focus:ring-0 text-sm"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-          />
-          <Button
-            variant="ghost"
-            size="icon"
-            className="shrink-0 h-8 w-8 text-muted-foreground hover:text-foreground"
-          >
-            <Paperclip className="w-4 h-4" />
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="hidden sm:flex shrink-0 gap-1 text-accent hover:bg-accent/10 h-8"
-            onClick={() => setIsScheduleOpen(true)}
-          >
-            <Calendar className="w-3 h-3" />
-            <span className="text-xs">Schedule</span>
-          </Button>
-          <Button
-            size="icon"
-            className="shrink-0 h-8 w-8 bg-accent text-accent-foreground hover:bg-accent/90"
-            onClick={handleSendMessage}
-          >
-            <Send className="w-4 h-4" />
-          </Button>
+      <div className="w-full flex bg-background p-4">
+        <div className="w-full ">
+          <div className="bg-card border border-border rounded-lg p-4">
+            <Textarea
+              placeholder="Type your message..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              className="min-h-20 mb-3 resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none"
+            />
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 text-foreground bg-transparent"
+              >
+                <Paperclip className="w-4 h-4" />
+                Attach file
+              </Button>
+
+              <Button
+                variant="default"
+                size="sm"
+                className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <Calendar className="w-4 h-4" />
+                Schedule Session
+              </Button>
+
+              <div className="flex-1" />
+
+              <Button
+                size="icon"
+                variant="ghost"
+                className="shrink-0"
+                onClick={handleSend}
+              >
+                <Send className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
 
