@@ -41,11 +41,11 @@ interface AcceptedRequest {
 }
 
 const openRequests: Request[] = [
-  { 
-    id: "1", 
-    subject: "Mathematics", 
-    school: "High School", 
-    grade: "10th Grade", 
+  {
+    id: "1",
+    subject: "Mathematics",
+    school: "High School",
+    grade: "10th Grade",
     daysAgo: 2,
     studentName: "Sarah Johnson",
     learningGoal: "Prepare for upcoming final exams and improve understanding of advanced concepts"
@@ -61,77 +61,77 @@ const openRequests: Request[] = [
 ];
 
 const acceptedRequests: AcceptedRequest[] = [
-  { 
-    id: "a1", 
-    name: "John b", 
-    subject: "Physics", 
-    trialSession: "Nov 12, 2025 - 3:00 PM", 
+  {
+    id: "a1",
+    name: "John b",
+    subject: "Physics",
+    trialSession: "Nov 12, 2025 - 3:00 PM",
     status: "Contacted",
     studentName: "Sarah Johnson",
     school: "Riverside High School",
     grade: "10th Grade",
     learningGoal: "Prepare for upcoming final exams and improve understanding of advanced concepts"
   },
-  { 
-    id: "a2", 
-    name: "John b", 
-    subject: "Math", 
-    trialSession: "Nov 12, 2025 - 3:00 PM", 
+  {
+    id: "a2",
+    name: "John b",
+    subject: "Math",
+    trialSession: "Nov 12, 2025 - 3:00 PM",
     status: "Scheduling",
     studentName: "Sarah Johnson",
     school: "Riverside High School",
     grade: "10th Grade",
     learningGoal: "Prepare for upcoming final exams and improve understanding of advanced concepts"
   },
-  { 
-    id: "a3", 
-    name: "John b", 
-    subject: "Math", 
-    trialSession: "Nov 12, 2025 - 3:00 PM", 
+  {
+    id: "a3",
+    name: "John b",
+    subject: "Math",
+    trialSession: "Nov 12, 2025 - 3:00 PM",
     status: "Scheduled",
     studentName: "Sarah Johnson",
     school: "Riverside High School",
     grade: "10th Grade",
     learningGoal: "Prepare for upcoming final exams and improve understanding of advanced concepts"
   },
-  { 
-    id: "a4", 
-    name: "John b", 
-    subject: "Math", 
-    trialSession: "Nov 12, 2025 - 3:00 PM", 
+  {
+    id: "a4",
+    name: "John b",
+    subject: "Math",
+    trialSession: "Nov 12, 2025 - 3:00 PM",
     status: "Scheduled",
     studentName: "Sarah Johnson",
     school: "Riverside High School",
     grade: "10th Grade",
     learningGoal: "Prepare for upcoming final exams and improve understanding of advanced concepts"
   },
-  { 
-    id: "a5", 
-    name: "John b", 
-    subject: "Physics", 
-    trialSession: "Nov 12, 2025 - 3:00 PM", 
+  {
+    id: "a5",
+    name: "John b",
+    subject: "Physics",
+    trialSession: "Nov 12, 2025 - 3:00 PM",
     status: "Scheduling",
     studentName: "Sarah Johnson",
     school: "Riverside High School",
     grade: "10th Grade",
     learningGoal: "Prepare for upcoming final exams and improve understanding of advanced concepts"
   },
-  { 
-    id: "a6", 
-    name: "John b", 
-    subject: "Physics", 
-    trialSession: "Nov 12, 2025 - 3:00 PM", 
+  {
+    id: "a6",
+    name: "John b",
+    subject: "Physics",
+    trialSession: "Nov 12, 2025 - 3:00 PM",
     status: "Scheduling",
     studentName: "Sarah Johnson",
     school: "Riverside High School",
     grade: "10th Grade",
     learningGoal: "Prepare for upcoming final exams and improve understanding of advanced concepts"
   },
-  { 
-    id: "a7", 
-    name: "John b", 
-    subject: "Math", 
-    trialSession: "Nov 12, 2025 - 3:00 PM", 
+  {
+    id: "a7",
+    name: "John b",
+    subject: "Math",
+    trialSession: "Nov 12, 2025 - 3:00 PM",
     status: "Contacted",
     studentName: "Sarah Johnson",
     school: "Riverside High School",
@@ -202,21 +202,19 @@ export default function RequestsPage() {
         <div className="flex gap-6 border-b border-gray-200 mb-6">
           <button
             onClick={() => handleTabChange("open")}
-            className={`pb-3 px-1 text-sm font-medium transition-colors ${
-              activeTab === "open"
+            className={`pb-3 px-1 text-sm font-medium transition-colors ${activeTab === "open"
                 ? "text-gray-900 border-b-2 border-gray-900"
                 : "text-gray-500 hover:text-gray-700"
-            }`}
+              }`}
           >
             Open Requests
           </button>
           <button
             onClick={() => handleTabChange("accepted")}
-            className={`pb-3 px-1 text-sm font-medium transition-colors ${
-              activeTab === "accepted"
+            className={`pb-3 px-1 text-sm font-medium transition-colors ${activeTab === "accepted"
                 ? "text-gray-900 border-b-2 border-gray-900"
                 : "text-gray-500 hover:text-gray-700"
-            }`}
+              }`}
           >
             Accepted Requests
           </button>
@@ -230,9 +228,8 @@ export default function RequestsPage() {
                 <div className="flex justify-between items-start mb-4">
                   <h3 className="text-lg font-semibold text-gray-900">{request.subject}</h3>
                   <span
-                    className={`text-sm font-medium ${
-                      request.daysAgo <= 2 ? "text-orange-500" : "text-green-600"
-                    }`}
+                    className={`text-sm font-medium ${request.daysAgo <= 2 ? "text-orange-500" : "text-green-600"
+                      }`}
                   >
                     {request.daysAgo} days Ago
                   </span>
@@ -241,7 +238,7 @@ export default function RequestsPage() {
                   <p className="text-sm text-gray-600">{request.school}</p>
                   <p className="text-sm text-gray-600">{request.grade}</p>
                 </div>
-                <button 
+                <button
                   onClick={() => handleViewClick(request)}
                   className="w-full bg-[#002AC8] text-white font-medium py-3 rounded-lg hover:bg-[#0024a8] transition-colors"
                 >
@@ -252,56 +249,61 @@ export default function RequestsPage() {
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-[#FAFAFA] border border-gray-200">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Name
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Subject
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Trial Session
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Action
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {(paginatedData as AcceptedRequest[]).map((request) => (
-                  <tr key={request.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {request.name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {request.subject}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {request.trialSession}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                        {request.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <button 
-                        onClick={() => handleViewClick(request)}
-                        className="bg-[#002AC8] text-white px-6 py-2 rounded-md hover:bg-[#0024a8] transition-colors font-medium"
-                      >
-                        View
-                      </button>
-                    </td>
+            {/* Mobile horizontal scroll wrapper */}
+            <div className="w-full overflow-x-auto">
+              <table className="min-w-[900px] w-full">
+                <thead className="bg-[#FAFAFA] border border-gray-200">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Name
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Subject
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Trial Session
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Action
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+
+                <tbody className="divide-y divide-gray-200">
+                  {(paginatedData as AcceptedRequest[]).map((request) => (
+                    <tr key={request.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {request.name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {request.subject}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {request.trialSession}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                          {request.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <button
+                          onClick={() => handleViewClick(request)}
+                          className="bg-[#002AC8] text-white px-6 py-2 rounded-md hover:bg-[#0024a8] transition-colors font-medium"
+                        >
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
+
         )}
 
         {/* Pagination */}
@@ -315,7 +317,7 @@ export default function RequestsPage() {
                     className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
                   />
                 </PaginationItem>
-                
+
                 {[...Array(totalPages)].map((_, i) => {
                   const pageNum = i + 1;
                   if (
