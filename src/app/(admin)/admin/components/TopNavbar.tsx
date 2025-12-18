@@ -11,7 +11,7 @@ export default function TopNavbar() {
 
   return (
     <>
-      <header className="h-20 md:h-24 bg-white fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-3 sm:px-4 md:px-6">
+      <header className="h-20 md:h-24 bg-white fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-3 sm:px-4 md:px-16">
         
         {/* Left: Hamburger (mobile) + Page Title */}
         <div className="flex items-center gap-3 md:gap-4">
@@ -23,7 +23,7 @@ export default function TopNavbar() {
             <Menu className="w-6 h-6 text-gray-700" />
           </button>
 
-          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-[#0B31BD] whitespace-nowrap">
+          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-3xl font-bold text-[#0B31BD] whitespace-nowrap">
             Schäfer Tutoring
           </h2>
         </div>

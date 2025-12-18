@@ -23,12 +23,14 @@ const MobileMenu = ({ isOpen, closeMenu }: MobileMenuProps) => {
         </Link>
 
         <div className="px-4 pt-2">
-          <Button
+          <Link href="/login">
+            <Button
             onClick={closeMenu}
             className="w-full bg-[#0B31BD] hover:bg-[#092A9E] text-white font-semibold text-lg py-6 rounded-xl shadow-lg"
           >
             Login
           </Button>
+          </Link>
         </div>
       </div>
     </div>
