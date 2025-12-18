@@ -1,9 +1,10 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import Stats from "./Stats";
-import HowItWorks from "./HowItWorks";
 import Approach from "./Approach";
+import HowItWorks from "./HowItWorks";
+import Stats from "./Stats";
+
 // Removed: import { ReactLenis } from "lenis/react";
 
 export default function Funcard() {
