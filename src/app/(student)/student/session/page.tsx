@@ -81,7 +81,7 @@ function FeedbackModal({
               </Button>
               <Button
                 onClick={handleSubmit}
-                className="flex-1 bg-blue-600 hover:bg-blue-700"
+                className="flex-1 bg-[#002AC8] hover:bg-blue-700"
               >
                 Submit
               </Button>
@@ -209,21 +209,21 @@ export default function StudentSession() {
             onClick={() => setActiveTab("upcoming")}
             className={`pb-3 font-medium text-sm transition-colors ${
               activeTab === "upcoming"
-                ? "text-blue-600 border-b-2 border-blue-600"
+                ? "text-[#002AC8] border-b-2 border-blue-600"
                 : "text-gray-600 hover:text-gray-900"
             }`}
           >
-            Upcoming Sessions ({upcomingSessions.length})
+            Upcoming ({upcomingSessions.length})
           </button>
           <button
             onClick={() => setActiveTab("completed")}
             className={`pb-3 font-medium text-sm transition-colors ${
               activeTab === "completed"
-                ? "text-blue-600 border-b-2 border-blue-600"
+                ? "text-[#002AC8] border-b-2 border-blue-600"
                 : "text-gray-600 hover:text-gray-900"
             }`}
           >
-            Completed Sessions ({completedSessions.length})
+            Completed
           </button>
         </div>
 
@@ -241,20 +241,19 @@ export default function StudentSession() {
                 </h3>
 
                 <div className="flex items-center gap-4 text-sm text-gray-600">
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 w-40">
                     <Calendar size={16} className="text-gray-400" />
                     <span>{session.date}</span>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 w-40">
                     <Clock size={16} className="text-gray-400" />
                     <span>{session.time}</span>
                   </div>
-                  <a
-                    href="#"
-                    className="text-[#405ED5] hover:text-[#3052D2] font-medium"
+                  <p
+                    className="text-[#405ED5] hover:text-[#3052D2] font-medium w-40 "
                   >
                     {session.subject}
-                  </a>
+                  </p>
                 </div>
               </div>
 
@@ -266,7 +265,7 @@ export default function StudentSession() {
                 className={`ml-4 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
                   activeTab === "upcoming"
                     ? "bg-gray-500 text-white hover:bg-gray-600 cursor-not-allowed"
-                    : "bg-blue-600 text-white hover:bg-blue-700"
+                    : "bg-[#002AC8] text-white hover:bg-blue-700"
                 }`}
                 disabled={activeTab === "upcoming"}
               >
