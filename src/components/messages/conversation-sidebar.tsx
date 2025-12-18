@@ -61,19 +61,6 @@ export default function ConversationSidebar({
 
   return (
     <div className="w-56 border-r border-border bg-card flex flex-col h-full mt-24 md:mt-0">
-      {/* Header */}
-      <div className="p-4.5 border-b border-border">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search conversations"
-            className="pl-10 bg-input border-0"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-      </div>
-
       {/* Conversations List */}
       <div className="flex-1 overflow-y-auto">
         {filteredConversations.map((conversation) => (
@@ -120,8 +107,8 @@ export default function ConversationSidebar({
               : "bg-muted hover:bg-muted/80 text-foreground"
           }`}
         >
-          <div className="flex items-center justify-center w-8 h-8 bg-current rounded-full">
-            <Headphones className="w-4 h-4" />
+          <div className="flex items-center justify-center w-8 h-8 bg-primary text-white rounded-full">
+            <Headphones className="w-4 h-4 " />
           </div>
           <div className="text-left flex-1">
             <div className="font-semibold text-sm">Support Chat</div>
