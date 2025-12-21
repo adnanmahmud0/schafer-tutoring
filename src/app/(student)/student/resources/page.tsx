@@ -103,37 +103,37 @@ export default function Resources() {
   });
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Resource Search
-          </h1>
-          <p className="text-gray-600">
-            Find educational materials from open education databases - filtered
-            by subject, grade, state, and material type
-          </p>
-        </div>
+    <div className="space-y-4 sm:space-y-5 lg:space-y-6">
+      {/* Header */}
+      <div className="bg-white rounded-lg shadow-sm p-4 sm:p-5 lg:p-6">
+        <h1 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">
+          Resource Search
+        </h1>
+        <p className="text-sm text-gray-600">
+          Find educational materials from open education databases - filtered
+          by subject, grade, state, and material type
+        </p>
+      </div>
 
-        {/* Search Bar */}
-        <div className="mb-8">
-          <div className="relative">
-            <Search
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-              size={20}
-            />
-            <Input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by topic, keyword, competencies..."
-              className="pl-12 h-11 text-base"
-            />
-          </div>
+      {/* Search Bar */}
+      <div className="bg-white rounded-lg shadow-sm p-4 sm:p-5 lg:p-6">
+        <div className="relative">
+          <Search
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+            size={20}
+          />
+          <Input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search by topic, keyword, competencies..."
+            className="pl-12 h-11 text-base"
+          />
         </div>
+      </div>
 
-        {/* Filters */}
+      {/* Filters */}
+      <div className="bg-white rounded-lg shadow-sm p-4 sm:p-5 lg:p-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
           <div>
             <label className="text-sm font-medium text-gray-700 block mb-2">
