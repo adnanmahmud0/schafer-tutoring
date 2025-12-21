@@ -26,7 +26,6 @@ const menuItems = [
   { icon: MessageCircle, label: "Messages", href: "/student/messages" },
   { icon: CreditCard, label: "Subscription", href: "/student/subscription" },
   { icon: BookOpen, label: "Resources", href: "/student/resources" },
-  { icon: User, label: "Profile", href: "/student/profile" },
 ];
 
 /* ================= COMPONENT ================= */

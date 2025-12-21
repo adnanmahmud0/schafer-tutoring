@@ -66,17 +66,18 @@ const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
   ];
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="mx-auto space-y-8">
-
-        {/* Info Banner */}
+    <div className="space-y-4 sm:space-y-5 lg:space-y-6">
+      {/* Info Banner */}
+      <div className="bg-white rounded-lg shadow-sm p-4 sm:p-5 lg:p-6">
         <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
           <p className="text-sm text-orange-900">
             For Questions outside the listed topics, a support chat is available in Messages
           </p>
         </div>
+      </div>
 
-        {/* Support Cards */}
+      {/* Support Cards */}
+      <div className="bg-white rounded-lg shadow-sm p-4 sm:p-5 lg:p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {supportCards.map((card) => {
             const IconComponent = card.icon;
@@ -98,43 +99,43 @@ const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
             );
           })}
         </div>
+      </div>
 
-        {/* FAQ Section */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
-            Frequently Asked Questions
-          </h2>
+      {/* FAQ Section */}
+      <div className="bg-white rounded-lg shadow-sm p-4 sm:p-5 lg:p-6">
+        <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4 sm:mb-5 lg:mb-6">
+          Frequently Asked Questions
+        </h2>
 
-          <div className="space-y-3">
-            {faqs.map((faq) => (
-              <Collapsible
-                key={faq.id}
-                open={openItems[faq.id]}
-                onOpenChange={() => toggleItem(faq.id)}
-              >
-                <CollapsibleTrigger className="w-full">
-                  <div className="flex items-center justify-between w-full p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-left">
-                    <span className="text-sm font-medium text-gray-900">
-                      {faq.question}
-                    </span>
-                    <ChevronDown
-                      className={`w-5 h-5 text-gray-600 transition-transform duration-300 shrink-0 ml-4 ${
-                        openItems[faq.id] ? 'rotate-180' : ''
-                      }`}
-                    />
-                  </div>
-                </CollapsibleTrigger>
+        <div className="space-y-3">
+          {faqs.map((faq) => (
+            <Collapsible
+              key={faq.id}
+              open={openItems[faq.id]}
+              onOpenChange={() => toggleItem(faq.id)}
+            >
+              <CollapsibleTrigger className="w-full">
+                <div className="flex items-center justify-between w-full p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-left">
+                  <span className="text-sm font-medium text-gray-900">
+                    {faq.question}
+                  </span>
+                  <ChevronDown
+                    className={`w-5 h-5 text-gray-600 transition-transform duration-300 shrink-0 ml-4 ${
+                      openItems[faq.id] ? 'rotate-180' : ''
+                    }`}
+                  />
+                </div>
+              </CollapsibleTrigger>
 
-                <CollapsibleContent className="mt-0">
-                  <div className="bg-gray-50 border border-t-0 border-gray-200 rounded-b-lg p-4">
-                    <p className="text-sm text-gray-700 leading-relaxed">
-                      {faq.answer}
-                    </p>
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
-            ))}
-          </div>
+              <CollapsibleContent className="mt-0">
+                <div className="bg-gray-50 border border-t-0 border-gray-200 rounded-b-lg p-4">
+                  <p className="text-sm text-gray-700 leading-relaxed">
+                    {faq.answer}
+                  </p>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+          ))}
         </div>
       </div>
     </div>

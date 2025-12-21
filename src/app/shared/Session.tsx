@@ -370,11 +370,11 @@ export default function Session() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 w-40">
                     <Calendar size={14} className="text-gray-400 sm:w-4 sm:h-4" />
                     <span>{session.date}</span>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 w-32">
                     <Clock size={14} className="text-gray-400 sm:w-4 sm:h-4" />
                     <span>{session.time}</span>
                   </div>
