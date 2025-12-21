@@ -166,36 +166,6 @@ export default function StudentSession() {
 
   return (
     <>
-      <div className="bg-white rounded-lg shadow-sm p-4 sm:p-5 lg:p-6 space-y-4 sm:space-y-5 lg:space-y-6 mb-4 sm:mb-5 lg:mb-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4 sm:mb-5 lg:mb-6">
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
-            Subscription Usage
-          </h2>
-          <div className="flex items-center gap-1.5 sm:gap-2 bg-[#002AC8] text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg w-fit">
-            <Image width={20} height={20} src="/badge-wt.svg" alt="Badge" className="w-5 h-5 sm:w-6 sm:h-6" />
-            <span className="font-semibold text-sm sm:text-base">Regular Plan</span>
-          </div>
-        </div>
-        <div className="space-y-2 sm:space-y-3">
-          <div className="flex items-center justify-between text-xs sm:text-sm text-gray-600">
-            <span>Usage 75%</span>
-            <span className="text-[#3052D2]">1 Lesson Left</span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2.5 sm:h-3">
-            <div
-              className="bg-[#002AC8] h-full rounded-full transition-all"
-              style={{ width: "75%" }}
-            />
-          </div>
-          <div className="bg-[#FFF4E6] border border-[#FFB256] rounded-lg p-2.5 sm:p-3 flex items-start gap-2 mt-3 sm:mt-5">
-            <Image width={20} height={20} src="/badge-yl.svg" alt="Badge" className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
-            <p className="text-xs sm:text-sm text-amber-800">
-              Your current usage amounts to{" "}
-              <span className="font-semibold">112€</span> this month
-            </p>
-          </div>
-        </div>
-      </div>
       <div className="bg-white rounded-lg shadow-sm p-4 sm:p-5 lg:p-6">
         {/* Header */}
         <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-5 lg:mb-6">
@@ -240,11 +210,11 @@ export default function StudentSession() {
                 </h3>
 
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center w-40 gap-1">
                     <Calendar size={14} className="text-gray-400 sm:w-4 sm:h-4 flex-shrink-0" />
                     <span>{session.date}</span>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 w-32">
                     <Clock size={14} className="text-gray-400 sm:w-4 sm:h-4 flex-shrink-0" />
                     <span>{session.time}</span>
                   </div>
