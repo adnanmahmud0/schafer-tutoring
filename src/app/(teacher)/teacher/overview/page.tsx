@@ -170,7 +170,6 @@ function FeedbackModal({
 export default function Dashboard() {
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
-  // Session থেকে feedback চাইলে এটা শুনবে (কোনো prop লাগবে না)
   useEffect(() => {
     const openModal = () => setIsFeedbackOpen(true);
     window.addEventListener('openFeedbackModal', openModal);
@@ -233,10 +232,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* তোমার Session – কোনো prop ছাড়াই */}
       <Session />
-
-      {/* Feedback Modal */}
       <FeedbackModal isOpen={isFeedbackOpen} onClose={() => setIsFeedbackOpen(false)} />
     </div>
   );
