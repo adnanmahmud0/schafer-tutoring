@@ -59,114 +59,112 @@ export default function EarningsPage() {
   };
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="mx-auto space-y-8">
-        {/* Payout Settings Card */}
-        <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <div className="mb-6 flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-900">
-              Payout Settings
-            </h2>
-            <Button
-              onClick={handleEditClick}
-              className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 h-10 rounded-lg font-medium"
-            >
-              <Edit className="w-4 h-4 mr-2" />
-              Edit
-            </Button>
-          </div>
-          <hr className="my-6" />
+    <div className="space-y-4 sm:space-y-5 lg:space-y-6">
+      {/* Payout Settings Card */}
+      <div className="rounded-lg border border-gray-200 bg-white p-4 sm:p-5 lg:p-6">
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
+            Payout Settings
+          </h2>
+          <Button
+            onClick={handleEditClick}
+            className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 h-10 rounded-lg font-medium"
+          >
+            <Edit className="w-4 h-4 mr-2" />
+            Edit
+          </Button>
+        </div>
+        <hr className="my-6" />
 
-          <div className="flex flex-col md:flex-row gap-8">
-            {/* Recipient */}
-            <div className="flex-1">
-              <label className="text-xs font-medium text-gray-600 block mb-2">
-                Recipient
-              </label>
-              <p className="text-gray-900 font-medium">
-                {payoutData.recipient}
-              </p>
-            </div>
-            {/* IBAN */}
-            <div className="flex-1">
-              <label className="text-xs font-medium text-gray-600 block mb-2">
-                IBAN
-              </label>
-              <p className="text-gray-900 font-medium">{payoutData.iban}</p>
-            </div>
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Recipient */}
+          <div className="flex-1">
+            <label className="text-xs font-medium text-gray-600 block mb-2">
+              Recipient
+            </label>
+            <p className="text-gray-900 font-medium">
+              {payoutData.recipient}
+            </p>
+          </div>
+          {/* IBAN */}
+          <div className="flex-1">
+            <label className="text-xs font-medium text-gray-600 block mb-2">
+              IBAN
+            </label>
+            <p className="text-gray-900 font-medium">{payoutData.iban}</p>
           </div>
         </div>
+      </div>
 
-        <div className="flex items-center justify-end gap-2">
-          <button
-            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-            disabled={currentPage === 1}
-            className="p-1.5 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4 text-gray-600" />
-          </button>
-          <span className="text-sm text-gray-600 min-w-12 text-center">
-            {currentPage} / {totalPages}
-          </span>
-          <button
-            onClick={() =>
-              setCurrentPage(Math.min(totalPages, currentPage + 1))
-            }
-            disabled={currentPage === totalPages}
-            className="p-1.5 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            <ChevronRight className="w-4 h-4 text-gray-600" />
-          </button>
-        </div>
+      <div className="flex items-center justify-end gap-2">
+        <button
+          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+          disabled={currentPage === 1}
+          className="p-1.5 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          <ChevronLeft className="w-4 h-4 text-gray-600" />
+        </button>
+        <span className="text-sm text-gray-600 min-w-12 text-center">
+          {currentPage} / {totalPages}
+        </span>
+        <button
+          onClick={() =>
+            setCurrentPage(Math.min(totalPages, currentPage + 1))
+          }
+          disabled={currentPage === totalPages}
+          className="p-1.5 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          <ChevronRight className="w-4 h-4 text-gray-600" />
+        </button>
+      </div>
 
-        {/* Earnings History Card */}
-        <div className="rounded-lg border border-gray-200 bg-white">
-          <div className="flex items-center justify-end mb-6"></div>
+      {/* Earnings History Card */}
+      <div className="rounded-lg border border-gray-200 bg-white">
+        <div className="flex items-center justify-end mb-6"></div>
 
-          {/* Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full ">
-              <thead>
-                <tr className="border-b border-gray-200 ">
-                  <th className="text-left text-sm font-semibold text-gray-700 pb-3 px-3">
-                    Period
-                  </th>
-                  <th className="text-left text-sm font-semibold text-gray-700 pb-3 px-3">
-                    Sessions
-                  </th>
-                  <th className="text-left text-sm font-semibold text-gray-700 pb-3 px-3">
-                    Earnings
-                  </th>
-                  <th className="text-right text-sm font-semibold text-gray-700 pb-3 px-3">
-                    Action
-                  </th>
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full ">
+            <thead>
+              <tr className="border-b border-gray-200 ">
+                <th className="text-left text-sm font-semibold text-gray-700 pb-3 px-3">
+                  Period
+                </th>
+                <th className="text-left text-sm font-semibold text-gray-700 pb-3 px-3">
+                  Sessions
+                </th>
+                <th className="text-left text-sm font-semibold text-gray-700 pb-3 px-3">
+                  Earnings
+                </th>
+                <th className="text-right text-sm font-semibold text-gray-700 pb-3 px-3">
+                  Action
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedData.map((item, index) => (
+                <tr
+                  key={index}
+                  className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                >
+                  <td className="text-sm text-gray-900 py-3 px-3 font-medium">
+                    {item.period}
+                  </td>
+                  <td className="text-sm text-gray-700 py-3 px-3">
+                    {item.sessions}
+                  </td>
+                  <td className="text-sm text-gray-700 py-3 px-3 font-medium">
+                    {item.earnings}
+                  </td>
+                  <td className="text-right py-3 px-3">
+                    <Button className="bg-[#002AC8] hover:bg-[#001F9C] text-white px-4 py-1 h-8 text-sm font-medium rounded-md">
+                      Download
+                    </Button>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {paginatedData.map((item, index) => (
-                  <tr
-                    key={index}
-                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="text-sm text-gray-900 py-3 px-3 font-medium">
-                      {item.period}
-                    </td>
-                    <td className="text-sm text-gray-700 py-3 px-3">
-                      {item.sessions}
-                    </td>
-                    <td className="text-sm text-gray-700 py-3 px-3 font-medium">
-                      {item.earnings}
-                    </td>
-                    <td className="text-right py-3 px-3">
-                      <Button className="bg-[#002AC8] hover:bg-[#001F9C] text-white px-4 py-1 h-8 text-sm font-medium rounded-md">
-                        Download
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
