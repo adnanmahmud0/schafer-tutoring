@@ -10,6 +10,7 @@ import {
   User,
   LogOut,
   BookOpen,
+  Headset as headset,
 } from "lucide-react";
 
 /* ================= TYPES ================= */
@@ -26,6 +27,7 @@ const menuItems = [
   { icon: MessageCircle, label: "Messages", href: "/student/messages" },
   { icon: CreditCard, label: "Subscription", href: "/student/subscription" },
   { icon: BookOpen, label: "Resources", href: "/student/resources" },
+  { icon: headset, label: "Support", href: "/student/support" },
 ];
 
 /* ================= COMPONENT ================= */
