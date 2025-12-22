@@ -177,11 +177,11 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="mx-auto p-6 space-y-6">
+    <div className="space-y-4 sm:space-y-5 lg:space-y-6">
       {/* Level Progress */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="bg-white rounded-lg shadow-sm p-4 sm:p-5 lg:p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-gray-800">Level Progress</h2>
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-800">Level Progress</h2>
           <div className="flex items-center gap-2 bg-[#002AC8] text-white px-4 py-2 rounded-lg">
             <Image width={24} height={24} src="/badge-wt.svg" alt="Badge" />
             <span className="font-semibold">Level 2</span>
@@ -205,7 +205,7 @@ export default function Dashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
         <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
           <div className="mb-4 bg-blue-50 p-3 rounded-full w-fit"><Image src="/cap.svg" alt="" width={24} height={24} /></div>
           <h3 className="text-sm font-medium text-gray-600 mb-2">Sessions</h3>
