@@ -43,11 +43,11 @@ const LoginPage = () => {
             {/* Email Field */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-900 block">
-                Email
+                E-Mail
               </label>
               <Input
                 type="email"
-                placeholder="Enter your email"
+                placeholder="Enter your E-Mail"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-5 border border-gray-300 rounded-lg focus:border-gray-400 focus:ring-0 focus:outline-none"
@@ -62,7 +62,7 @@ const LoginPage = () => {
               </label>
               <Input
                 type="password"
-                placeholder="Enter Password"
+                placeholder="Enter your Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-5 border border-gray-300 rounded-lg focus:border-gray-400 focus:ring-0 focus:outline-none"
@@ -83,7 +83,7 @@ const LoginPage = () => {
                   htmlFor="remember"
                   className="text-sm text-gray-700 cursor-pointer"
                 >
-                  Remember Password
+                  Remember Me
                 </label>
               </div>
               <div>
@@ -105,7 +105,7 @@ const LoginPage = () => {
           {/* Sign Up Link */}
           <div className="text-center">
             <p className="text-gray-700 text-sm">
-              If have an account?{' '}
+              Don't have an account?{' '}
               <a href="#" className="text-[#0B31BD] hover:text-blue-700 font-semibold">
                  Sign Up
               </a>

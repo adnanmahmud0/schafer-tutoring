@@ -75,19 +75,42 @@ export default function FreeTrialStudent() {
   };
 
   const showSweetAlert = (
-    type: "success" | "error" | "warning",
-    title: string,
-    text: string
-  ) => {
-    if (typeof window !== "undefined" && (window as any).Swal) {
-      (window as any).Swal.fire({
-        icon: type,
-        title,
-        text,
-        confirmButtonColor: "#0B31BD",
-      });
-    }
-  };
+  type: "success" | "error" | "warning",
+  title: string,
+  text: string
+) => {
+  if (typeof window !== "undefined" && (window as any).Swal) {
+    (window as any).Swal.fire({
+      icon: type,
+      title,
+      text,
+      confirmButtonColor: "#0B31BD",
+      didOpen: () => {
+        const popup = document.querySelector(".swal2-popup") as HTMLElement;
+        const icon = document.querySelector(".swal2-icon") as HTMLElement;
+        const titleEl = document.querySelector(".swal2-title") as HTMLElement;
+        const textEl = document.querySelector(".swal2-html-container") as HTMLElement;
+
+        // border (static)
+        if (popup) {
+          popup.style.border = "2px solid black";
+          popup.style.borderRadius = "12px";
+        }
+
+        // icon color
+        if (icon) {
+          icon.style.color = "#ff3333";
+          icon.style.borderColor = "#ff3333";
+        }
+
+        // text color (keep readable on default bg)
+        if (titleEl) titleEl.style.color = "#000";
+        if (textEl) textEl.style.color = "#000";
+      },
+    });
+  }
+};
+
 
   /* =========================
      Validation
@@ -95,11 +118,8 @@ export default function FreeTrialStudent() {
 
   const validateStep1 = () => {
     if (!formData.subject || !formData.grade || !formData.schoolType) {
-      showSweetAlert(
-        "error",
-        "Required Fields",
-        "Please fill in all required fields."
-      );
+      showSweetAlert("error", "Missing Input", "Please fill in all required fields.");
+
       return false;
     }
     return true;
@@ -112,11 +132,8 @@ export default function FreeTrialStudent() {
       !formData.email ||
       !formData.password
     ) {
-      showSweetAlert(
-        "error",
-        "Required Fields",
-        "Please fill in all required fields."
-      );
+     showSweetAlert("error", "Missing Input", "Please fill in all required personal information.");
+
       return false;
     }
 

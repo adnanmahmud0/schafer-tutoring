@@ -24,7 +24,8 @@ export const Step3PersonalInfo = ({ formData, setFormData }: Step3Props) => {
             onChange={(e) =>
               setFormData({ ...formData, studentFirstName: e.target.value })
             }
-            placeholder="Enter your first name"
+            placeholder="Enter your First Name"
+            required
           />
         </div>
         <div>
@@ -38,22 +39,45 @@ export const Step3PersonalInfo = ({ formData, setFormData }: Step3Props) => {
             onChange={(e) =>
               setFormData({ ...formData, studentLastName: e.target.value })
             }
-            placeholder="Enter your last name"
+            placeholder="Enter your Last Name"
           />
         </div>
       </div>
 
-      <div className="flex items-center">
-        <Checkbox
-          checked={formData.isUnder18}
-          onCheckedChange={(checked) =>
-            setFormData({ ...formData, isUnder18: checked })
-          }
-        />
-        <label className="ml-2 text-sm text-gray-700">
-          Is the student under age 18?
-        </label>
-      </div>
+      <div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Is the student under 18 years of age? <span className="text-red-500">*</span>
+  </label>
+
+  <div className="flex gap-6">
+    {/* YES → Under 18 */}
+    <label className="flex items-center gap-2 cursor-pointer">
+      <input
+        type="radio"
+        name="ageCheck"
+        checked={formData.isUnder18 === true}
+        onChange={() =>
+          setFormData({ ...formData, isUnder18: true })
+        }
+      />
+      <span className="text-sm text-gray-700">Yes</span>
+    </label>
+
+    {/* NO → 18 or above */}
+    <label className="flex items-center gap-2 cursor-pointer">
+      <input
+        type="radio"
+        name="ageCheck"
+        checked={formData.isUnder18 === false}
+        onChange={() =>
+          setFormData({ ...formData, isUnder18: false })
+        }
+      />
+      <span className="text-sm text-gray-700">No</span>
+    </label>
+  </div>
+</div>
+
 
       {formData.isUnder18 && (
         <>
@@ -112,14 +136,14 @@ export const Step3PersonalInfo = ({ formData, setFormData }: Step3Props) => {
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Email <span className="text-red-500">*</span>
+          E-Mail <span className="text-red-500">*</span>
         </label>
         <Input
           type="email"
           name="email"
           value={formData.email}
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          placeholder="Enter your email"
+          placeholder="Enter your E-mail"
         />
       </div>
 
@@ -134,7 +158,7 @@ export const Step3PersonalInfo = ({ formData, setFormData }: Step3Props) => {
           onChange={(e) =>
             setFormData({ ...formData, password: e.target.value })
           }
-          placeholder="Enter your password"
+          placeholder="Enter your Password"
         />
       </div>
 
