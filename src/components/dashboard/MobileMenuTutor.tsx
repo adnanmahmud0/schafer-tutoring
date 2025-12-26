@@ -24,12 +24,12 @@ interface MobileMenuProps {
 /* ================= MENU DATA ================= */
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Overview", href: "/teacher/overview" },
-  { icon: FileText, label: "Requests", href: "/teacher/requests" },
-  { icon: MessageCircle, label: "Messages", href: "/teacher/messages" },
-  { icon: BookOpen, label: "Resources", href: "/teacher/resources" },
-  { icon: DollarSign, label: "Earnings", href: "/teacher/earnings" },
-  { icon: headset, label: "Support", href: "/teacher/support" },
+  {  label: "Sessions", href: "/teacher/overview" },
+  {  label: "Requests", href: "/teacher/requests" },
+  {  label: "Messages", href: "/teacher/messages" },
+  {  label: "Resources", href: "/teacher/resources" },
+  {  label: "Earnings", href: "/teacher/earnings" },
+  {  label: "Support", href: "/teacher/support" },
 ];
 
 /* ================= COMPONENT ================= */
@@ -66,7 +66,6 @@ export default function MobileMenuTutor({ isOpen, onClose }: MobileMenuProps) {
         {/* Navigation */}
         <nav className="flex-1 px-3 sm:px-4 py-4 sm:py-6 space-y-1 overflow-y-auto">
           {menuItems.map((item) => {
-            const Icon = item.icon;
             const isActive = pathname.startsWith(item.href);
 
             return (
@@ -80,11 +79,7 @@ export default function MobileMenuTutor({ isOpen, onClose }: MobileMenuProps) {
                     : "hover:bg-white/10"
                 }`}
               >
-                <Icon
-                  className={`w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0 ${
-                    isActive ? "text-[#0B31BD]" : "text-white/80"
-                  }`}
-                />
+
                 <span className="text-base sm:text-lg">{item.label}</span>
 
                 {isActive && (
@@ -94,17 +89,6 @@ export default function MobileMenuTutor({ isOpen, onClose }: MobileMenuProps) {
             );
           })}
         </nav>
-
-        {/* Logout */}
-        <div className="p-3 sm:p-4 border-t border-blue-900">
-          <button
-            type="button"
-            className="flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-3 sm:py-4 rounded-lg hover:bg-white/10 w-full text-base sm:text-lg"
-          >
-            <LogOut className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
-            <span>Logout</span>
-          </button>
-        </div>
       </div>
     </>
   );

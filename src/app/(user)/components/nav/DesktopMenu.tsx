@@ -8,7 +8,7 @@ const DesktopMenu = () => {
         href="/free-trial-teacher"
         className="text-[#0B31BD] text-lg font-medium hover:text-[#092A9E] transition-colors"
       >
-        Become a tutor
+        Become Tutor
       </Link>
       <PrimaryButton name={"Login"} href={"/login"} />
     </div>

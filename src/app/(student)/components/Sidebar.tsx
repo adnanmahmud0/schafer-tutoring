@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const menuItems = [
-  { label: "Session", href: "/student/session" },
+  { label: "Sessions", href: "/student/session" },
   { label: "Messages", href: "/student/messages" },
   { label: "Subscription", href: "/student/subscription" },
   { label: "Resources", href: "/student/resources" },
