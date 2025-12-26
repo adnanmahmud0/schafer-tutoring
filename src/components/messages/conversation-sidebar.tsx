@@ -21,7 +21,7 @@ const conversations: Conversation[] = [
     avatar: "SM",
     message: "I can help with the repair task",
     time: "10:30 AM",
-    isRead: false,
+    isRead: true,
   },
   {
     id: "emma1",

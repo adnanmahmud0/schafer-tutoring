@@ -22,7 +22,7 @@ export default function Funcard() {
     cards: [
       {
         step: "1.",
-        title: "Send your request",
+        title: "Send your Request",
         description:
           "Tell us the subject you need help with and when you're available.",
         image: "/boy1.png",
@@ -30,7 +30,7 @@ export default function Funcard() {
       },
       {
         step: "2.",
-        title: "Meet your tutor",
+        title: "Meet your Tutor",
         description:
           "We connect you with a suitable tutor based on your goals.",
         image: "/girl1.png",
@@ -38,7 +38,7 @@ export default function Funcard() {
       },
       {
         step: "3.",
-        title: "Start learning",
+        title: "Start Learning",
         description: "Improve your grades and build confidence.",
         image: "/girl2.png",
         bgColor: "bg-[#6490F8]",

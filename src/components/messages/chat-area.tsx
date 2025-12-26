@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import React from "react";
 
-import { Send, Paperclip, Calendar, Menu } from "lucide-react";
+import { Send, Paperclip, Calendar, Menu, ArrowUp, ArrowLeft } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -191,7 +191,7 @@ export default function ChatArea({
             onClick={onMenuClick}
             className="md:hidden h-8 w-8"
           >
-            <Menu className="w-5 h-5" />
+            <ArrowLeft className="w-5 h-5" />
           </Button>
           <Avatar className="w-10 h-10">
             <AvatarFallback className="bg-primary text-primary-foreground">
@@ -270,7 +270,7 @@ export default function ChatArea({
         <div className="w-full ">
           <div className="bg-card border border-border rounded-lg p-4">
             <Textarea
-              placeholder="Type your message..."
+              placeholder="Type your Message..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               className="min-h-20 mb-3 resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none"
@@ -283,16 +283,14 @@ export default function ChatArea({
                 className="gap-2 text-foreground bg-transparent"
               >
                 <Paperclip className="w-4 h-4" />
-                Attach file
               </Button>
 
               <Button
-                variant="default"
+                variant="outline"
                 size="sm"
-                className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                className="gap-2 text-foreground bg-transparent"
               >
-                <Calendar className="w-4 h-4" />
-                Schedule Session
+                <Calendar className="w-4 h-4 text-blue-500" />
               </Button>
 
               <div className="flex-1" />
@@ -300,10 +298,10 @@ export default function ChatArea({
               <Button
                 size="icon"
                 variant="ghost"
-                className="shrink-0"
+                className="shrink-0 bg-[#0B31BD] text-white"
                 onClick={handleSend}
               >
-                <Send className="w-4 h-4" />
+                <ArrowUp className="w-4 h-4" />
               </Button>
             </div>
           </div>

@@ -19,7 +19,7 @@ const MobileMenu = ({ isOpen, closeMenu }: MobileMenuProps) => {
           onClick={closeMenu}
           className="block px-4 py-3 text-lg font-medium text-gray-800 hover:text-[#0B31BD] hover:bg-blue-50 rounded-lg transition mx-2"
         >
-          Become a tutor
+          Become Tutor
         </Link>
 
         <div className="px-4 pt-2">

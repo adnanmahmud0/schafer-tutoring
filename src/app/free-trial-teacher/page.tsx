@@ -133,7 +133,7 @@ const FreeTrialTeacher = () => {
     if (selectedSubjects.length === 0) {
       showSweetAlert(
         "error",
-        "Required Fields",
+        "Missing Input",
         "Please select at least one subject to teach."
       );
       return false;
@@ -145,7 +145,7 @@ const FreeTrialTeacher = () => {
     if (!formData.cv || !formData.abiturCertificate || !formData.officialId) {
       showSweetAlert(
         "error",
-        "Required Fields",
+        "Missing Documents",
         "Please upload all required documents."
       );
       return false;
@@ -168,7 +168,7 @@ const FreeTrialTeacher = () => {
     ) {
       showSweetAlert(
         "error",
-        "Required Fields",
+        "Missing Input",
         "Please fill in all required fields to continue."
       );
       return false;
@@ -190,26 +190,42 @@ const FreeTrialTeacher = () => {
     setStep((prev) => Math.max(1, prev - 1));
   };
 
-  const showSweetAlert = (
-    type: SweetAlertType,
-    title: string,
-    text: string
-  ) => {
-    if (typeof window !== "undefined" && window.Swal) {
-      window.Swal.fire({
-        icon: type,
-        title: title,
-        text: text,
-        confirmButtonColor: "#0B31BD",
-        confirmButtonText: "OK",
-        allowOutsideClick: false,
-        customClass: {
-          popup: "animate__animated animate__fadeInDown",
-          confirmButton: "font-medium",
-        },
-      });
-    }
-  };
+   const showSweetAlert = (
+  type: "success" | "error" | "warning",
+  title: string,
+  text: string
+) => {
+  if (typeof window !== "undefined" && (window as any).Swal) {
+    (window as any).Swal.fire({
+      icon: type,
+      title,
+      text,
+      confirmButtonColor: "#0B31BD",
+      didOpen: () => {
+        const popup = document.querySelector(".swal2-popup") as HTMLElement;
+        const icon = document.querySelector(".swal2-icon") as HTMLElement;
+        const titleEl = document.querySelector(".swal2-title") as HTMLElement;
+        const textEl = document.querySelector(".swal2-html-container") as HTMLElement;
+
+        // border (static)
+        if (popup) {
+          popup.style.border = "2px solid black";
+          popup.style.borderRadius = "12px";
+        }
+
+        // icon color
+        if (icon) {
+          icon.style.color = "#ff3333";
+          icon.style.borderColor = "#ff3333";
+        }
+
+        // text color (keep readable on default bg)
+        if (titleEl) titleEl.style.color = "#000";
+        if (textEl) textEl.style.color = "#000";
+      },
+    });
+  }
+};
 
   const handleSubmit = () => {
     if (!validateStep3()) {
@@ -730,7 +746,7 @@ const FreeTrialTeacher = () => {
                         onClick={handleSubmit}
                         className="w-full max-w-md mx-auto bg-[#0B31BD] text-white py-3 rounded-md font-medium hover:bg-[#062183] transition-colors flex items-center justify-center gap-2"
                       >
-                        Send the request
+                        Send the Request
                       </button>
                     </div>
                   </div>
