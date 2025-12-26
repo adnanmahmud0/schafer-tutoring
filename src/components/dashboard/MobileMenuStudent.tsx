@@ -23,11 +23,11 @@ interface MobileMenuProps {
 /* ================= MENU DATA ================= */
 
 const menuItems = [
-  { icon: Calendar, label: "Session", href: "/student/session" },
-  { icon: MessageCircle, label: "Messages", href: "/student/messages" },
-  { icon: CreditCard, label: "Subscription", href: "/student/subscription" },
-  { icon: BookOpen, label: "Resources", href: "/student/resources" },
-  { icon: headset, label: "Support", href: "/student/support" },
+  {  label: "Sessions", href: "/student/session" },
+  {  label: "Messages", href: "/student/messages" },
+  {  label: "Subscription", href: "/student/subscription" },
+  {  label: "Resources", href: "/student/resources" },
+  {  label: "Support", href: "/student/support" },
 ];
 
 /* ================= COMPONENT ================= */
@@ -64,7 +64,6 @@ export default function MobileMenuStudent({ isOpen, onClose }: MobileMenuProps) 
         {/* Navigation */}
         <nav className="flex-1 px-3 sm:px-4 py-4 sm:py-6 space-y-1 overflow-y-auto">
           {menuItems.map((item) => {
-            const Icon = item.icon;
             const isActive = pathname.startsWith(item.href);
 
             return (
@@ -78,11 +77,6 @@ export default function MobileMenuStudent({ isOpen, onClose }: MobileMenuProps) 
                     : "hover:bg-white/10"
                 }`}
               >
-                <Icon
-                  className={`w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0 ${
-                    isActive ? "text-[#0B31BD]" : "text-white/80"
-                  }`}
-                />
                 <span className="text-base sm:text-lg">{item.label}</span>
 
                 {isActive && (
@@ -92,17 +86,6 @@ export default function MobileMenuStudent({ isOpen, onClose }: MobileMenuProps) 
             );
           })}
         </nav>
-
-        {/* Logout */}
-        <div className="p-3 sm:p-4 border-t border-blue-900">
-          <button
-            type="button"
-            className="flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-3 sm:py-4 rounded-lg hover:bg-white/10 w-full text-base sm:text-lg"
-          >
-            <LogOut className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
-            <span>Logout</span>
-          </button>
-        </div>
       </div>
     </>
   );
