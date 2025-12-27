@@ -5,15 +5,37 @@ import { FormEvent } from 'react';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
+import { useLogin } from '@/hooks/api';
+import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberPassword, setRememberPassword] = useState(false);
 
+  const { mutate: login, isPending } = useLogin();
+
   const handleLogin = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('Login attempt:', { email, password, rememberPassword });
+
+    if (!email || !password) {
+      toast.error('Please enter email and password');
+      return;
+    }
+
+    login(
+      { email, password },
+      {
+        onSuccess: () => {
+          toast.success('Login successful!');
+        },
+        onError: (error: any) => {
+          const message = error?.getFullMessage?.() || error?.message || 'Login failed. Please try again.';
+          toast.error(message);
+        },
+      }
+    );
   };
 
   return (
@@ -96,9 +118,17 @@ const LoginPage = () => {
             {/* Login Button */}
             <button
               type="submit"
-              className="w-full bg-[#0B31BD] hover:bg-blue-800 text-white font-semibold py-2.5 rounded-lg text-base transition-colors"
+              disabled={isPending}
+              className="w-full bg-[#0B31BD] hover:bg-blue-800 text-white font-semibold py-2.5 rounded-lg text-base transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              Login
+              {isPending ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Logging in...
+                </>
+              ) : (
+                'Login'
+              )}
             </button>
           </form>
 

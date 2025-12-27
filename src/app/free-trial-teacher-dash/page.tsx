@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 
 const TeacherDash = dynamic(
-  () => import("./components/Page1"), // or Page2 / main component
+  () => import("./components/Page1"), // Uses Page1.tsx (TSX version)
   { ssr: false }
 );
 

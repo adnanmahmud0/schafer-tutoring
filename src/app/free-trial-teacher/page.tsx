@@ -1,27 +1,21 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { Upload, X } from "lucide-react";
+import React, { useState } from "react";
+import { Upload, X, Loader2, CalendarIcon } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-
-type SweetAlertType = "success" | "error" | "warning" | "info" | "question";
-
-declare global {
-  interface Window {
-    Swal: {
-      fire: (options: {
-        icon: SweetAlertType;
-        title: string;
-        text: string;
-        confirmButtonColor?: string;
-        confirmButtonText?: string;
-        allowOutsideClick?: boolean;
-        customClass?: Record<string, string>;
-      }) => Promise<{ isConfirmed: boolean }>;
-    };
-  }
-}
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { useSubmitApplication, useActiveSubjects } from "@/hooks/api";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface FormData {
   subjects: string[];
@@ -30,9 +24,9 @@ interface FormData {
   officialId: File | null;
   firstName: string;
   lastName: string;
-  birthDate: string;
+  birthDate: Date | undefined;
   street: string;
-  number: string;
+  houseNumber: string;
   zip: string;
   city: string;
   phoneNumber: string;
@@ -41,12 +35,21 @@ interface FormData {
   agreeToPolicy: boolean;
 }
 
+interface SelectedSubject {
+  id: string;
+  name: string;
+}
+
 const FreeTrialTeacher = () => {
+  const router = useRouter();
   const [step, setStep] = useState<number>(1);
-  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
+  const [selectedSubjects, setSelectedSubjects] = useState<SelectedSubject[]>([]);
   const [showSubjectDropdown, setShowSubjectDropdown] =
     useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>("");
+
+  // Fetch subjects from API
+  const { data: availableSubjects = [], isLoading: subjectsLoading } = useActiveSubjects();
 
   const [formData, setFormData] = useState<FormData>({
     subjects: [],
@@ -55,9 +58,9 @@ const FreeTrialTeacher = () => {
     officialId: null,
     firstName: "",
     lastName: "",
-    birthDate: "",
+    birthDate: undefined,
     street: "",
-    number: "",
+    houseNumber: "",
     zip: "",
     city: "",
     phoneNumber: "",
@@ -66,31 +69,7 @@ const FreeTrialTeacher = () => {
     agreeToPolicy: false,
   });
 
-  const availableSubjects: string[] = [
-    "Math",
-    "Physics",
-    "Chemistry",
-    "Biology",
-    "English",
-    "German",
-    "French",
-    "Spanish",
-    "History",
-    "Geography",
-    "Economics",
-    "Computer Science",
-  ];
-
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://cdn.jsdelivr.net/npm/sweetalert2@11";
-    script.async = true;
-    document.body.appendChild(script);
-
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
+  const { mutate: submitApplication, isPending } = useSubmitApplication();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -111,31 +90,32 @@ const FreeTrialTeacher = () => {
     }));
   };
 
-  const handleSubjectToggle = (subject: string) => {
+  const handleSubjectToggle = (subjectId: string, subjectName: string) => {
     setSelectedSubjects((prev) => {
-      if (prev.includes(subject)) {
-        return prev.filter((s) => s !== subject);
+      const exists = prev.find((s) => s.id === subjectId);
+      if (exists) {
+        return prev.filter((s) => s.id !== subjectId);
       } else {
-        return [...prev, subject];
+        return [...prev, { id: subjectId, name: subjectName }];
       }
     });
   };
 
-  const handleRemoveSubject = (subject: string) => {
-    setSelectedSubjects((prev) => prev.filter((s) => s !== subject));
+  const handleRemoveSubject = (subjectId: string) => {
+    setSelectedSubjects((prev) => prev.filter((s) => s.id !== subjectId));
+  };
+
+  const isSubjectSelected = (subjectId: string) => {
+    return selectedSubjects.some((s) => s.id === subjectId);
   };
 
   const filteredSubjects = availableSubjects.filter((subject) =>
-    subject.toLowerCase().includes(searchTerm.toLowerCase())
+    subject.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const validateStep1 = () => {
     if (selectedSubjects.length === 0) {
-      showSweetAlert(
-        "error",
-        "Required Fields",
-        "Please select at least one subject to teach."
-      );
+      toast.error("Please select at least one subject to teach.");
       return false;
     }
     return true;
@@ -143,11 +123,7 @@ const FreeTrialTeacher = () => {
 
   const validateStep2 = () => {
     if (!formData.cv || !formData.abiturCertificate || !formData.officialId) {
-      showSweetAlert(
-        "error",
-        "Required Fields",
-        "Please upload all required documents."
-      );
+      toast.error("Please upload all required documents.");
       return false;
     }
     return true;
@@ -159,18 +135,14 @@ const FreeTrialTeacher = () => {
       !formData.lastName ||
       !formData.birthDate ||
       !formData.street ||
-      !formData.number ||
+      !formData.houseNumber ||
       !formData.zip ||
       !formData.city ||
       !formData.phoneNumber ||
       !formData.email ||
       !formData.password
     ) {
-      showSweetAlert(
-        "error",
-        "Required Fields",
-        "Please fill in all required fields to continue."
-      );
+      toast.error("Please fill in all required fields to continue.");
       return false;
     }
     return true;
@@ -190,66 +162,46 @@ const FreeTrialTeacher = () => {
     setStep((prev) => Math.max(1, prev - 1));
   };
 
-  const showSweetAlert = (
-    type: SweetAlertType,
-    title: string,
-    text: string
-  ) => {
-    if (typeof window !== "undefined" && window.Swal) {
-      window.Swal.fire({
-        icon: type,
-        title: title,
-        text: text,
-        confirmButtonColor: "#0B31BD",
-        confirmButtonText: "OK",
-        allowOutsideClick: false,
-        customClass: {
-          popup: "animate__animated animate__fadeInDown",
-          confirmButton: "font-medium",
-        },
-      });
-    }
-  };
-
   const handleSubmit = () => {
     if (!validateStep3()) {
       return;
     }
 
     if (!formData.agreeToPolicy) {
-      showSweetAlert(
-        "warning",
-        "Agreement Required",
-        "Please agree to the Privacy Policy to continue."
-      );
+      toast.warning("Please agree to the Privacy Policy to continue.");
       return;
     }
 
-    const submitData = {
-      ...formData,
-      subjects: selectedSubjects,
+    // Prepare data for API
+    const applicationData = {
+      email: formData.email,
+      password: formData.password,
+      name: `${formData.firstName} ${formData.lastName}`.trim(),
+      birthDate: formData.birthDate!.toISOString(),
+      phoneNumber: formData.phoneNumber,
+      street: formData.street,
+      houseNumber: formData.houseNumber,
+      zip: formData.zip,
+      city: formData.city,
+      subjects: selectedSubjects.map((s) => s.id), // Send ObjectIds
+      cv: formData.cv!,
+      abiturCertificate: formData.abiturCertificate!,
+      officialId: formData.officialId!,
     };
 
-    console.log("Form submitted:", submitData);
-
-    if (typeof window !== "undefined" && window.Swal) {
-      window.Swal.fire({
-        icon: "success",
-        title: "Success!",
-        text: "Your teacher application has been sent. We will get back to you shortly!",
-        confirmButtonColor: "#0B31BD",
-        confirmButtonText: "OK",
-        allowOutsideClick: false,
-        customClass: {
-          popup: "animate__animated animate__fadeInDown",
-          confirmButton: "font-medium",
-        },
-      }).then((result) => {
-        if (result.isConfirmed) {
-          window.location.href = "/free-trial-teacher-dash";
-        }
-      });
-    }
+    submitApplication(applicationData, {
+      onSuccess: () => {
+        toast.success(
+          "Your teacher application has been sent. We will get back to you shortly!"
+        );
+        router.push("/free-trial-teacher-dash");
+      },
+      onError: (error: any) => {
+        // ApiError has getFullMessage() method for detailed errors
+        const message = error?.getFullMessage?.() || error?.message || "Something went wrong. Please try again.";
+        toast.error(message);
+      },
+    });
   };
 
   return (
@@ -309,16 +261,16 @@ const FreeTrialTeacher = () => {
                         ) : (
                           selectedSubjects.map((subject) => (
                             <span
-                              key={subject}
+                              key={subject.id}
                               className="inline-flex items-center gap-1 bg-[#0B31BD] text-white px-2 py-1 rounded text-sm"
                             >
-                              {subject}
+                              {subject.name}
                               <X
                                 size={14}
                                 className="cursor-pointer hover:text-gray-300"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleRemoveSubject(subject);
+                                  handleRemoveSubject(subject.id);
                                 }}
                               />
                             </span>
@@ -367,28 +319,32 @@ const FreeTrialTeacher = () => {
 
                           {/* Subject List */}
                           <div className="p-2">
-                            {filteredSubjects.map((subject) => (
-                              <div
-                                key={subject}
-                                className="flex items-center justify-between px-3 py-2 hover:bg-gray-50 cursor-pointer rounded"
-                                onClick={() => handleSubjectToggle(subject)}
-                              >
-                                <span className="text-sm text-gray-700">
-                                  {subject}
-                                </span>
-                                <Checkbox
-                                  checked={selectedSubjects.includes(subject)}
-                                  onCheckedChange={(checked) =>
-                                    setSelectedSubjects((prev) =>
-                                      checked
-                                        ? [...prev, subject]
-                                        : prev.filter((s) => s !== subject)
-                                    )
-                                  }
-                                  onClick={(e) => e.stopPropagation()}
-                                />
+                            {subjectsLoading ? (
+                              <div className="flex items-center justify-center py-4">
+                                <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
                               </div>
-                            ))}
+                            ) : filteredSubjects.length === 0 ? (
+                              <div className="text-center py-4 text-gray-500 text-sm">
+                                No subjects found
+                              </div>
+                            ) : (
+                              filteredSubjects.map((subject) => (
+                                <div
+                                  key={subject._id}
+                                  className="flex items-center justify-between px-3 py-2 hover:bg-gray-50 cursor-pointer rounded"
+                                  onClick={() => handleSubjectToggle(subject._id, subject.name)}
+                                >
+                                  <span className="text-sm text-gray-700">
+                                    {subject.name}
+                                  </span>
+                                  <Checkbox
+                                    checked={isSubjectSelected(subject._id)}
+                                    onCheckedChange={() => handleSubjectToggle(subject._id, subject.name)}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                </div>
+                              ))
+                            )}
                           </div>
                         </div>
                       )}
@@ -579,15 +535,39 @@ const FreeTrialTeacher = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Birth Date <span className="text-red-500">*</span>
                       </label>
-                      <Input
-                        type="text"
-                        name="birthDate"
-                        value={formData.birthDate}
-                        onChange={handleInputChange}
-                        placeholder="DD-MM-YYYY"
-                        className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        required
-                      />
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "flex h-10 w-full justify-start rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-normal hover:bg-white",
+                              !formData.birthDate && "text-gray-400"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {formData.birthDate ? (
+                              format(formData.birthDate, "dd-MM-yyyy")
+                            ) : (
+                              <span>Select your birth date</span>
+                            )}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={formData.birthDate}
+                            onSelect={(date) =>
+                              setFormData((prev) => ({ ...prev, birthDate: date }))
+                            }
+                            disabled={(date) =>
+                              date > new Date() || date < new Date("1950-01-01")
+                            }
+                            captionLayout="dropdown"
+                            fromYear={1950}
+                            toYear={new Date().getFullYear()}
+                          />
+                        </PopoverContent>
+                      </Popover>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -607,14 +587,14 @@ const FreeTrialTeacher = () => {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Number <span className="text-red-500">*</span>
+                          House Number <span className="text-red-500">*</span>
                         </label>
                         <Input
                           type="text"
-                          name="number"
-                          value={formData.number}
+                          name="houseNumber"
+                          value={formData.houseNumber}
                           onChange={handleInputChange}
-                          placeholder="Enter your number"
+                          placeholder="Enter house number"
                           className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           required
                         />
@@ -722,15 +702,24 @@ const FreeTrialTeacher = () => {
                     <div className="flex gap-4">
                       <button
                         onClick={handlePrevStep}
-                        className="w-full max-w-md mx-auto bg-gray-300 text-gray-700 py-3 rounded-md font-medium hover:bg-gray-400 transition-colors"
+                        disabled={isPending}
+                        className="w-full max-w-md mx-auto bg-gray-300 text-gray-700 py-3 rounded-md font-medium hover:bg-gray-400 transition-colors disabled:opacity-50"
                       >
                         Back
                       </button>
                       <button
                         onClick={handleSubmit}
-                        className="w-full max-w-md mx-auto bg-[#0B31BD] text-white py-3 rounded-md font-medium hover:bg-[#062183] transition-colors flex items-center justify-center gap-2"
+                        disabled={isPending}
+                        className="w-full max-w-md mx-auto bg-[#0B31BD] text-white py-3 rounded-md font-medium hover:bg-[#062183] transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                       >
-                        Send the request
+                        {isPending ? (
+                          <>
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                            Submitting...
+                          </>
+                        ) : (
+                          "Send the request"
+                        )}
                       </button>
                     </div>
                   </div>
