@@ -1,36 +1,11 @@
 "use client";
 import React, { useState } from 'react';
-import { Calendar, DollarSign, ChevronDown } from 'lucide-react';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+import { Plus, Paperclip, Send } from 'lucide-react';
 
 export default function SupportPage() {
-const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
-
-  const toggleItem = (id: string) => {
-    setOpenItems((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
-
-  const supportCards = [
-    {
-      id: 1,
-      icon: Calendar,
-      title: 'Report incorrect bookings',
-      description: 'or request lesson correction',
-    },
-    {
-      id: 2,
-      icon: DollarSign,
-      title: 'Report issue with',
-      description: 'with earnings and',
-    },
-  ];
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [showTicketModal, setShowTicketModal] = useState(false);
+  const [ticketMessage, setTicketMessage] = useState('');
 
   const faqs = [
     {
@@ -65,78 +40,129 @@ const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
     },
   ];
 
+  const handleSubmitTicket = () => {
+    if (ticketMessage.trim()) {
+      // Handle ticket submission logic here
+      console.log('Ticket submitted:', ticketMessage);
+      setTicketMessage('');
+      setShowTicketModal(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen p-6">
-      <div className="mx-auto space-y-8">
+    <div className="space-y-4 sm:space-y-5 lg:space-y-6">
+      {/* FAQ Section */}
+      <section className="bg-[#F7F7F7] p-4 sm:p-5 lg:p-6">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-semibold text-black">
+              How can we help?
+            </h2>
+          </div>
 
-        {/* Info Banner */}
-        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-          <p className="text-sm text-orange-900">
-            For Questions outside the listed topics, a support chat is available in Messages
-          </p>
-        </div>
+          <div className='bg-white p-8 rounded-[12px] mb-10 shadow'>
+            <div>
+              <h2 className="text-2xl font-bold  mb-6">
+                Frequently Asked Questions
+              </h2>
+            </div>
 
-        {/* Support Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {supportCards.map((card) => {
-            const IconComponent = card.icon;
-            return (
-              <div
-                key={card.id}
-                className="bg-white rounded-lg border border-gray-300 p-8 hover:shadow-md transition-shadow cursor-pointer"
-              >
-                <div className="flex flex-col items-center text-center">
-                  <div className="mb-4 p-4 bg-gray-100 rounded-lg">
-                    <IconComponent className="w-8 h-8 text-gray-600" />
+            <div className="space-y-4 mb-12">
+              {faqs.map((faq, index) => {
+                const isOpen = openIndex === index;
+
+                return (
+                  <div
+                    key={index}
+                    className="bg-white rounded-lg shadow-sm border-2 border-[#85C2DE] overflow-hidden"
+                  >
+                    <button
+                      onClick={() => setOpenIndex(isOpen ? null : index)}
+                      className="w-full px-5 py-4 sm:px-6 sm:py-5 flex items-center justify-between text-left hover:bg-gray-50 transition-colors duration-200"
+                      aria-expanded={isOpen}
+                    >
+                      <span className="font-normal text-gray-900 text-sm sm:text-base pr-4 text-left">
+                        {faq.question}
+                      </span>
+                      <Plus
+                        className={`w-5 h-5 text-gray-400 transition-transform duration-300 shrink-0 ${isOpen ? "rotate-45" : ""
+                          }`}
+                      />
+                    </button>
+
+                    <div
+                      className={`overflow-hidden transition-all duration-500 ease-in-out ${isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                        }`}
+                      style={{
+                        transition:
+                          "max-height 0.5s ease-in-out, opacity 0.4s ease-in-out, padding 0.5s ease-in-out",
+                      }}
+                    >
+                      <div className="px-5 pb-5 sm:px-6 sm:pb-6 pt-2">
+                        <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
+                          {faq.answer}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <h3 className="text-sm font-semibold text-gray-900 mb-2">
-                    {card.title}
-                  </h3>
-                  <p className="text-sm text-gray-600">{card.description}</p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                );
+              })}
+            </div>
+          </div>
 
-        {/* FAQ Section */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
-            Frequently Asked Questions
-          </h2>
-
-          <div className="space-y-3">
-            {faqs.map((faq) => (
-              <Collapsible
-                key={faq.id}
-                open={openItems[faq.id]}
-                onOpenChange={() => toggleItem(faq.id)}
-              >
-                <CollapsibleTrigger className="w-full">
-                  <div className="flex items-center justify-between w-full p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-left">
-                    <span className="text-sm font-medium text-gray-900">
-                      {faq.question}
-                    </span>
-                    <ChevronDown
-                      className={`w-5 h-5 text-gray-600 transition-transform duration-300 shrink-0 ml-4 ${
-                        openItems[faq.id] ? 'rotate-180' : ''
-                      }`}
-                    />
-                  </div>
-                </CollapsibleTrigger>
-
-                <CollapsibleContent className="mt-0">
-                  <div className="bg-gray-50 border border-t-0 border-gray-200 rounded-b-lg p-4">
-                    <p className="text-sm text-gray-700 leading-relaxed">
-                      {faq.answer}
-                    </p>
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
-            ))}
+          {/* Need Personal Assistance Section */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sm:p-8">
+            <h3 className="text-xl font-semibold text-gray-900 mb-3">
+              Need Personal assistance?
+            </h3>
+            <p className="text-gray-600 text-sm sm:text-base mb-6">
+              If you couldn't find the information you need, our support team is ready to assist you. Submit a ticket, and we'll get back to you as soon as possible.
+            </p>
+            <button
+              onClick={() => setShowTicketModal(true)}
+              className="bg-[#0B31BD] text-white px-8 py-3 rounded-lg font-medium hover:bg-[#0a2aa0] transition-colors duration-200"
+            >
+              Submit Ticket
+            </button>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Ticket Modal */}
+      {showTicketModal && (
+        <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg border shadow-xl w-full max-w-md">
+            <div className=" text-white px-4 py-3 rounded-t-lg flex items-center justify-end">
+              <button
+                onClick={() => setShowTicketModal(false)}
+                className='text-black'
+              >
+                ×
+              </button>
+            </div>
+            <div className="p-4">
+              <textarea
+                value={ticketMessage}
+                onChange={(e) => setTicketMessage(e.target.value)}
+                placeholder="Describe your issue or request here..."
+                className="w-full h-32 p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#0B31BD] focus:border-transparent text-sm"
+              />
+              <div className="flex items-center justify-between mt-4">
+                <button className="flex items-center gap-2 text-gray-600 hover:text-gray-800 text-sm">
+                  <Paperclip className="w-4 h-4" />
+                  Attach file
+                </button>
+                <button
+                  onClick={handleSubmitTicket}
+                  className="text-[#0B31BD] hover:text-[#0a2aa0]"
+                >
+                  <Send className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

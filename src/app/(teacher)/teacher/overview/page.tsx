@@ -170,7 +170,6 @@ function FeedbackModal({
 export default function Dashboard() {
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
-  // Session থেকে feedback চাইলে এটা শুনবে (কোনো prop লাগবে না)
   useEffect(() => {
     const openModal = () => setIsFeedbackOpen(true);
     window.addEventListener('openFeedbackModal', openModal);
@@ -178,65 +177,10 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="mx-auto p-6 space-y-6">
-      {/* Level Progress */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-gray-800">Level Progress</h2>
-          <div className="flex items-center gap-2 bg-[#002AC8] text-white px-4 py-2 rounded-lg">
-            <Image width={24} height={24} src="/badge-wt.svg" alt="Badge" />
-            <span className="font-semibold">Level 2</span>
-          </div>
-        </div>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between text-sm text-gray-600">
-            <span>Progress to Level 3</span>
-            <span className="text-[#3052D2]">4 Lesson Left</span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-3">
-            <div className="bg-[#002AC8] h-full rounded-full transition-all" style={{ width: '75%' }} />
-          </div>
-          <div className="bg-[#FFF4E6] border border-[#FFB256] rounded-lg p-3 flex items-start gap-2 mt-5">
-            <Image width={24} height={24} src="/badge-yl.svg" alt="Badge" />
-            <p className="text-sm text-amber-800">
-              Hourly earnings will grow to <span className="font-semibold">17€</span> on level 3.
-            </p>
-          </div>
-        </div>
-      </div>
+    <div className="space-y-4 sm:space-y-5 lg:space-y-6">
+      
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
-          <div className="mb-4 bg-blue-50 p-3 rounded-full w-fit"><Image src="/cap.svg" alt="" width={24} height={24} /></div>
-          <h3 className="text-sm font-medium text-gray-600 mb-2">Sessions</h3>
-          <div className="text-3xl font-bold text-gray-900">156.5 <span className="text-lg text-gray-500">h</span></div>
-          <p className="text-sm text-gray-500 mt-3">Total: 42 h</p>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
-          <div className="mb-4 bg-green-50 p-3 rounded-full w-fit"><Image src="/dollar.svg" alt="" width={24} height={24} /></div>
-          <h3 className="text-sm font-medium text-gray-600 mb-2">Earnings</h3>
-          <div className="text-3xl font-bold text-gray-900">1,880 <span className="text-lg text-gray-500">€</span></div>
-          <p className="text-sm text-gray-500 mt-3">Total: 1.890 €</p>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
-          <div className="mb-4 bg-orange-50 p-3 rounded-full w-fit"><BookOpen className="text-[#FF8A00]" size={24} /></div>
-          <h3 className="text-sm font-medium text-gray-600 mb-2">Trial Sessions</h3>
-          <div className="text-3xl font-bold text-gray-900">99 <span className="text-lg text-gray-500">%</span></div>
-          <p className="text-sm text-gray-500 mt-3">Total: 75%</p>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
-          <div className="mb-4 bg-[#F3F3F3] p-3 rounded-full w-fit"><Image src="/users.svg" alt="" width={24} height={24} /></div>
-          <h3 className="text-sm font-medium text-gray-600 mb-2">The Number of Students</h3>
-          <div className="text-3xl font-bold text-gray-900">150</div>
-          <p className="text-sm text-gray-500 mt-3">Total: 27</p>
-        </div>
-      </div>
-
-      {/* তোমার Session – কোনো prop ছাড়াই */}
       <Session />
-
-      {/* Feedback Modal */}
       <FeedbackModal isOpen={isFeedbackOpen} onClose={() => setIsFeedbackOpen(false)} />
     </div>
   );

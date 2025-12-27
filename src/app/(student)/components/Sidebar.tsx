@@ -6,11 +6,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const menuItems = [
-  { label: "Session", href: "/student/session" },
+  { label: "Sessions", href: "/student/session" },
   { label: "Messages", href: "/student/messages" },
   { label: "Subscription", href: "/student/subscription" },
   { label: "Resources", href: "/student/resources" },
-  { label: "Profile", href: "/student/profile" },
+  { label: "Support", href: "/student/support" },
 ];
 
 function Sidebar() {
@@ -41,35 +41,7 @@ function Sidebar() {
       </nav>
 
       <div className="p-3 sm:p-4 lg:p-6 flex flex-col items-center">
-        {/* Support Link */}
-        {(() => {
-          const isActive = pathname.startsWith("/student/support");
-
-          return (
-            <Link
-              href="/student/support"
-              className={`w-full max-w-[240px] sm:max-w-[220px] md:max-w-[200px] lg:w-64 px-4 sm:px-6 lg:px-10 mb-3 sm:mb-4 lg:mb-5 text-base sm:text-lg font-medium cursor-pointer py-2.5 sm:py-3 lg:py-4 block rounded-lg sm:rounded-xl transition-all duration-200 ${
-                isActive
-                  ? "bg-[#002AC8] text-white shadow-xl"
-                  : "text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              Support
-            </Link>
-          );
-        })()}
-        <button className="w-full max-w-[240px] sm:max-w-[220px] md:max-w-[200px] lg:w-64 flex items-center justify-start gap-2 px-4 sm:px-6 lg:px-10 py-2.5 sm:py-3 lg:py-4 bg-[#FF8A00] hover:bg-[#ee8607] text-white text-base sm:text-lg font-semibold rounded-lg sm:rounded-xl active:scale-95 transition-all duration-200">
-          {/* Logout Icon */}
-          <Image
-            width={24}
-            height={24}
-            src="/logout.svg"
-            alt="Logout"
-            className="w-5 h-5 sm:w-6 sm:h-6"
-          />
-          {/* Text */}
-          <span>Logout</span>
-        </button>
+        
       </div>
     </aside>
   );

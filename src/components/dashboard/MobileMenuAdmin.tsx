@@ -23,16 +23,21 @@ interface MobileMenuProps {
 /* ================= MENU DATA ================= */
 
 const menuItems = [
-  {  label: "Sessions", href: "/student/session" },
-  {  label: "Messages", href: "/student/messages" },
-  {  label: "Subscription", href: "/student/subscription" },
-  {  label: "Resources", href: "/student/resources" },
-  {  label: "Support", href: "/student/support" },
+  { label: "Overview", href: "/admin/overview" },
+  { label: "Student", href: "/admin/student" },
+  { label: "Tutor", href: "/admin/tutor" },
+  { label: "Session", href: "/admin/session" },
+  { label: "Application",  href: "/admin/application" },
+  { label: "Transaction",  href: "/admin/transaction" },
+  { label: "Meeting List",  href: "/admin/meeting-list" },
+  { label: "Available Slot",  href: "/admin/available-slot" },
+  { label: "Terms & Conditions",  href: "/admin/terms-conditions" },
+  { label: "Support",  href: "/admin/support" },
 ];
 
 /* ================= COMPONENT ================= */
 
-export default function MobileMenuStudent({ isOpen, onClose }: MobileMenuProps) {
+export default function MobileMenuAdmin({ isOpen, onClose }: MobileMenuProps) {
   const pathname = usePathname();
 
   if (!isOpen) return null;

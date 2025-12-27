@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// components/free-trial/steps/Step1SubjectInfo.tsx
 import {
   Select,
   SelectTrigger,
@@ -27,7 +25,7 @@ export const Step1SubjectInfo = ({ formData, setFormData }: Step1Props) => {
           }
         >
           <SelectTrigger className="h-10 w-full">
-            <SelectValue placeholder="Select your subject" />
+            <SelectValue placeholder="Select your Subject" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="math">Mathematics</SelectItem>
@@ -48,7 +46,7 @@ export const Step1SubjectInfo = ({ formData, setFormData }: Step1Props) => {
           onValueChange={(value) => setFormData({ ...formData, grade: value })}
         >
           <SelectTrigger className="h-10 w-full">
-            <SelectValue placeholder="Select your grade" />
+            <SelectValue placeholder="Select your Grade" />
           </SelectTrigger>
           <SelectContent>
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((grade) => (
@@ -71,7 +69,7 @@ export const Step1SubjectInfo = ({ formData, setFormData }: Step1Props) => {
           }
         >
           <SelectTrigger className="h-10 w-full">
-            <SelectValue placeholder="Select your school type" />
+            <SelectValue placeholder="Select your School Type" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="public">Public School</SelectItem>

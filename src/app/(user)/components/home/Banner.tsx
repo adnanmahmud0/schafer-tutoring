@@ -78,7 +78,7 @@ const Banner = () => {
               {/* Book Free Trial Button */}
               <PrimaryButton
                 className="bg-transparent border-2 hover:bg-transparent text-white w-full sm:w-auto min-w-[200px]"
-                name="Book free trial"
+                name="Book Free Trial"
                 href="/free-trial-student"
               />
             </div>
