@@ -3,13 +3,7 @@
 import React, { useState } from 'react';
 import { Search, MoreVertical, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
   Pagination,
@@ -27,130 +21,110 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
+import { toast } from 'sonner';
+import { useTutors, useBlockTutor, useUnblockTutor } from '@/hooks/api';
 
-interface Tutor {
-  id: number;
-  name: string;
-  email: string;
-  subject: string;
-  registrationDate: string;
-  classBooked: number;
-  status: 'active' | 'blocked';
-}
+type TutorStatus = 'all' | 'ACTIVE' | 'RESTRICTED';
 
 const TutorManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState<TutorStatus>('all');
+  const itemsPerPage = 10;
 
-  const allTutors: Tutor[] = [
-    {
-      id: 1,
-      name: 'John Doe',
-      email: 'john@gmail.com',
-      subject: 'Mathematics',
-      registrationDate: '10/09/25',
-      classBooked: 10,
-      status: 'active',
-    },
-    {
-      id: 2,
-      name: 'Sarah Smith',
-      email: 'sarah@gmail.com',
-      subject: 'Physics',
-      registrationDate: '10/09/25',
-      classBooked: 10,
-      status: 'active',
-    },
-    {
-      id: 3,
-      name: 'Mike Johnson',
-      email: 'mike@gmail.com',
-      subject: 'Chemistry',
-      registrationDate: '10/09/25',
-      classBooked: 10,
-      status: 'active',
-    },
-    {
-      id: 4,
-      name: 'Emma Wilson',
-      email: 'emma@gmail.com',
-      subject: 'Biology',
-      registrationDate: '10/09/25',
-      classBooked: 10,
-      status: 'blocked',
-    },
-    {
-      id: 5,
-      name: 'David Brown',
-      email: 'david@gmail.com',
-      subject: 'English',
-      registrationDate: '10/09/25',
-      classBooked: 10,
-      status: 'active',
-    },
-    {
-      id: 6,
-      name: 'Lisa Anderson',
-      email: 'lisa@gmail.com',
-      subject: 'History',
-      registrationDate: '10/09/25',
-      classBooked: 10,
-      status: 'active',
-    },
-    {
-      id: 7,
-      name: 'Tom Martinez',
-      email: 'tom@gmail.com',
-      subject: 'Geography',
-      registrationDate: '10/09/25',
-      classBooked: 10,
-      status: 'active',
-    },
-    {
-      id: 8,
-      name: 'Jessica Davis',
-      email: 'jessica@gmail.com',
-      subject: 'Art',
-      registrationDate: '10/09/25',
-      classBooked: 10,
-      status: 'blocked',
-    },
-  ];
-
-  // Filter tutors based on tab and search
-  const filteredTutors = allTutors.filter((tutor) => {
-    const matchesSearch =
-      tutor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      tutor.email.toLowerCase().includes(searchQuery.toLowerCase());
-
-    if (activeTab === 'all') return matchesSearch;
-    if (activeTab === 'blocked') return tutor.status === 'blocked' && matchesSearch;
-    return matchesSearch;
-  });
-
-  const itemsPerPage = 7;
-  const totalPages = Math.ceil(filteredTutors.length / itemsPerPage);
-  const startIdx = (currentPage - 1) * itemsPerPage;
-  const paginatedTutors = filteredTutors.slice(startIdx, startIdx + itemsPerPage);
-
-  const statCard = {
-    label: 'Total Tutors',
-    value: '15,842',
-    icon: <Users className="text-blue-600" size={24} />,
-    bgColor: 'bg-blue-50',
+  // Build filters based on active tab
+  const filters = {
+    page: currentPage,
+    limit: itemsPerPage,
+    searchTerm: searchTerm || undefined,
+    status: activeTab === 'all' ? undefined : activeTab,
   };
 
+  // Fetch tutors
+  const { data, isLoading, isFetching, error } = useTutors(filters);
+
+  // Mutations
+  const { mutate: blockTutor, isPending: isBlocking } = useBlockTutor();
+  const { mutate: unblockTutor, isPending: isUnblocking } = useUnblockTutor();
+
+  const tutors = data?.data || [];
+  const meta = data?.meta;
+  const totalPages = meta?.totalPage || 1;
+
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
+    setSearchTerm(e.target.value);
     setCurrentPage(1);
   };
 
   const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
+    setActiveTab(tab as TutorStatus);
     setCurrentPage(1);
   };
+
+  const handleBlock = (tutorId: string) => {
+    blockTutor(tutorId, {
+      onSuccess: () => toast.success('Tutor blocked successfully'),
+      onError: (error: any) => {
+        toast.error(error?.getFullMessage?.() || error?.message || 'Failed to block tutor');
+      },
+    });
+  };
+
+  const handleUnblock = (tutorId: string) => {
+    unblockTutor(tutorId, {
+      onSuccess: () => toast.success('Tutor unblocked successfully'),
+      onError: (error: any) => {
+        toast.error(error?.getFullMessage?.() || error?.message || 'Failed to unblock tutor');
+      },
+    });
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: '2-digit',
+    });
+  };
+
+  // Skeleton rows for table loading
+  const TableSkeleton = () => (
+    <>
+      {Array.from({ length: 5 }).map((_, index) => (
+        <tr key={index} className="border-b border-gray-100">
+          <td className="py-3 px-4">
+            <Skeleton className="h-4 w-32" />
+          </td>
+          <td className="py-3 px-4">
+            <Skeleton className="h-4 w-40" />
+          </td>
+          <td className="py-3 px-4">
+            <Skeleton className="h-4 w-24" />
+          </td>
+          <td className="py-3 px-4">
+            <Skeleton className="h-4 w-20" />
+          </td>
+          <td className="py-3 px-4">
+            <Skeleton className="h-4 w-16" />
+          </td>
+          <td className="py-3 px-4">
+            <Skeleton className="h-8 w-8 rounded" />
+          </td>
+        </tr>
+      ))}
+    </>
+  );
+
+  // Error state
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <p className="text-red-500">Error loading tutors. Please try again.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -160,14 +134,14 @@ const TutorManagement = () => {
           <CardContent className="pt-6">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <div className={`${statCard.bgColor} p-2 rounded-full w-fit mb-2`}>
-                  {statCard.icon}
+                <div className="bg-blue-50 p-2 rounded-full w-fit mb-2">
+                  <Users className="text-blue-600" size={24} />
                 </div>
                 <p className="text-sm font-medium text-gray-600 mb-2">
-                  {statCard.label}
+                  Total Tutors
                 </p>
                 <p className="text-3xl font-bold text-gray-900">
-                  {statCard.value}
+                  {meta?.total || 0}
                 </p>
               </div>
             </div>
@@ -182,8 +156,8 @@ const TutorManagement = () => {
           size={18}
         />
         <Input
-          placeholder="Search here......."
-          value={searchQuery}
+          placeholder="Search by name, email..."
+          value={searchTerm}
           onChange={handleSearch}
           className="pl-10 pr-4 h-11 border border-gray-300 rounded-xl focus:ring-0 focus:border-gray-400"
         />
@@ -201,7 +175,7 @@ const TutorManagement = () => {
                 All Tutor
               </TabsTrigger>
               <TabsTrigger
-                value="blocked"
+                value="RESTRICTED"
                 className="bg-transparent border-0 rounded-none border-b-2 border-transparent data-[state=active]:border-b-2 data-[state=active]:border-black"
               >
                 Blocked Tutor
@@ -210,247 +184,116 @@ const TutorManagement = () => {
           </CardHeader>
 
           <CardContent>
-            <TabsContent value="all" className="space-y-4 mt-0">
+            <TabsContent value={activeTab} className="space-y-4 mt-0">
               {/* Table */}
               <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">
-                        Name
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">
-                        Email
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">
-                        Subject
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">
-                        Registration Date
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">
-                        Class Booked
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">
-                        Action
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {paginatedTutors.map((tutor) => (
-                      <tr
-                        key={tutor.id}
-                        className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                      >
-                        <td className="py-3 px-4 text-gray-900 font-medium text-sm">
-                          {tutor.name}
-                        </td>
-                        <td className="py-3 px-4 text-gray-600 text-sm">
-                          {tutor.email}
-                        </td>
-                        <td className="py-3 px-4 text-gray-600 text-sm">
-                          {tutor.subject}
-                        </td>
-                        <td className="py-3 px-4 text-gray-600 text-sm">
-                          {tutor.registrationDate}
-                        </td>
-                        <td className="py-3 px-4 text-gray-600 text-sm">
-                          {tutor.classBooked}
-                        </td>
-                        <td className="py-3 px-4">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0"
-                              >
-                                <MoreVertical size={16} />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <Link href="/admin/tutor-details">
-                                <DropdownMenuItem>View Details</DropdownMenuItem>
-                              </Link>
-                              {tutor.status === 'active' ? (
-                                <DropdownMenuItem className="text-red-600">
-                                  Block Tutor
-                                </DropdownMenuItem>
-                              ) : (
-                                <DropdownMenuItem className="text-green-600">
-                                  Unblock Tutor
-                                </DropdownMenuItem>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </td>
+                <div className="border border-gray-200 rounded-lg">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-gray-200">
+                        <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">
+                          Name
+                        </th>
+                        <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">
+                          Email
+                        </th>
+                        <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">
+                          Subject
+                        </th>
+                        <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">
+                          Registration Date
+                        </th>
+                        <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">
+                          Sessions
+                        </th>
+                        <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">
+                          Action
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-end pt-6 border-t-0">
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious
-                          onClick={() =>
-                            setCurrentPage((prev) => Math.max(1, prev - 1))
-                          }
-                          className={
-                            currentPage === 1
-                              ? 'pointer-events-none opacity-50'
-                              : 'cursor-pointer'
-                          }
-                        />
-                      </PaginationItem>
-
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                        (page) => {
-                          if (
-                            page === 1 ||
-                            page === totalPages ||
-                            (page >= currentPage - 1 && page <= currentPage + 1)
-                          ) {
-                            return (
-                              <PaginationItem key={page}>
-                                <PaginationLink
-                                  onClick={() => setCurrentPage(page)}
-                                  isActive={page === currentPage}
-                                  className="cursor-pointer"
-                                >
-                                  {page}
-                                </PaginationLink>
-                              </PaginationItem>
-                            );
-                          } else if (
-                            (page === 2 && currentPage > 3) ||
-                            (page === totalPages - 1 &&
-                              currentPage < totalPages - 2)
-                          ) {
-                            return (
-                              <PaginationItem key={page}>
-                                <PaginationEllipsis />
-                              </PaginationItem>
-                            );
-                          }
-                          return null;
-                        }
+                    </thead>
+                    <tbody>
+                      {isLoading || isFetching ? (
+                        <TableSkeleton />
+                      ) : tutors.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="py-8 text-center text-gray-500">
+                            No tutors found
+                          </td>
+                        </tr>
+                      ) : (
+                        tutors.map((tutor) => (
+                          <tr
+                            key={tutor._id}
+                            className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                          >
+                            <td className="py-3 px-4 text-gray-900 font-medium text-sm">
+                              {tutor.name}
+                            </td>
+                            <td className="py-3 px-4 text-gray-600 text-sm">
+                              {tutor.email}
+                            </td>
+                            <td className="py-3 px-4 text-gray-600 text-sm">
+                              {tutor.tutorProfile?.subjects?.map((s) => s.name).join(', ') || '-'}
+                            </td>
+                            <td className="py-3 px-4 text-gray-600 text-sm">
+                              {formatDate(tutor.createdAt)}
+                            </td>
+                            <td className="py-3 px-4 text-gray-600 text-sm">
+                              {tutor.tutorProfile?.totalSessions || 0}
+                            </td>
+                            <td className="py-3 px-4">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 w-8 p-0"
+                                    disabled={isBlocking || isUnblocking}
+                                  >
+                                    <MoreVertical size={16} />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <Link href={`/admin/tutor-details?id=${tutor._id}`}>
+                                    <DropdownMenuItem>View Details</DropdownMenuItem>
+                                  </Link>
+                                  {tutor.status === 'ACTIVE' ? (
+                                    <DropdownMenuItem
+                                      className="text-red-600"
+                                      onClick={() => handleBlock(tutor._id)}
+                                    >
+                                      Block Tutor
+                                    </DropdownMenuItem>
+                                  ) : (
+                                    <DropdownMenuItem
+                                      className="text-green-600"
+                                      onClick={() => handleUnblock(tutor._id)}
+                                    >
+                                      Unblock Tutor
+                                    </DropdownMenuItem>
+                                  )}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </td>
+                          </tr>
+                        ))
                       )}
-
-                      <PaginationItem>
-                        <PaginationNext
-                          onClick={() =>
-                            setCurrentPage((prev) =>
-                              Math.min(totalPages, prev + 1)
-                            )
-                          }
-                          className={
-                            currentPage === totalPages
-                              ? 'pointer-events-none opacity-50'
-                              : 'cursor-pointer'
-                          }
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
+                    </tbody>
+                  </table>
                 </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="blocked" className="space-y-4 mt-0">
-              {/* Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">
-                        Name
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">
-                        Email
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">
-                        Subject
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">
-                        Registration Date
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">
-                        Class Booked
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">
-                        Action
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {paginatedTutors.map((tutor) => (
-                      <tr
-                        key={tutor.id}
-                        className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                      >
-                        <td className="py-3 px-4 text-gray-900 font-medium text-sm">
-                          {tutor.name}
-                        </td>
-                        <td className="py-3 px-4 text-gray-600 text-sm">
-                          {tutor.email}
-                        </td>
-                        <td className="py-3 px-4 text-gray-600 text-sm">
-                          {tutor.subject}
-                        </td>
-                        <td className="py-3 px-4 text-gray-600 text-sm">
-                          {tutor.registrationDate}
-                        </td>
-                        <td className="py-3 px-4 text-gray-600 text-sm">
-                          {tutor.classBooked}
-                        </td>
-                        <td className="py-3 px-4">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0"
-                              >
-                                <MoreVertical size={16} />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <Link href="/admin/tutor-details">
-                                <DropdownMenuItem>View Details</DropdownMenuItem>
-                              </Link>
-                              {tutor.status === 'active' ? (
-                                <DropdownMenuItem className="text-red-600">
-                                  Block Tutor
-                                </DropdownMenuItem>
-                              ) : (
-                                <DropdownMenuItem className="text-green-600">
-                                  Unblock Tutor
-                                </DropdownMenuItem>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
               </div>
 
               {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-end pt-6 border-t-0">
-                  <Pagination>
+              {tutors.length > 0 && (
+                <div className="flex items-center justify-between pt-6">
+                  <p className="text-sm text-gray-500 whitespace-nowrap">
+                    Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, meta?.total || 0)} of {meta?.total || 0} results
+                  </p>
+                  <Pagination className="justify-end mx-0">
                     <PaginationContent>
                       <PaginationItem>
                         <PaginationPrevious
-                          onClick={() =>
-                            setCurrentPage((prev) => Math.max(1, prev - 1))
-                          }
+                          onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                           className={
                             currentPage === 1
                               ? 'pointer-events-none opacity-50'
@@ -459,46 +302,39 @@ const TutorManagement = () => {
                         />
                       </PaginationItem>
 
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                        (page) => {
-                          if (
-                            page === 1 ||
-                            page === totalPages ||
-                            (page >= currentPage - 1 && page <= currentPage + 1)
-                          ) {
-                            return (
-                              <PaginationItem key={page}>
-                                <PaginationLink
-                                  onClick={() => setCurrentPage(page)}
-                                  isActive={page === currentPage}
-                                  className="cursor-pointer"
-                                >
-                                  {page}
-                                </PaginationLink>
-                              </PaginationItem>
-                            );
-                          } else if (
-                            (page === 2 && currentPage > 3) ||
-                            (page === totalPages - 1 &&
-                              currentPage < totalPages - 2)
-                          ) {
-                            return (
-                              <PaginationItem key={page}>
-                                <PaginationEllipsis />
-                              </PaginationItem>
-                            );
-                          }
-                          return null;
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                        if (
+                          page === 1 ||
+                          page === totalPages ||
+                          (page >= currentPage - 1 && page <= currentPage + 1)
+                        ) {
+                          return (
+                            <PaginationItem key={page}>
+                              <PaginationLink
+                                onClick={() => setCurrentPage(page)}
+                                isActive={page === currentPage}
+                                className="cursor-pointer"
+                              >
+                                {page}
+                              </PaginationLink>
+                            </PaginationItem>
+                          );
+                        } else if (
+                          (page === 2 && currentPage > 3) ||
+                          (page === totalPages - 1 && currentPage < totalPages - 2)
+                        ) {
+                          return (
+                            <PaginationItem key={page}>
+                              <PaginationEllipsis />
+                            </PaginationItem>
+                          );
                         }
-                      )}
+                        return null;
+                      })}
 
                       <PaginationItem>
                         <PaginationNext
-                          onClick={() =>
-                            setCurrentPage((prev) =>
-                              Math.min(totalPages, prev + 1)
-                            )
-                          }
+                          onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                           className={
                             currentPage === totalPages
                               ? 'pointer-events-none opacity-50'

@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import { FileText, Download, X } from 'lucide-react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { FileText, ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -11,48 +11,140 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-
-interface Subject {
-  name: string;
-  color: string;
-}
-
-interface File {
-  id: number;
-  name: string;
-  type: string;
-}
+import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
+import { useTutor, useBlockTutor, useUnblockTutor } from '@/hooks/api';
 
 const TutorDetailsPage = () => {
-  const tutorInfo = {
-    fullName: 'Sarah Johnson',
-    email: 'sarah.johnson@gmail.com',
-    phone: '+49 123 456 789',
-    dateOfBirth: '15-06-1996',
-    address: '24 Park Street, Berlin, Germany',
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const id = searchParams.get('id') || '';
+
+  // Fetch tutor details
+  const { data: tutor, isLoading, error } = useTutor(id);
+
+  // Mutations
+  const { mutate: blockTutor, isPending: isBlocking } = useBlockTutor();
+  const { mutate: unblockTutor, isPending: isUnblocking } = useUnblockTutor();
+
+  const isActionPending = isBlocking || isUnblocking;
+
+  // Handlers
+  const handleBlock = () => {
+    blockTutor(id, {
+      onSuccess: () => {
+        toast.success('Tutor blocked successfully');
+      },
+      onError: (error: any) => {
+        toast.error(error?.getFullMessage?.() || error?.message || 'Failed to block tutor');
+      },
+    });
   };
 
-  const teachingPreferences: Subject[] = [
-    { name: 'English', color: 'bg-blue-100 text-blue-800' },
-    { name: 'Community', color: 'bg-green-100 text-green-800' },
-    { name: 'Psychology', color: 'bg-purple-100 text-purple-800' },
-  ];
+  const handleUnblock = () => {
+    unblockTutor(id, {
+      onSuccess: () => {
+        toast.success('Tutor unblocked successfully');
+      },
+      onError: (error: any) => {
+        toast.error(error?.getFullMessage?.() || error?.message || 'Failed to unblock tutor');
+      },
+    });
+  };
 
-  const uploadedFiles: File[] = [
-    { id: 1, name: 'CV', type: 'pdf' },
-    { id: 2, name: 'Adour Certificate', type: 'pdf' },
-  ];
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+  };
+
+  const getStatusColor = (status: string) => {
+    return status === 'ACTIVE'
+      ? 'bg-green-100 text-green-800'
+      : 'bg-red-100 text-red-800';
+  };
+
+  const getStatusLabel = (status: string) => {
+    return status === 'ACTIVE' ? 'Active' : 'Blocked';
+  };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-10 w-20" />
+          <Skeleton className="h-6 w-24" />
+        </div>
+        <Card className="border-gray-200">
+          <CardHeader>
+            <Skeleton className="h-6 w-48" />
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-8">
+              <div className="space-y-6">
+                {[1, 2, 3].map((i) => (
+                  <div key={i}>
+                    <Skeleton className="h-4 w-20 mb-2" />
+                    <Skeleton className="h-5 w-40" />
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-6">
+                {[1, 2].map((i) => (
+                  <div key={i}>
+                    <Skeleton className="h-4 w-20 mb-2" />
+                    <Skeleton className="h-5 w-40" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error || !tutor) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+        <p className="text-red-500">Tutor not found or error loading details.</p>
+        <Button variant="outline" onClick={() => router.push('/admin/tutor')}>
+          <ArrowLeft className="mr-2" size={16} />
+          Back to Tutors
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      
+      {/* Header with Back Button and Status */}
+      <div className="flex items-center justify-between">
+        <Button
+          variant="ghost"
+          onClick={() => router.push('/admin/tutor')}
+          className="gap-2"
+        >
+          <ArrowLeft size={16} />
+          Back
+        </Button>
+        <Badge className={`${getStatusColor(tutor.status)} border-0 text-sm px-3 py-1`}>
+          {getStatusLabel(tutor.status)}
+        </Badge>
+      </div>
 
       {/* Personal Information Section */}
       <Card className="border-gray-200">
         <CardHeader>
           <div>
-            <h1 className="text-xl font-bold text-gray-700">Information of {tutorInfo.fullName}</h1>
+            <h1 className="text-xl font-bold text-gray-700">
+              Information of {tutor.name}
+            </h1>
           </div>
         </CardHeader>
         <CardContent>
@@ -61,15 +153,17 @@ const TutorDetailsPage = () => {
             <div className="space-y-6">
               <div>
                 <p className="text-sm font-medium text-gray-600 mb-2">Full Name</p>
-                <p className="text-gray-900 font-medium">{tutorInfo.fullName}</p>
+                <p className="text-gray-900 font-medium">{tutor.name}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-600 mb-2">Phone</p>
-                <p className="text-gray-900 font-medium">{tutorInfo.phone}</p>
+                <p className="text-gray-900 font-medium">{tutor.phone || '-'}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-600 mb-2">Address</p>
-                <p className="text-gray-900 font-medium">{tutorInfo.address}</p>
+                <p className="text-gray-900 font-medium">
+                  {tutor.tutorProfile?.address || tutor.location || '-'}
+                </p>
               </div>
             </div>
 
@@ -77,12 +171,54 @@ const TutorDetailsPage = () => {
             <div className="space-y-6">
               <div>
                 <p className="text-sm font-medium text-gray-600 mb-2">Email</p>
-                <p className="text-gray-900 font-medium">{tutorInfo.email}</p>
+                <p className="text-gray-900 font-medium">{tutor.email}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-600 mb-2">Date of Birth</p>
-                <p className="text-gray-900 font-medium">{tutorInfo.dateOfBirth}</p>
+                <p className="text-gray-900 font-medium">
+                  {formatDate(tutor.tutorProfile?.birthDate || tutor.dateOfBirth)}
+                </p>
               </div>
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-2">Member Since</p>
+                <p className="text-gray-900 font-medium">{formatDate(tutor.createdAt)}</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Statistics Section */}
+      <Card className="border-gray-200">
+        <CardHeader>
+          <CardTitle>Statistics</CardTitle>
+          <CardDescription>Tutor performance overview</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-4 gap-6">
+            <div className="text-center p-4 bg-gray-50 rounded-lg">
+              <p className="text-2xl font-bold text-gray-900">
+                {tutor.tutorProfile?.totalSessions || 0}
+              </p>
+              <p className="text-sm text-gray-600">Total Sessions</p>
+            </div>
+            <div className="text-center p-4 bg-gray-50 rounded-lg">
+              <p className="text-2xl font-bold text-gray-900">
+                {tutor.tutorProfile?.completedSessions || 0}
+              </p>
+              <p className="text-sm text-gray-600">Completed</p>
+            </div>
+            <div className="text-center p-4 bg-gray-50 rounded-lg">
+              <p className="text-2xl font-bold text-gray-900">
+                {tutor.tutorProfile?.totalStudents || 0}
+              </p>
+              <p className="text-sm text-gray-600">Students</p>
+            </div>
+            <div className="text-center p-4 bg-gray-50 rounded-lg">
+              <p className="text-2xl font-bold text-gray-900">
+                {tutor.tutorProfile?.level || 'STARTER'}
+              </p>
+              <p className="text-sm text-gray-600">Level</p>
             </div>
           </div>
         </CardContent>
@@ -92,15 +228,22 @@ const TutorDetailsPage = () => {
       <Card className="border-gray-200">
         <CardHeader>
           <CardTitle>Teaching Preferences</CardTitle>
-          <CardDescription>Subjects this tutor wants to teach</CardDescription>
+          <CardDescription>Subjects this tutor teaches</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
-            {teachingPreferences.map((subject, index) => (
-              <Badge key={index} className={`${subject.color} border-0 font-medium`}>
-                {subject.name}
-              </Badge>
-            ))}
+            {tutor.tutorProfile?.subjects && tutor.tutorProfile.subjects.length > 0 ? (
+              tutor.tutorProfile.subjects.map((subject, index) => (
+                <Badge
+                  key={subject._id || index}
+                  className="bg-blue-100 text-blue-800 border-0 font-medium"
+                >
+                  {subject.name}
+                </Badge>
+              ))
+            ) : (
+              <p className="text-gray-500">No subjects assigned</p>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -112,32 +255,83 @@ const TutorDetailsPage = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {uploadedFiles.map((file) => (
-              <div
-                key={file.id}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
-              >
+            {/* CV */}
+            {tutor.tutorProfile?.cvUrl && (
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-gray-200 rounded">
                     <FileText size={20} className="text-gray-600" />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">{file.name}</p>
-                    <p className="text-xs text-gray-500">{file.type.toUpperCase()}</p>
+                    <p className="font-medium text-gray-900">CV / Resume</p>
+                    <p className="text-xs text-gray-500">PDF</p>
                   </div>
                 </div>
                 <Button
                   variant="outline"
                   size="sm"
                   className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                  onClick={() => window.open(tutor.tutorProfile?.cvUrl, '_blank')}
                 >
                   View File
                 </Button>
               </div>
-            ))}
+            )}
+
+            {/* Abitur Certificate */}
+            {tutor.tutorProfile?.abiturCertificateUrl && (
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gray-200 rounded">
+                    <FileText size={20} className="text-gray-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">Abitur Certificate</p>
+                    <p className="text-xs text-gray-500">PDF</p>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                  onClick={() => window.open(tutor.tutorProfile?.abiturCertificateUrl, '_blank')}
+                >
+                  View File
+                </Button>
+              </div>
+            )}
+
+            {/* No files */}
+            {!tutor.tutorProfile?.cvUrl && !tutor.tutorProfile?.abiturCertificateUrl && (
+              <p className="text-gray-500 text-center py-4">No files uploaded</p>
+            )}
           </div>
         </CardContent>
       </Card>
+
+      {/* Action Buttons */}
+      <div className="flex justify-center gap-4">
+        {tutor.status === 'ACTIVE' ? (
+          <Button
+            onClick={handleBlock}
+            disabled={isActionPending}
+            variant="outline"
+            className="border-red-600 text-red-600 hover:bg-red-50 px-8"
+          >
+            {isBlocking && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Block Tutor
+          </Button>
+        ) : (
+          <Button
+            onClick={handleUnblock}
+            disabled={isActionPending}
+            className="bg-green-600 hover:bg-green-700 text-white px-8"
+          >
+            {isUnblocking && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Unblock Tutor
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

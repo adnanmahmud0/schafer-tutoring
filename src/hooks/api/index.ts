@@ -67,15 +67,43 @@ export {
   useMarkAllNotificationsAsRead,
 } from './use-notifications';
 
-// Application Hooks
+// Application Hooks (Applicant)
 export { useSubmitApplication, useMyApplication } from './use-applications';
+
+// Admin Application Hooks
+export {
+  useAdminApplications,
+  useAdminApplication,
+  useSelectForInterview,
+  useApproveApplication,
+  useRejectApplication,
+  useSendForRevision,
+  useDeleteApplication,
+} from './use-admin-applications';
+
+// Trial Request Hooks
+export {
+  useCreateTrialRequest,
+  useTrialRequest,
+  useCancelTrialRequest,
+  useExtendTrialRequest,
+  useAvailableTrialRequests,
+  useMyAcceptedTrialRequests,
+  useAcceptTrialRequest,
+  useMyRequests,
+  TRIAL_REQUEST_STATUS,
+  SCHOOL_TYPE,
+  GRADE_LEVEL,
+} from './use-trial-requests';
 
 // Types
 export type { Subject } from './use-subjects';
 export type { Session } from './use-sessions';
 export type { Student, StudentFilters } from './use-students';
-export type { Tutor, TutorFilters } from './use-tutors';
+export type { Tutor, TutorFilters, TutorsResponse } from './use-tutors';
 export type { Bookmark } from './use-bookmarks';
 export type { Chat, Message } from './use-chats';
 export type { Notification } from './use-notifications';
 export type { SubmitApplicationData, ApplicationResponse, TutorApplication, ApplicationStatus } from './use-applications';
+export type { AdminApplication, AdminApplicationStatus, ApplicationFilters, AdminApplicationsResponse } from './use-admin-applications';
+export type { TrialRequest, CreateTrialRequestData, StudentInfo, GuardianInfo } from './use-trial-requests';

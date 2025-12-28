@@ -2,13 +2,15 @@
 "use client";
 
 import { useState } from "react";
-import Script from "next/script";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import { ProgressBar } from "./components/ProgressBar";
 import { Step1SubjectInfo } from "./components/Step1SubjectInfo";
 import { Step2GoalsDocuments } from "./components/Step2GoalsDocuments";
 import { Step3PersonalInfo } from "./components/Step3PersonalInfo";
 import { FormNavigationButtons } from "./components/FormNavigationButtons";
+import { useCreateTrialRequest, type CreateTrialRequestData } from "@/hooks/api";
 
 /* =========================
    Types
@@ -39,7 +41,12 @@ interface FreeTrialFormData {
 ========================= */
 
 export default function FreeTrialStudent() {
+  const router = useRouter();
   const [step, setStep] = useState<number>(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Trial request mutation
+  const { mutate: createTrialRequest } = useCreateTrialRequest();
 
   const [formData, setFormData] = useState<FreeTrialFormData>({
     subject: "",
@@ -74,42 +81,6 @@ export default function FreeTrialStudent() {
     }
   };
 
-  const showSweetAlert = (
-  type: "success" | "error" | "warning",
-  title: string,
-  text: string
-) => {
-  if (typeof window !== "undefined" && (window as any).Swal) {
-    (window as any).Swal.fire({
-      icon: type,
-      title,
-      text,
-      confirmButtonColor: "#0B31BD",
-      didOpen: () => {
-        const popup = document.querySelector(".swal2-popup") as HTMLElement;
-        const icon = document.querySelector(".swal2-icon") as HTMLElement;
-        const titleEl = document.querySelector(".swal2-title") as HTMLElement;
-        const textEl = document.querySelector(".swal2-html-container") as HTMLElement;
-
-        // border (static)
-        if (popup) {
-          popup.style.border = "2px solid black";
-          popup.style.borderRadius = "12px";
-        }
-
-        // icon color
-        if (icon) {
-          icon.style.color = "#ff3333";
-          icon.style.borderColor = "#ff3333";
-        }
-
-        // text color (keep readable on default bg)
-        if (titleEl) titleEl.style.color = "#000";
-        if (textEl) textEl.style.color = "#000";
-      },
-    });
-  }
-};
 
 
   /* =========================
@@ -118,8 +89,7 @@ export default function FreeTrialStudent() {
 
   const validateStep1 = () => {
     if (!formData.subject || !formData.grade || !formData.schoolType) {
-      showSweetAlert("error", "Missing Input", "Please fill in all required fields.");
-
+      toast.error("Please fill in all required fields.");
       return false;
     }
     return true;
@@ -132,8 +102,7 @@ export default function FreeTrialStudent() {
       !formData.email ||
       !formData.password
     ) {
-     showSweetAlert("error", "Missing Input", "Please fill in all required personal information.");
-
+      toast.error("Please fill in all required personal information.");
       return false;
     }
 
@@ -143,11 +112,7 @@ export default function FreeTrialStudent() {
         !formData.guardianLastName ||
         !formData.guardianPhone)
     ) {
-      showSweetAlert(
-        "error",
-        "Guardian Info",
-        "Please fill in all guardian information."
-      );
+      toast.error("Please fill in all guardian information.");
       return false;
     }
 
@@ -163,27 +128,59 @@ export default function FreeTrialStudent() {
     if (step === 3 && !validateStep3()) return;
 
     if (step === 3 && !formData.agreeToPolicy) {
-      showSweetAlert(
-        "warning",
-        "Agreement Required",
-        "Please agree to the Privacy Policy."
-      );
+      toast.warning("Please agree to the Privacy Policy.");
       return;
     }
 
     if (step === 3) {
-      console.log("Submitted:", formData);
+      // Build the payload for the API
+      const payload: CreateTrialRequestData = {
+        studentInfo: {
+          name: `${formData.studentFirstName} ${formData.studentLastName}`,
+          isUnder18: formData.isUnder18,
+          // If 18+, student has their own email/password
+          ...(!formData.isUnder18 && {
+            email: formData.email,
+            password: formData.password,
+          }),
+          // If under 18, include guardian info
+          ...(formData.isUnder18 && {
+            guardianInfo: {
+              name: `${formData.guardianFirstName} ${formData.guardianLastName}`,
+              email: formData.email,
+              password: formData.password,
+              phone: formData.guardianPhone,
+            },
+          }),
+        },
+        subject: formData.subject,
+        gradeLevel: formData.grade,
+        schoolType: formData.schoolType,
+        description:
+          formData.learningGoals && formData.learningGoals.length >= 10
+            ? formData.learningGoals
+            : "Free trial session request",
+        preferredLanguage: "GERMAN",
+        ...(formData.documents ? { documents: [formData.documents] } : {}),
+      };
 
-      if ((window as any).Swal) {
-        (window as any).Swal.fire({
-          icon: "success",
-          title: "Success!",
-          text: "Your request has been sent!",
-          confirmButtonColor: "#0B31BD",
-        }).then(() => {
-          window.location.href = "/free-trial-student-dash";
-        });
-      }
+      setIsSubmitting(true);
+
+      createTrialRequest(payload, {
+        onSuccess: () => {
+          setIsSubmitting(false);
+          toast.success("Your request has been sent successfully!");
+          router.push("/free-trial-student-dash");
+        },
+        onError: (error: any) => {
+          setIsSubmitting(false);
+          const message =
+            error?.getFullMessage?.() ||
+            error?.message ||
+            "Failed to submit trial request. Please try again.";
+          toast.error(message);
+        },
+      });
     } else {
       setStep((prev) => prev + 1);
     }
@@ -194,20 +191,7 @@ export default function FreeTrialStudent() {
   ========================= */
 
   return (
-    <>
-      {/* SweetAlert2 Script */}
-      <Script
-        src="https://cdn.jsdelivr.net/npm/sweetalert2@11"
-        strategy="afterInteractive"
-      />
-
-      <style jsx global>{`
-        .swal2-container {
-          background-color: transparent !important;
-        }
-      `}</style>
-
-      <div className="min-h-screen">
+    <div className="min-h-screen">
         <nav className="bg-[#FBFCFC] h-20 shadow-sm flex items-center justify-center">
           <h1 className="text-3xl font-bold text-[#0B31BD]">
             Schäfer Tutoring
@@ -246,10 +230,10 @@ export default function FreeTrialStudent() {
               totalSteps={3}
               onNext={handleNext}
               isLastStep={step === 3}
+              isLoading={isSubmitting}
             />
           </div>
         </div>
-      </div>
-    </>
+    </div>
   );
 }

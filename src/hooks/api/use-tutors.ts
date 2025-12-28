@@ -1,24 +1,36 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
-import { useAuthStore } from '@/store/auth-store';
 
 // Types
 export interface Tutor {
   _id: string;
   name: string;
   email: string;
-  avatar?: string;
   phone?: string;
-  bio?: string;
-  subjects?: string[];
-  hourlyRate?: number;
-  rating?: number;
-  totalReviews?: number;
-  totalStudents?: number;
-  totalSessions?: number;
-  status: 'active' | 'inactive' | 'blocked';
-  stripeAccountId?: string;
-  isStripeOnboarded?: boolean;
+  dateOfBirth?: string;
+  location?: string;
+  profilePicture?: string;
+  tutorProfile?: {
+    address?: string;
+    birthDate?: string;
+    subjects?: Array<{ _id: string; name: string }>;
+    bio?: string;
+    languages?: string[];
+    teachingExperience?: string;
+    education?: string;
+    cvUrl?: string;
+    abiturCertificateUrl?: string;
+    educationProofUrls?: string[];
+    totalSessions?: number;
+    completedSessions?: number;
+    totalHoursTaught?: number;
+    totalStudents?: number;
+    level?: 'STARTER' | 'INTERMEDIATE' | 'EXPERT';
+    totalEarnings?: number;
+    isVerified?: boolean;
+    verificationStatus?: string;
+  };
+  status: 'ACTIVE' | 'RESTRICTED';
   createdAt: string;
   updatedAt: string;
 }
@@ -26,58 +38,54 @@ export interface Tutor {
 export interface TutorFilters {
   page?: number;
   limit?: number;
-  search?: string;
-  subject?: string;
+  searchTerm?: string;
   status?: string;
 }
 
-// Get All Tutors - Admin Only (Protected)
+export interface TutorsResponse {
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPage: number;
+  };
+  data: Tutor[];
+}
+
+// Get All Tutors - Admin Only
 export function useTutors(filters: TutorFilters = {}) {
-  const { isAuthenticated, user } = useAuthStore();
-  const { page = 1, limit = 10, search = '', subject, status } = filters;
-
   return useQuery({
-    queryKey: ['tutors', { page, limit, search, subject, status }],
+    queryKey: ['tutors', filters],
     queryFn: async () => {
-      const params = new URLSearchParams();
-      params.append('page', String(page));
-      params.append('limit', String(limit));
-      if (search) params.append('search', search);
-      if (subject) params.append('subject', subject);
-      if (status) params.append('status', status);
-
-      const { data } = await apiClient.get(`/users?role=TUTOR&${params}`);
-      return data as {
-        data: Tutor[];
-        meta: { total: number; page: number; limit: number };
-      };
+      const { data } = await apiClient.get('/user/tutors', { params: filters });
+      // Backend returns { success: true, data: [...], pagination: {...} }
+      return {
+        meta: data.pagination,
+        data: data.data,
+      } as TutorsResponse;
     },
-    enabled: isAuthenticated && user?.role === 'SUPER_ADMIN',
+    staleTime: 1 * 60 * 1000,
   });
 }
 
-// Get Single Tutor (Protected)
+// Get Single Tutor - Admin Only
 export function useTutor(tutorId: string) {
-  const { isAuthenticated } = useAuthStore();
-
   return useQuery({
-    queryKey: ['tutors', tutorId],
+    queryKey: ['tutor', tutorId],
     queryFn: async () => {
-      const { data } = await apiClient.get(`/users/${tutorId}/user`);
+      const { data } = await apiClient.get(`/user/${tutorId}`);
       return data.data as Tutor;
     },
-    enabled: isAuthenticated && !!tutorId,
+    enabled: !!tutorId,
   });
 }
 
-// Get Tutor Statistics - For Tutor Dashboard (Protected)
+// Get Tutor Statistics - For Tutor Dashboard
 export function useTutorStatistics() {
-  const { isAuthenticated, user } = useAuthStore();
-
   return useQuery({
     queryKey: ['tutor-statistics'],
     queryFn: async () => {
-      const { data } = await apiClient.get('/users/my-statistics');
+      const { data } = await apiClient.get('/user/my-statistics');
       return data.data as {
         totalEarnings: number;
         totalStudents: number;
@@ -87,17 +95,16 @@ export function useTutorStatistics() {
         upcomingSessions: number;
       };
     },
-    enabled: isAuthenticated && user?.role === 'TUTOR',
   });
 }
 
-// Block Tutor - Admin Only (Protected)
+// Block Tutor - Admin Only
 export function useBlockTutor() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (tutorId: string) => {
-      const { data } = await apiClient.patch(`/users/${tutorId}/block-tutor`);
+      const { data } = await apiClient.patch(`/user/tutors/${tutorId}/block`);
       return data;
     },
     onSuccess: () => {
@@ -106,13 +113,13 @@ export function useBlockTutor() {
   });
 }
 
-// Unblock Tutor - Admin Only (Protected)
+// Unblock Tutor - Admin Only
 export function useUnblockTutor() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (tutorId: string) => {
-      const { data } = await apiClient.patch(`/users/${tutorId}/unblock-tutor`);
+      const { data } = await apiClient.patch(`/user/tutors/${tutorId}/unblock`);
       return data;
     },
     onSuccess: () => {
@@ -121,7 +128,7 @@ export function useUnblockTutor() {
   });
 }
 
-// Update Tutor Subjects - Admin Only (Protected)
+// Update Tutor Subjects - Admin Only
 export function useUpdateTutorSubjects() {
   const queryClient = useQueryClient();
 
@@ -133,7 +140,7 @@ export function useUpdateTutorSubjects() {
       tutorId: string;
       subjects: string[];
     }) => {
-      const { data } = await apiClient.patch(`/users/${tutorId}/subjects`, {
+      const { data } = await apiClient.patch(`/user/tutors/${tutorId}/subjects`, {
         subjects,
       });
       return data;
