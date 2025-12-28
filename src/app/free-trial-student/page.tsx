@@ -3,6 +3,8 @@
 
 import { useState } from "react";
 import Script from "next/script";
+import { useSearchParams } from "next/navigation";
+import { useEffect, Suspense } from "react";
 
 import { ProgressBar } from "./components/ProgressBar";
 import { Step1SubjectInfo } from "./components/Step1SubjectInfo";
@@ -38,7 +40,7 @@ interface FreeTrialFormData {
    Component
 ========================= */
 
-export default function FreeTrialStudent() {
+function FreeTrialStudent() {
   const [step, setStep] = useState<number>(1);
 
   const [formData, setFormData] = useState<FreeTrialFormData>({
@@ -60,6 +62,35 @@ export default function FreeTrialStudent() {
     password: "",
     agreeToPolicy: false,
   });
+
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const subjectParam = searchParams.get("subject");
+    if (subjectParam) {
+      // Map Banner subjects to Step1SubjectInfo values
+      const subjectMap: Record<string, string> = {
+        Mathematics: "math",
+        Physics: "physics",
+        Chemistry: "chemistry",
+        Biology: "biology",
+        English: "english",
+        History: "history",
+        Geography: "geography",
+        "Computer Science": "computer-science",
+        Economics: "economics",
+        Psychology: "psychology",
+      };
+
+      const mappedSubject = subjectMap[subjectParam];
+      if (mappedSubject) {
+        setFormData((prev) => ({
+          ...prev,
+          subject: mappedSubject,
+        }));
+      }
+    }
+  }, [searchParams]);
 
   /* =========================
      Helpers
@@ -201,11 +232,7 @@ export default function FreeTrialStudent() {
         strategy="afterInteractive"
       />
 
-      <style jsx global>{`
-        .swal2-container {
-          background-color: transparent !important;
-        }
-      `}</style>
+
 
       <div className="min-h-screen">
         <nav className="bg-[#FBFCFC] h-20 shadow-sm flex items-center justify-center">
@@ -251,5 +278,13 @@ export default function FreeTrialStudent() {
         </div>
       </div>
     </>
+  );
+}
+
+export default function FreeTrialStudentPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <FreeTrialStudent />
+    </Suspense>
   );
 }

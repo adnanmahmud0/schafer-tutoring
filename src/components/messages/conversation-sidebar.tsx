@@ -60,7 +60,7 @@ export default function ConversationSidebar({
   };
 
   return (
-    <div className="w-56 border-r border-border bg-card flex flex-col h-full mt-24 md:mt-0">
+    <div className="w-full h-full bg-card flex flex-col">
       {/* Conversations List */}
       <div className="flex-1 overflow-y-auto">
         {filteredConversations.map((conversation) => (
