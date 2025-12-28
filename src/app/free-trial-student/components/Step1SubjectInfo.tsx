@@ -29,9 +29,15 @@ export const Step1SubjectInfo = ({ formData, setFormData }: Step1Props) => {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="math">Mathematics</SelectItem>
-            <SelectItem value="science">Science</SelectItem>
+            <SelectItem value="physics">Physics</SelectItem>
+            <SelectItem value="chemistry">Chemistry</SelectItem>
+            <SelectItem value="biology">Biology</SelectItem>
             <SelectItem value="english">English</SelectItem>
             <SelectItem value="history">History</SelectItem>
+            <SelectItem value="geography">Geography</SelectItem>
+            <SelectItem value="computer-science">Computer Science</SelectItem>
+            <SelectItem value="economics">Economics</SelectItem>
+            <SelectItem value="psychology">Psychology</SelectItem>
             <SelectItem value="languages">Languages</SelectItem>
           </SelectContent>
         </Select>
