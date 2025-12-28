@@ -1,439 +1,661 @@
 'use client';
 
-import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths } from 'date-fns';
+import { ChevronLeft, ChevronRight, Plus, Trash2, Check, X, Calendar, Clock, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { toast } from 'sonner';
+import {
+  useInterviewSlots,
+  useCreateInterviewSlot,
+  useDeleteInterviewSlot,
+  useCompleteInterviewSlot,
+  useCancelInterviewSlot,
+  INTERVIEW_SLOT_STATUS,
+  InterviewSlot,
+} from '@/hooks/api';
 
 const AvailableSlots = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [showFinalView, setShowFinalView] = useState(false);
-  
-  // Date selection
-  const [selectedDate, setSelectedDate] = useState(17);
-  const [selectedMonth, setSelectedMonth] = useState('September');
-  const [selectedYear, setSelectedYear] = useState(2023);
-  
-  // Time selection
-  const [selectedTimes, setSelectedTimes] = useState<string[]>([]);
-  const [timeFormat, setTimeFormat] = useState<'AM' | 'PM'>('AM');
+  // Calendar state
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  const daysInMonth = 30;
-  const firstDayOfWeek = 2;
-  
-  const weekDays = ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-  
-  const amTimes = [
-    '12:00 AM',
-    '02:00 AM',
-    '04:00 AM',
-    '06:00 AM',
-    '08:00 AM',
-    '10:00 AM',
-  ];
+  // Modal states
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState<InterviewSlot | null>(null);
+  const [cancellationReason, setCancellationReason] = useState('');
 
-  const pmTimes = [
-    '01:00 AM',
-    '03:00 AM',
-    '05:00 AM',
-    '07:00 AM',
-    '09:00 AM',
-    '11:00 AM',
-  ];
+  // Create slot form state
+  const [startTime, setStartTime] = useState('09:00');
+  const [endTime, setEndTime] = useState('09:30');
+  const [notes, setNotes] = useState('');
 
-  const times = timeFormat === 'AM' ? amTimes : pmTimes;
+  // Filter state
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [page, setPage] = useState(1);
 
-  const calendarDays = [];
-  for (let i = 0; i < firstDayOfWeek; i++) {
-    calendarDays.push(null);
-  }
-  for (let i = 1; i <= daysInMonth; i++) {
-    calendarDays.push(i);
-  }
+  // API Hooks
+  const { data: slotsData, isLoading, refetch } = useInterviewSlots({
+    page,
+    limit: 10,
+    status: statusFilter !== 'all' ? statusFilter : undefined,
+  });
 
-  const handleDateClick = (day: number) => {
-    setSelectedDate(day);
+  const { mutate: createSlot, isPending: isCreating } = useCreateInterviewSlot();
+  const { mutate: deleteSlot, isPending: isDeleting } = useDeleteInterviewSlot();
+  const { mutate: completeSlot, isPending: isCompleting } = useCompleteInterviewSlot();
+  const { mutate: cancelSlot, isPending: isCancelling } = useCancelInterviewSlot();
+
+  // Calendar helpers
+  const monthStart = startOfMonth(currentMonth);
+  const monthEnd = endOfMonth(currentMonth);
+  const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
+
+  // Get day of week for first day (0 = Sunday, 6 = Saturday)
+  const startDayOfWeek = monthStart.getDay();
+
+  // Week days starting from Sunday
+  const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  // Get slots for selected date
+  const getSlotsForDate = (date: Date) => {
+    if (!slotsData?.data) return [];
+    return slotsData.data.filter((slot) => {
+      const slotDate = new Date(slot.startTime);
+      return isSameDay(slotDate, date);
+    });
   };
 
-  const handleTimeClick = (time: string) => {
-    if (selectedTimes.includes(time)) {
-      setSelectedTimes(selectedTimes.filter((t) => t !== time));
-    } else {
-      setSelectedTimes([...selectedTimes, time]);
+  // Check if date has slots
+  const dateHasSlots = (date: Date) => {
+    return getSlotsForDate(date).length > 0;
+  };
+
+  // Handle create slot
+  const handleCreateSlot = () => {
+    if (!selectedDate) {
+      toast.error('Please select a date');
+      return;
+    }
+
+    const startDateTime = new Date(selectedDate);
+    const [startHour, startMinute] = startTime.split(':').map(Number);
+    startDateTime.setHours(startHour, startMinute, 0, 0);
+
+    const endDateTime = new Date(selectedDate);
+    const [endHour, endMinute] = endTime.split(':').map(Number);
+    endDateTime.setHours(endHour, endMinute, 0, 0);
+
+    if (endDateTime <= startDateTime) {
+      toast.error('End time must be after start time');
+      return;
+    }
+
+    createSlot(
+      {
+        startTime: startDateTime.toISOString(),
+        endTime: endDateTime.toISOString(),
+        notes: notes || undefined,
+      },
+      {
+        onSuccess: () => {
+          toast.success('Interview slot created successfully');
+          setIsCreateModalOpen(false);
+          resetForm();
+          refetch();
+        },
+        onError: (error: any) => {
+          toast.error(error?.response?.data?.message || 'Failed to create slot');
+        },
+      }
+    );
+  };
+
+  // Handle delete slot
+  const handleDeleteSlot = (slotId: string) => {
+    if (!confirm('Are you sure you want to delete this slot?')) return;
+
+    deleteSlot(slotId, {
+      onSuccess: () => {
+        toast.success('Slot deleted successfully');
+        refetch();
+      },
+      onError: (error: any) => {
+        toast.error(error?.response?.data?.message || 'Failed to delete slot');
+      },
+    });
+  };
+
+  // Handle complete slot
+  const handleCompleteSlot = (slotId: string) => {
+    completeSlot(slotId, {
+      onSuccess: () => {
+        toast.success('Interview marked as completed');
+        refetch();
+      },
+      onError: (error: any) => {
+        toast.error(error?.response?.data?.message || 'Failed to complete slot');
+      },
+    });
+  };
+
+  // Handle cancel slot
+  const handleCancelSlot = () => {
+    if (!selectedSlot || !cancellationReason.trim()) {
+      toast.error('Please provide a cancellation reason');
+      return;
+    }
+
+    cancelSlot(
+      { id: selectedSlot._id, cancellationReason },
+      {
+        onSuccess: () => {
+          toast.success('Slot cancelled successfully');
+          setIsCancelModalOpen(false);
+          setSelectedSlot(null);
+          setCancellationReason('');
+          refetch();
+        },
+        onError: (error: any) => {
+          toast.error(error?.response?.data?.message || 'Failed to cancel slot');
+        },
+      }
+    );
+  };
+
+  // Reset form
+  const resetForm = () => {
+    setStartTime('09:00');
+    setEndTime('09:30');
+    setNotes('');
+  };
+
+  // Get status badge color
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case INTERVIEW_SLOT_STATUS.AVAILABLE:
+        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Available</Badge>;
+      case INTERVIEW_SLOT_STATUS.BOOKED:
+        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Booked</Badge>;
+      case INTERVIEW_SLOT_STATUS.COMPLETED:
+        return <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-100">Completed</Badge>;
+      case INTERVIEW_SLOT_STATUS.CANCELLED:
+        return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Cancelled</Badge>;
+      default:
+        return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">{status}</Badge>;
     }
   };
 
-  const handleSaveModal = () => {
-    setIsModalOpen(false);
-    setShowFinalView(true);
+  // Format time for display
+  const formatSlotTime = (startTime: string, endTime: string) => {
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    return `${format(start, 'h:mm a')} - ${format(end, 'h:mm a')}`;
   };
 
-  const handleOpenModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const isDateSelected = (day: number) => day === selectedDate;
-  const isDateInRange = (day: number) => day >= 17 && day <= 30;
-  const isTimeSelected = (time: string) => selectedTimes.includes(time);
-
-  // First View - Before modal
-  if (!showFinalView) {
-    return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-2 gap-8">
-          {/* Date Section */}
-          <Card className="border-gray-200">
-            <CardContent className="pt-6">
-              <h3 className="text-sm font-semibold text-gray-900 mb-4">Date</h3>
-              
-              {/* Month Navigation */}
-              <div className="flex items-center justify-between mb-4">
-                <button className="text-gray-600 hover:text-gray-900">
-                  <ChevronLeft size={20} />
-                </button>
-                <p className="text-sm font-medium text-gray-900">
-                  {selectedMonth} {selectedYear}
-                </p>
-                <button className="text-gray-600 hover:text-gray-900">
-                  <ChevronRight size={20} />
-                </button>
-              </div>
-
-              {/* Week days header */}
-              <div className="grid grid-cols-7 gap-2 text-center mb-2">
-                {weekDays.map((day) => (
-                  <p key={day} className="text-xs font-medium text-gray-600 py-2">
-                    {day}
-                  </p>
-                ))}
-              </div>
-
-              {/* Calendar */}
-              <div className="grid grid-cols-7 gap-2">
-                {calendarDays.map((day, index) => (
-                  <button
-                    key={index}
-                    onClick={() => day && handleDateClick(day)}
-                    disabled={!day}
-                    className={`py-2 rounded-full text-sm font-medium transition-colors ${
-                      !day
-                        ? 'text-gray-300'
-                        : isDateInRange(day)
-                        ? isDateSelected(day)
-                          ? 'bg-[#0B31BD] text-white'
-                          : 'bg-[#0B31BD] text-white hover:bg-blue-700'
-                        : 'text-gray-600 hover:bg-gray-100'
-                    }`}
-                  >
-                    {day}
-                  </button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Time Section */}
-          <Card className="border-gray-200">
-            <CardContent className="pt-6">
-              <h3 className="text-sm font-semibold text-gray-900 mb-4">Time</h3>
-              
-              {/* AM/PM Toggle */}
-              <div className="flex gap-2 border border-gray-200 rounded-lg p-1 mb-4">
-                <button
-                  onClick={() => setTimeFormat('AM')}
-                  className={`flex-1 py-2 px-4 text-sm font-medium rounded transition-colors ${
-                    timeFormat === 'AM'
-                      ? 'bg-[#0B31BD] text-white'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  AM
-                </button>
-                <button
-                  onClick={() => setTimeFormat('PM')}
-                  className={`flex-1 py-2 px-4 text-sm font-medium rounded transition-colors ${
-                    timeFormat === 'PM'
-                      ? 'bg-[#0B31BD] text-white'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  PM
-                </button>
-              </div>
-
-              {/* Time Slots Grid */}
-              <div className="grid grid-cols-2 gap-2">
-                {times.map((time) => (
-                  <button
-                    key={time}
-                    className={`py-2 px-3 text-sm font-medium rounded border transition-colors ${
-                      'border-gray-200 text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    {time}
-                  </button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Set Available Time Button */}
-        <div className="flex justify-center">
-          <Button
-            onClick={handleOpenModal}
-            className="bg-[#0B31BD] hover:bg-blue-800 text-white font-medium py-2 px-12 rounded-lg"
-          >
-            Set Available Time
-          </Button>
-        </div>
-
-        {/* Modal for setting slots */}
-        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogContent className="sm:max-w-md bg-white">
-            <DialogHeader>
-              <DialogTitle>Select Date & Time</DialogTitle>
-            </DialogHeader>
-
-            <div className="grid grid-cols-2 gap-4">
-              {/* Date Section in Modal */}
-              <div className="space-y-3">
-                <h4 className="text-xs font-semibold text-gray-900">Select Class Date</h4>
-                
-                {/* Month Navigation */}
-                <div className="flex items-center justify-between">
-                  <button className="text-gray-600 hover:text-gray-900">
-                    <ChevronLeft size={18} />
-                  </button>
-                  <p className="text-xs font-medium text-gray-900">
-                    {selectedMonth} {selectedYear}
-                  </p>
-                  <button className="text-gray-600 hover:text-gray-900">
-                    <ChevronRight size={18} />
-                  </button>
-                </div>
-
-                {/* Week days header */}
-                <div className="grid grid-cols-7 gap-1 text-center">
-                  {weekDays.map((day) => (
-                    <p key={day} className="text-xs font-medium text-gray-600 py-1">
-                      {day}
-                    </p>
-                  ))}
-                </div>
-
-                {/* Calendar */}
-                <div className="grid grid-cols-7 gap-1">
-                  {calendarDays.map((day, index) => (
-                    <button
-                      key={index}
-                      onClick={() => day && handleDateClick(day)}
-                      disabled={!day}
-                      className={`py-1.5 text-xs font-medium rounded-full transition-colors ${
-                        !day
-                          ? 'text-gray-300'
-                          : isDateInRange(day)
-                          ? isDateSelected(day)
-                            ? 'bg-[#0B31BD] text-white'
-                            : 'bg-[#0B31BD] text-white hover:bg-blue-700'
-                          : 'text-gray-600 hover:bg-gray-100'
-                      }`}
-                    >
-                      {day}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Time Section in Modal */}
-              <div className="space-y-3">
-                <h4 className="text-xs font-semibold text-gray-900">Time</h4>
-                
-                {/* AM/PM Toggle */}
-                <div className="flex gap-1 border border-gray-200 rounded-lg p-0.5">
-                  <button
-                    onClick={() => setTimeFormat('AM')}
-                    className={`flex-1 py-1 px-2 text-xs font-medium rounded transition-colors ${
-                      timeFormat === 'AM'
-                        ? 'bg-[#0B31BD] text-white'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    AM
-                  </button>
-                  <button
-                    onClick={() => setTimeFormat('PM')}
-                    className={`flex-1 py-1 px-2 text-xs font-medium rounded transition-colors ${
-                      timeFormat === 'PM'
-                        ? 'bg-[#0B31BD] text-white'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    PM
-                  </button>
-                </div>
-
-                {/* Time Slots Grid */}
-                <div className="grid grid-cols-1 gap-1">
-                  {times.map((time) => (
-                    <button
-                      key={time}
-                      onClick={() => handleTimeClick(time)}
-                      className={`py-1.5 px-2 text-xs font-medium rounded border transition-colors ${
-                        isTimeSelected(time)
-                          ? 'bg-[#298E10] text-white border-[#298E10]'
-                          : 'border-gray-200 text-gray-700 hover:border-gray-300'
-                      }`}
-                    >
-                      {time}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Buttons */}
-            <div className="flex gap-3 mt-6">
-              <Button
-                variant="outline"
-                onClick={() => setIsModalOpen(false)}
-                className="flex-1 border-gray-300 text-gray-700"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSaveModal}
-                className="flex-1 bg-[#0B31BD] hover:bg-blue-800 text-white"
-              >
-                Save
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-    );
-  }
-
-  // Final View - After saving from modal
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-8">
-        {/* Date Section */}
-        <Card className="border-gray-200">
-          <CardContent className="pt-6">
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">Date</h3>
-            
-            {/* Month Navigation */}
-            <div className="flex items-center justify-between mb-4">
-              <button className="text-gray-600 hover:text-gray-900">
-                <ChevronLeft size={20} />
-              </button>
-              <p className="text-sm font-medium text-gray-900">
-                {selectedMonth} {selectedYear}
-              </p>
-              <button className="text-gray-600 hover:text-gray-900">
-                <ChevronRight size={20} />
-              </button>
-            </div>
-
-            {/* Week days header */}
-            <div className="grid grid-cols-7 gap-2 text-center mb-2">
-              {weekDays.map((day) => (
-                <p key={day} className="text-xs font-medium text-gray-600 py-2">
-                  {day}
-                </p>
-              ))}
-            </div>
-
-            {/* Calendar */}
-            <div className="grid grid-cols-7 gap-2">
-              {calendarDays.map((day, index) => (
-                <button
-                  key={index}
-                  disabled={!day}
-                  className={`py-2 rounded-full text-sm font-medium transition-colors ${
-                    !day
-                      ? 'text-gray-300'
-                      : isDateInRange(day)
-                      ? isDateSelected(day)
-                        ? 'bg-[#0B31BD] text-white'
-                        : 'bg-[#0B31BD] text-white'
-                      : 'text-gray-600'
-                  }`}
-                >
-                  {day}
-                </button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Time Section */}
-        <Card className="border-gray-200">
-          <CardContent className="pt-6">
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">Time</h3>
-            
-            {/* AM/PM Toggle */}
-            <div className="flex gap-2 border border-gray-200 rounded-lg p-1 mb-4">
-              <button
-                onClick={() => setTimeFormat('AM')}
-                className={`flex-1 py-2 px-4 text-sm font-medium rounded transition-colors ${
-                  timeFormat === 'AM'
-                    ? 'bg-[#0B31BD] text-white'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                AM
-              </button>
-              <button
-                onClick={() => setTimeFormat('PM')}
-                className={`flex-1 py-2 px-4 text-sm font-medium rounded transition-colors ${
-                  timeFormat === 'PM'
-                    ? 'bg-[#0B31BD] text-white'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                PM
-              </button>
-            </div>
-
-            {/* Time Slots Grid */}
-            <div className="grid grid-cols-2 gap-2">
-              {times.map((time) => (
-                <button
-                  key={time}
-                  className={`py-2 px-3 text-sm font-medium rounded border transition-colors ${
-                    isTimeSelected(time)
-                      ? 'bg-[#298E10] text-white border-[#298E10]'
-                      : 'border-gray-200 text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  {time}
-                </button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Set Available Time Button */}
-      <div className="flex justify-center">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Interview Slots</h1>
+          <p className="text-sm text-gray-500">Manage available interview slots for tutor applications</p>
+        </div>
         <Button
-          onClick={() => setShowFinalView(false)}
-          className="bg-[#0B31BD] hover:bg-blue-800 text-white font-medium py-2 px-12 rounded-lg"
+          onClick={() => {
+            setSelectedDate(new Date());
+            setIsCreateModalOpen(true);
+          }}
+          className="bg-[#0B31BD] hover:bg-blue-800"
         >
-          Set Available Time
+          <Plus className="w-4 h-4 mr-2" />
+          Create New Slot
         </Button>
       </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Calendar Card */}
+        <Card className="lg:col-span-1">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg">Calendar</CardTitle>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+                <span className="text-sm font-medium min-w-[120px] text-center">
+                  {format(currentMonth, 'MMMM yyyy')}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {/* Week days header */}
+            <div className="grid grid-cols-7 gap-1 text-center mb-2">
+              {weekDays.map((day) => (
+                <div key={day} className="text-xs font-medium text-gray-500 py-2">
+                  {day}
+                </div>
+              ))}
+            </div>
+
+            {/* Calendar grid */}
+            <div className="grid grid-cols-7 gap-1">
+              {/* Empty cells for days before month start */}
+              {Array.from({ length: startDayOfWeek }).map((_, index) => (
+                <div key={`empty-${index}`} className="py-2" />
+              ))}
+
+              {/* Days of month */}
+              {daysInMonth.map((day) => {
+                const isSelected = selectedDate && isSameDay(day, selectedDate);
+                const hasSlots = dateHasSlots(day);
+                const isToday = isSameDay(day, new Date());
+
+                return (
+                  <button
+                    key={day.toISOString()}
+                    onClick={() => setSelectedDate(day)}
+                    className={`
+                      relative py-2 text-sm font-medium rounded-full transition-colors
+                      ${isSelected ? 'bg-[#0B31BD] text-white' : ''}
+                      ${!isSelected && isToday ? 'bg-gray-100' : ''}
+                      ${!isSelected && !isToday ? 'hover:bg-gray-50' : ''}
+                    `}
+                  >
+                    {format(day, 'd')}
+                    {hasSlots && !isSelected && (
+                      <span className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-[#0B31BD] rounded-full" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Quick create for selected date */}
+            {selectedDate && (
+              <div className="mt-4 pt-4 border-t">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">
+                    {format(selectedDate, 'EEEE, MMM d, yyyy')}
+                  </span>
+                  <Button
+                    size="sm"
+                    onClick={() => setIsCreateModalOpen(true)}
+                    className="bg-[#0B31BD] hover:bg-blue-800"
+                  >
+                    <Plus className="w-3 h-3 mr-1" />
+                    Add Slot
+                  </Button>
+                </div>
+
+                {/* Slots for selected date */}
+                <div className="mt-3 space-y-2">
+                  {getSlotsForDate(selectedDate).map((slot) => (
+                    <div
+                      key={slot._id}
+                      className="flex items-center justify-between p-2 bg-gray-50 rounded-lg text-sm"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-3 h-3 text-gray-400" />
+                        <span>{formatSlotTime(slot.startTime, slot.endTime)}</span>
+                      </div>
+                      {getStatusBadge(slot.status)}
+                    </div>
+                  ))}
+                  {getSlotsForDate(selectedDate).length === 0 && (
+                    <p className="text-sm text-gray-400 text-center py-2">
+                      No slots for this date
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Slots Table Card */}
+        <Card className="lg:col-span-2">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg">All Interview Slots</CardTitle>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value={INTERVIEW_SLOT_STATUS.AVAILABLE}>Available</SelectItem>
+                  <SelectItem value={INTERVIEW_SLOT_STATUS.BOOKED}>Booked</SelectItem>
+                  <SelectItem value={INTERVIEW_SLOT_STATUS.COMPLETED}>Completed</SelectItem>
+                  <SelectItem value={INTERVIEW_SLOT_STATUS.CANCELLED}>Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+              </div>
+            ) : (
+              <>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date & Time</TableHead>
+                      <TableHead>Applicant</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Notes</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {slotsData?.data && slotsData.data.length > 0 ? (
+                      slotsData.data.map((slot) => (
+                        <TableRow key={slot._id}>
+                          <TableCell>
+                            <div className="flex flex-col">
+                              <span className="font-medium">
+                                {format(new Date(slot.startTime), 'MMM d, yyyy')}
+                              </span>
+                              <span className="text-sm text-gray-500">
+                                {formatSlotTime(slot.startTime, slot.endTime)}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {slot.applicantId ? (
+                              <div className="flex flex-col">
+                                <span className="font-medium">{slot.applicantId.name}</span>
+                                <span className="text-sm text-gray-500">{slot.applicantId.email}</span>
+                              </div>
+                            ) : (
+                              <span className="text-gray-400">-</span>
+                            )}
+                          </TableCell>
+                          <TableCell>{getStatusBadge(slot.status)}</TableCell>
+                          <TableCell>
+                            <span className="text-sm text-gray-500 truncate max-w-[150px] block">
+                              {slot.notes || '-'}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              {slot.status === INTERVIEW_SLOT_STATUS.BOOKED && (
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  onClick={() => handleCompleteSlot(slot._id)}
+                                  disabled={isCompleting}
+                                  title="Mark as Completed"
+                                >
+                                  <Check className="w-4 h-4 text-green-600" />
+                                </Button>
+                              )}
+                              {(slot.status === INTERVIEW_SLOT_STATUS.AVAILABLE ||
+                                slot.status === INTERVIEW_SLOT_STATUS.BOOKED) && (
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  onClick={() => {
+                                    setSelectedSlot(slot);
+                                    setIsCancelModalOpen(true);
+                                  }}
+                                  title="Cancel Slot"
+                                >
+                                  <X className="w-4 h-4 text-orange-600" />
+                                </Button>
+                              )}
+                              {slot.status === INTERVIEW_SLOT_STATUS.AVAILABLE && (
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  onClick={() => handleDeleteSlot(slot._id)}
+                                  disabled={isDeleting}
+                                  title="Delete Slot"
+                                >
+                                  <Trash2 className="w-4 h-4 text-red-600" />
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                          No interview slots found
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+
+                {/* Pagination */}
+                {slotsData?.meta && slotsData.meta.totalPage > 1 && (
+                  <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                    <span className="text-sm text-gray-500">
+                      Page {slotsData.meta.page} of {slotsData.meta.totalPage}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                      >
+                        Previous
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage((p) => p + 1)}
+                        disabled={page >= slotsData.meta.totalPage}
+                      >
+                        Next
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Create Slot Modal */}
+      <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Calendar className="w-5 h-5" />
+              Create Interview Slot
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {/* Date Display */}
+            <div>
+              <Label>Date</Label>
+              <Input
+                type="date"
+                value={selectedDate ? format(selectedDate, 'yyyy-MM-dd') : ''}
+                onChange={(e) => setSelectedDate(new Date(e.target.value))}
+                className="mt-1"
+              />
+            </div>
+
+            {/* Time Selection */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Start Time</Label>
+                <Input
+                  type="time"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label>End Time</Label>
+                <Input
+                  type="time"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+
+            {/* Notes */}
+            <div>
+              <Label>Notes (Optional)</Label>
+              <Textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Add any notes about this interview slot..."
+                className="mt-1"
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsCreateModalOpen(false);
+                resetForm();
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreateSlot}
+              disabled={isCreating}
+              className="bg-[#0B31BD] hover:bg-blue-800"
+            >
+              {isCreating ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                'Create Slot'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Cancel Slot Modal */}
+      <Dialog open={isCancelModalOpen} onOpenChange={setIsCancelModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Cancel Interview Slot</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              Are you sure you want to cancel this interview slot? This action cannot be undone.
+            </p>
+
+            {selectedSlot && (
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <p className="font-medium">
+                  {format(new Date(selectedSlot.startTime), 'EEEE, MMMM d, yyyy')}
+                </p>
+                <p className="text-sm text-gray-500">
+                  {formatSlotTime(selectedSlot.startTime, selectedSlot.endTime)}
+                </p>
+                {selectedSlot.applicantId && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    Booked by: {selectedSlot.applicantId.name}
+                  </p>
+                )}
+              </div>
+            )}
+
+            <div>
+              <Label>Cancellation Reason</Label>
+              <Textarea
+                value={cancellationReason}
+                onChange={(e) => setCancellationReason(e.target.value)}
+                placeholder="Please provide a reason for cancellation..."
+                className="mt-1"
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsCancelModalOpen(false);
+                setSelectedSlot(null);
+                setCancellationReason('');
+              }}
+            >
+              Keep Slot
+            </Button>
+            <Button
+              onClick={handleCancelSlot}
+              disabled={isCancelling || !cancellationReason.trim()}
+              variant="destructive"
+            >
+              {isCancelling ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Cancelling...
+                </>
+              ) : (
+                'Cancel Slot'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

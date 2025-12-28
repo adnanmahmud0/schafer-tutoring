@@ -7,14 +7,13 @@ export interface Student {
   _id: string;
   name: string;
   email: string;
-  avatar?: string;
+  profilePicture?: string;
   phone?: string;
-  grade?: string;
-  subjects?: string[];
-  status: 'active' | 'inactive' | 'blocked';
-  subscription?: {
-    plan: string;
-    expiresAt: string;
+  status: 'ACTIVE' | 'INACTIVE' | 'RESTRICTED';
+  studentProfile?: {
+    hasCompletedTrial: boolean;
+    trialRequestsCount: number;
+    sessionRequestsCount: number;
   };
   createdAt: string;
   updatedAt: string;
@@ -23,28 +22,33 @@ export interface Student {
 export interface StudentFilters {
   page?: number;
   limit?: number;
-  search?: string;
-  status?: string;
+  searchTerm?: string;
+  status?: 'ACTIVE' | 'RESTRICTED';
 }
 
 // Get All Students - Admin Only (Protected)
+// Backend route: /api/v1/user/students (singular "user")
 export function useStudents(filters: StudentFilters = {}) {
   const { isAuthenticated, user } = useAuthStore();
-  const { page = 1, limit = 10, search = '', status } = filters;
 
   return useQuery({
-    queryKey: ['students', { page, limit, search, status }],
+    queryKey: ['students', filters],
     queryFn: async () => {
       const params = new URLSearchParams();
-      params.append('page', String(page));
-      params.append('limit', String(limit));
-      if (search) params.append('search', search);
-      if (status) params.append('status', status);
+      if (filters.page) params.append('page', String(filters.page));
+      if (filters.limit) params.append('limit', String(filters.limit));
+      if (filters.searchTerm) params.append('searchTerm', filters.searchTerm);
+      if (filters.status) params.append('status', filters.status);
 
-      const { data } = await apiClient.get(`/users?role=STUDENT&${params}`);
+      const { data } = await apiClient.get(`/user/students?${params}`);
       return data as {
         data: Student[];
-        meta: { total: number; page: number; limit: number };
+        pagination: {
+          total: number;
+          page: number;
+          limit: number;
+          totalPage: number;
+        };
       };
     },
     enabled: isAuthenticated && user?.role === 'SUPER_ADMIN',
@@ -58,7 +62,7 @@ export function useStudent(studentId: string) {
   return useQuery({
     queryKey: ['students', studentId],
     queryFn: async () => {
-      const { data } = await apiClient.get(`/users/${studentId}/user`);
+      const { data } = await apiClient.get(`/user/${studentId}/user`);
       return data.data as Student;
     },
     enabled: isAuthenticated && !!studentId,
@@ -71,7 +75,7 @@ export function useBlockStudent() {
 
   return useMutation({
     mutationFn: async (studentId: string) => {
-      const { data } = await apiClient.patch(`/users/${studentId}/block`);
+      const { data } = await apiClient.patch(`/user/students/${studentId}/block`);
       return data;
     },
     onSuccess: () => {
@@ -86,7 +90,7 @@ export function useUnblockStudent() {
 
   return useMutation({
     mutationFn: async (studentId: string) => {
-      const { data } = await apiClient.patch(`/users/${studentId}/unblock`);
+      const { data } = await apiClient.patch(`/user/students/${studentId}/unblock`);
       return data;
     },
     onSuccess: () => {

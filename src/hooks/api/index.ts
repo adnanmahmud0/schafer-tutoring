@@ -20,6 +20,7 @@ export {
   useUpcomingSessions,
   useCompletedSessions,
   useSession,
+  useSessionDetails,
   useCancelSession,
   useRescheduleSession,
   useApproveReschedule,
@@ -27,6 +28,12 @@ export {
   useProposeSession,
   useAcceptSessionProposal,
   useRejectSessionProposal,
+  // Admin
+  useAdminSessions,
+  useSessionStats,
+  useUnifiedSessions,
+  SESSION_STATUS,
+  PAYMENT_STATUS,
 } from './use-sessions';
 
 // Student Hooks
@@ -96,9 +103,23 @@ export {
   GRADE_LEVEL,
 } from './use-trial-requests';
 
+// Interview Slot Hooks
+export {
+  useInterviewSlots,
+  useInterviewSlot,
+  useCreateInterviewSlot,
+  useUpdateInterviewSlot,
+  useDeleteInterviewSlot,
+  useCompleteInterviewSlot,
+  useCancelInterviewSlot,
+  useBookInterviewSlot,
+  useRescheduleInterviewSlot,
+  INTERVIEW_SLOT_STATUS,
+} from './use-interview-slots';
+
 // Types
 export type { Subject } from './use-subjects';
-export type { Session } from './use-sessions';
+export type { Session, SessionFilters, UnifiedSession, UnifiedSessionFilters } from './use-sessions';
 export type { Student, StudentFilters } from './use-students';
 export type { Tutor, TutorFilters, TutorsResponse } from './use-tutors';
 export type { Bookmark } from './use-bookmarks';
@@ -107,3 +128,4 @@ export type { Notification } from './use-notifications';
 export type { SubmitApplicationData, ApplicationResponse, TutorApplication, ApplicationStatus } from './use-applications';
 export type { AdminApplication, AdminApplicationStatus, ApplicationFilters, AdminApplicationsResponse } from './use-admin-applications';
 export type { TrialRequest, CreateTrialRequestData, StudentInfo, GuardianInfo } from './use-trial-requests';
+export type { InterviewSlot, InterviewSlotFilters } from './use-interview-slots';
