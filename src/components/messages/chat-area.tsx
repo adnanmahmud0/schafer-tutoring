@@ -181,7 +181,7 @@ export default function ChatArea({
   }, [conversationId]);
 
   return (
-    <div className="flex-1 flex flex-col bg-background">
+    <div className="h-full flex flex-col bg-background">
       {/* Header */}
       <div className="border-b border-border bg-card px-4 md:px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">

@@ -79,7 +79,13 @@ const Banner = () => {
               <PrimaryButton
                 className="bg-transparent border-2 hover:bg-transparent text-white w-full sm:w-auto min-w-[200px]"
                 name="Book Free Trial"
-                href="/free-trial-student"
+                href={
+                  selectedSubject
+                    ? `/free-trial-student?subject=${encodeURIComponent(
+                        selectedSubject
+                      )}`
+                    : "/free-trial-student"
+                }
               />
             </div>
           </div>
