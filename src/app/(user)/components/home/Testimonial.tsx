@@ -1,208 +1,113 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Plus } from "lucide-react";
-import Image from "next/image";
+import { cn } from "@/lib/utils";
+import { Marquee } from "@/registry/magicui/marquee";
 
-const testimonials = [
-  "/frame1.png",
-  "/frame2.png",
-  "/frame3.png",
-  "/frame4.png",
-  "/frame5.png",
-  "/frame6.png",
-  "/frame7.png",
+const reviews = [
+  {
+    name: "Jack",
+    username: "@jack",
+    body: "I've never seen anything like this before. It's amazing. I love it.",
+    img: "https://avatar.vercel.sh/jack",
+  },
+  {
+    name: "Jill",
+    username: "@jill",
+    body: "I don't know what to say. I'm speechless. This is amazing.",
+    img: "https://avatar.vercel.sh/jill",
+  },
+  {
+    name: "John",
+    username: "@john",
+    body: "I'm at a loss for words. This is amazing. I love it.",
+    img: "https://avatar.vercel.sh/john",
+  },
+  {
+    name: "Jane",
+    username: "@jane",
+    body: "I'm at a loss for words. This is amazing. I love it.",
+    img: "https://avatar.vercel.sh/jane",
+  },
+  {
+    name: "Jenny",
+    username: "@jenny",
+    body: "I'm at a loss for words. This is amazing. I love it.",
+    img: "https://avatar.vercel.sh/jenny",
+  },
+  {
+    name: "James",
+    username: "@james",
+    body: "I'm at a loss for words. This is amazing. I love it.",
+    img: "https://avatar.vercel.sh/james",
+  },
 ];
 
-const faqs = [
-  {
-    question: "How does online tutoring work?",
-    answer:
-      "All lessons are conducted on an integrated online meeting platform. Tutor and student collaborate in a secure digital room using interactive whiteboards for writing, drawing, and sharing tasks. Teaching takes place live and is individually tailored to the student's learning goals.",
-  },
-  {
-    question: "Which subjects and grade levels are offered?",
-    answer: "A wide range of school subjects from grades 1–13 is available. This includes Math, English, German, Sciences, Languages and more.",
-  },
-  {
-    question: "How are tutors selected?",
-    answer:
-      "All tutors undergo a structured two-step screening process. Qualifications, teaching experience, and pedagogical skills are reviewed. Only applicants who demonstrate clear communication and strong individual support are accepted.",
-  },
-  {
-    question: "Can sessions be rescheduled or cancelled?",
-    answer:
-      "Sessions can be rescheduled or cancelled free of charge up to 10 minutes before the scheduled start time.",
-  },
-  {
-    question: "How long is a typical lesson?",
-    answer:
-      "A standard lesson lasts 60 minutes. This duration has proven effective for achieving consistent academic progress.",
-  },
-  {
-    question: "What equipment is required?",
-    answer:
-      "Only basic equipment is needed: laptop, tablet, or smartphone; stable internet connection; microphone; optional camera. No additional software installation is necessary.",
-  },
-  {
-    question: "Can tutors be changed if needed?",
-    answer:
-      "A tutor change is possible at any time if the match is not optimal. In such cases, an alternative tutor is recommended.",
-  },
-];
+const firstRow = reviews.slice(0, reviews.length / 2);
+const secondRow = reviews.slice(reviews.length / 2);
+
+const ReviewCard = ({
+  img,
+  name,
+  username,
+  body,
+}: {
+  img: string;
+  name: string;
+  username: string;
+  body: string;
+}) => {
+  return (
+    <figure
+      className={cn(
+        "relative h-full w-64 cursor-pointer overflow-hidden rounded-xl border p-4",
+        // light styles
+        "border-gray-950/[.1] bg-gray-950/[.01] hover:bg-gray-950/[.05]",
+        // dark styles
+        "dark:border-gray-50/[.1] dark:bg-gray-50/[.10] dark:hover:bg-gray-50/[.15]"
+      )}
+    >
+      <div className="flex flex-row items-center gap-2">
+        <img className="rounded-full" width="32" height="32" alt="" src={img} />
+        <div className="flex flex-col">
+          <figcaption className="text-sm font-medium text-primary">
+            {name}
+          </figcaption>
+          <p className="text-xs font-medium text-primary/50">{username}</p>
+        </div>
+      </div>
+      <blockquote className="mt-2 text-sm">{body}</blockquote>
+    </figure>
+  );
+};
 
 export default function Testimonial() {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-  const [defaultActiveIndex, setDefaultActiveIndex] = useState(3);
-
-  // Set default active index based on screen width
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 768) {
-        // phone
-        setDefaultActiveIndex(1);
-      } else {
-        // tablet & desktop
-        setDefaultActiveIndex(3);
-      }
-    };
-
-    handleResize(); // set on load
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
   return (
-    <>
-      {/* Testimonial Section */}
-      <section className="w-full bg-white">
-        <div className="text-center space-y-10 md:space-y-12">
-          <div className="max-w-7xl mx-auto mb-20">
-            <Image
-              src="/comma.svg"
-              alt="quote"
-              width={64}
-              height={64}
-              className="w-10 sm:w-16 md:w-24 -mb-6 md:-mb-8 sm:-ms-2 md:-ms-4"
-            />
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-medium text-[#000000] leading-tight px-4">
-              Education has{" "}
-              <span className="text-[#0B31BD]">transformed how I study.</span>{" "}
-              The on-demand lessons save me{" "}
-              <span className="text-[#0B31BD]">
-                hours every week without losing
-              </span>{" "}
-              quality
-            </h2>
-          </div>
-
-          {/* Testimonials Images */}
-          <div className="py-8 mb-20">
-            <div className="flex gap-6 md:gap-8 justify-center items-end flex-wrap">
-              {testimonials.map((src, index) => {
-                const isActive =
-                  hoveredIndex !== null
-                    ? hoveredIndex === index
-                    : index === defaultActiveIndex;
-
-                return (
-                  <div
-                    key={`${src}-${index}`}
-                    className="shrink-0 transition-all duration-500 ease-out group"
-                    onMouseEnter={() => setHoveredIndex(index)}
-                    onMouseLeave={() => setHoveredIndex(null)}
-                  >
-                    <div
-                      className={`
-                        w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36
-                        rounded-2xl overflow-hidden relative
-                        transition-all duration-500 ease-out
-                        cursor-pointer
-                        ${isActive ? "-translate-y-8" : "translate-y-0"}
-                        ${isActive ? "shadow-xl" : ""}
-                      `}
-                    >
-                      <Image
-                        src={src}
-                        alt="Student"
-                        fill
-                        className={`
-                          object-cover transition-all duration-500
-                          ${
-                            isActive
-                              ? "blur-0 scale-100"
-                              : "blur-in-2xl scale-95"
-                          }
-                        `}
-                      />
-                      {!isActive && <div className="absolute inset-0 bg-white/30" />}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+    <section className="bg-white py-16 lg:py-24">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-12 px-4">
+          <h2 className="text-4xl sm:text-5xl font-bold text-[#0B31BD] mb-2.5">
+            What our students say
+          </h2>
+          <p className="text-[#061651] text-base sm:text-lg">
+            Hear from our community of learners about their experience.
+          </p>
         </div>
-      </section>
 
-      {/* FAQ Section */}
-      <section className="bg-[#F7F7F7] py-16 md:py-20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-11">
-            <h2 className="text-3xl md:text-4xl font-bold text-[#0B31BD]">
-              Frequently Asked Questions
-            </h2>
-            <p className="text-gray-600 mt-[15px] text-base sm:text-lg">
-              Everything you need to know about our online tutoring.
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            {faqs.map((faq, index) => {
-              const isOpen = openIndex === index;
-
-              return (
-                <div
-                  key={index}
-                  className="bg-white rounded-[11px] shadow-sm border-2 border-[#85C2DE] overflow-hidden"
-                >
-                  <button
-                    onClick={() => setOpenIndex(isOpen ? null : index)}
-                    className="w-full px-5 py-4 sm:px-6 sm:py-5 flex items-center justify-between text-left hover:bg-gray-50 transition-colors duration-200"
-                    aria-expanded={isOpen}
-                  >
-                    <span className="font-medium text-gray-900 text-sm sm:text-base pr-4 text-left">
-                      {faq.question}
-                    </span>
-                    <Plus
-                      className={`w-5 h-5 text-gray-500 transition-transform duration-300 shrink-0 ${
-                        isOpen ? "rotate-180" : ""
-                      }`}
-                    />
-                  </button>
-
-                  <div
-                    className={`overflow-hidden transition-all duration-500 ease-in-out ${
-                      isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-                    }`}
-                    style={{
-                      transition:
-                        "max-height 0.5s ease-in-out, opacity 0.4s ease-in-out, padding 0.5s ease-in-out",
-                    }}
-                  >
-                    <div className="px-5 pb-5 sm:px-6 sm:pb-6 pt-2">
-                      <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
-                        {faq.answer}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+        <div className="relative flex w-full flex-col items-center justify-center overflow-hidden">
+          <Marquee pauseOnHover className="[--duration:20s]">
+            {firstRow.map((review) => (
+              <ReviewCard key={review.username} {...review} />
+            ))}
+          </Marquee>
+          <Marquee reverse pauseOnHover className="[--duration:20s]">
+            {secondRow.map((review) => (
+              <ReviewCard key={review.username} {...review} />
+            ))}
+          </Marquee>
+          <div className="from-background pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r"></div>
+          <div className="from-background pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l"></div>
         </div>
-      </section>
-    </>
+      </div>
+    </section>
   );
 }
