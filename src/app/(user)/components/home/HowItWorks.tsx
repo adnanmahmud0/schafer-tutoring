@@ -2,7 +2,6 @@
 "use client";
 
 import { motion, useScroll, useTransform } from "framer-motion";
-import ReactLenis from "lenis/react";
 import { useRef } from "react";
 
 interface Heading {
@@ -26,6 +25,7 @@ export default function HowItWorks({
   cards: Card[];
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  /* Removed custom sticky logic to allow native CSS behavior */
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"],
@@ -33,8 +33,9 @@ export default function HowItWorks({
 
   return (
     <section className="bg-[#F7F7F7] py-16 lg:py-24">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="text-center mb-12">
+      {/* start on this */}
+      <div ref={containerRef} className="max-w-7xl mx-auto px-4">
+        <div className="text-center mb-12 bg-[#F7F7F7] py-6">
           <h2 className="text-4xl sm:text-5xl font-bold text-[#0B31BD] mb-2.5">
             {heading.title}
           </h2>
@@ -45,17 +46,15 @@ export default function HowItWorks({
 
         {/* -------------Mobile mode with Skiper-style sticky stack---------------- */}
         <div className="md:hidden">
-          <ReactLenis root>
-            <main
-              ref={containerRef}
+          <main
               className="relative -mt-[15vh]" // Smooth entry & exit space
             >
               {cards.map((card, i) => {
                 // The top card (last in array) should be largest, previous ones smaller behind
-                const targetScale = 1 - (cards.length - 1 - i) * 0.01; // 0.08 gives nice depth
+                const targetScale = 1 - (cards.length - 0 - i) * 0.00; // 0.08 gives nice depth
                 const scale = useTransform(
                   scrollYProgress,
-                  [i * 0.25, 1],
+                  [i * 0.00, 0],
                   [1, targetScale]
                 );
 
@@ -99,7 +98,6 @@ export default function HowItWorks({
                 );
               })}
             </main>
-          </ReactLenis>
         </div>
         {/* -------------Mobile mode end---------------- */}
 
