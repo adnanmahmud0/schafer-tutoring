@@ -1,22 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Download, FileText, Check } from "lucide-react";
+import { Download, FileText, Check, Loader2 } from "lucide-react";
 
 interface Request {
   id: string;
@@ -142,23 +133,51 @@ const acceptedRequests: AcceptedRequest[] = [
 
 export default function RequestsPage() {
   const [activeTab, setActiveTab] = useState<"open" | "accepted">("open");
-  const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
   const [introMessage, setIntroMessage] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
   const [isInfoOnly, setIsInfoOnly] = useState(false);
+  
+  // Infinite Scroll State
+  const [visibleCount, setVisibleCount] = useState(6);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const observerTarget = useRef<HTMLDivElement>(null);
   const itemsPerPage = 6;
 
   const currentData = activeTab === "open" ? openRequests : acceptedRequests;
-  const totalPages = Math.ceil(currentData.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedData = currentData.slice(startIndex, endIndex);
+  const displayedData = currentData.slice(0, visibleCount);
+  const hasMore = visibleCount < currentData.length;
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
+          setIsLoadingMore(true);
+          // Simulate network delay for better UX
+          setTimeout(() => {
+            setVisibleCount((prev) => prev + itemsPerPage);
+            setIsLoadingMore(false);
+          }, 500);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [hasMore, isLoadingMore]);
 
   const handleTabChange = (tab: "open" | "accepted") => {
     setActiveTab(tab);
-    setCurrentPage(1);
+    setVisibleCount(itemsPerPage); // Reset visible count
   };
 
   const handleViewClick = (request: Request | AcceptedRequest) => {
@@ -223,15 +242,15 @@ export default function RequestsPage() {
         {/* Content */}
         {activeTab === "open" ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {(paginatedData as Request[]).map((request) => (
+            {(displayedData as Request[]).map((request) => (
               <div key={request.id} className="bg-white rounded-lg shadow-sm p-6">
                 <div className="flex justify-between items-start mb-4">
                   <h3 className="text-lg font-semibold text-gray-900">{request.subject}</h3>
                   <span
-                    className={`text-sm font-medium ${request.daysAgo <= 2 ? "text-orange-500" : "text-green-600"
+                    className={`text-sm font-medium ${request.daysAgo <= 2 ? "text-green-600" : "text-red-600"
                       }`}
                   >
-                    {request.daysAgo} days Ago
+                    {request.daysAgo} Days
                   </span>
                 </div>
                 <div className="space-y-2 mb-6">
@@ -248,114 +267,53 @@ export default function RequestsPage() {
             ))}
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-            {/* Mobile horizontal scroll wrapper */}
-            <div className="w-full overflow-x-auto">
-              <table className="min-w-[900px] w-full">
-                <thead className="bg-[#FAFAFA] border border-gray-200">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Subject
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Trial Session
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Action
-                    </th>
-                  </tr>
-                </thead>
+          <div className="space-y-3 sm:space-y-4">
+            {(displayedData as AcceptedRequest[]).map((request) => (
+              <div
+                key={request.id}
+                className="bg-white shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 rounded-lg hover:bg-gray-50 border border-[#F6F6F7] transition-colors gap-3 sm:gap-0"
+              >
+                {/* Left Content */}
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1.5 sm:mb-2 flex-wrap">
+                    <h3 className="font-semibold text-sm sm:text-base text-gray-900">
+                      {request.name}
+                    </h3>
+                    <span className="text-xs font-semibold text-gray-600 bg-gray-100 px-2 py-0.5 sm:py-1 rounded-3xl">
+                      {request.status}
+                    </span>
+                  </div>
 
-                <tbody className="divide-y divide-gray-200">
-                  {(paginatedData as AcceptedRequest[]).map((request) => (
-                    <tr key={request.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {request.name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {request.subject}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {request.trialSession}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                          {request.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <button
-                          onClick={() => handleViewClick(request)}
-                          className="bg-[#002AC8] text-white px-6 py-2 rounded-md hover:bg-[#0024a8] transition-colors font-medium"
-                        >
-                          View
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
+                    <div className="flex items-center gap-1 sm:w-30">
+                      <span className="font-medium text-gray-900">Subject:</span>
+                      <span>{request.subject}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="font-medium text-gray-900">Trial Session:</span>
+                      <span>{request.trialSession}</span>
+                    </div>
+                  </div>
+                </div>
 
-        )}
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="mt-6">
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                  />
-                </PaginationItem>
-
-                {[...Array(totalPages)].map((_, i) => {
-                  const pageNum = i + 1;
-                  if (
-                    pageNum === 1 ||
-                    pageNum === totalPages ||
-                    (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
-                  ) {
-                    return (
-                      <PaginationItem key={pageNum}>
-                        <PaginationLink
-                          onClick={() => setCurrentPage(pageNum)}
-                          isActive={currentPage === pageNum}
-                          className="cursor-pointer"
-                        >
-                          {pageNum}
-                        </PaginationLink>
-                      </PaginationItem>
-                    );
-                  } else if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
-                    return (
-                      <PaginationItem key={pageNum}>
-                        <PaginationEllipsis />
-                      </PaginationItem>
-                    );
-                  }
-                  return null;
-                })}
-
-                <PaginationItem>
-                  <PaginationNext
-                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
+                {/* Action Button */}
+                <button
+                  onClick={() => handleViewClick(request)}
+                  className="sm:ml-4 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-colors w-full sm:w-auto bg-[#002AC8] text-white hover:bg-[#0024a8]"
+                >
+                  View
+                </button>
+              </div>
+            ))}
           </div>
         )}
+
+        {/* Infinite Scroll Trigger & Loader */}
+        <div ref={observerTarget} className="h-10 w-full flex items-center justify-center mt-4">
+          {isLoadingMore && (
+             <Loader2 className="w-6 h-6 animate-spin text-[#002AC8]" />
+          )}
+        </div>
       </div>
 
       {/* Request Details Modal */}

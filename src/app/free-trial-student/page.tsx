@@ -2,9 +2,9 @@
 "use client";
 
 import { useState } from "react";
-import Script from "next/script";
 import { useSearchParams } from "next/navigation";
 import { useEffect, Suspense } from "react";
+import { showAlert } from "@/lib/sweetalert";
 
 import { ProgressBar } from "./components/ProgressBar";
 import { Step1SubjectInfo } from "./components/Step1SubjectInfo";
@@ -105,42 +105,6 @@ function FreeTrialStudent() {
     }
   };
 
-  const showSweetAlert = (
-  type: "success" | "error" | "warning",
-  title: string,
-  text: string
-) => {
-  if (typeof window !== "undefined" && (window as any).Swal) {
-    (window as any).Swal.fire({
-      icon: type,
-      title,
-      text,
-      confirmButtonColor: "#0B31BD",
-      didOpen: () => {
-        const popup = document.querySelector(".swal2-popup") as HTMLElement;
-        const icon = document.querySelector(".swal2-icon") as HTMLElement;
-        const titleEl = document.querySelector(".swal2-title") as HTMLElement;
-        const textEl = document.querySelector(".swal2-html-container") as HTMLElement;
-
-        // border (static)
-        if (popup) {
-          popup.style.border = "2px solid black";
-          popup.style.borderRadius = "12px";
-        }
-
-        // icon color
-        if (icon) {
-          icon.style.color = "#ff3333";
-          icon.style.borderColor = "#ff3333";
-        }
-
-        // text color (keep readable on default bg)
-        if (titleEl) titleEl.style.color = "#000";
-        if (textEl) textEl.style.color = "#000";
-      },
-    });
-  }
-};
 
 
   /* =========================
@@ -149,7 +113,7 @@ function FreeTrialStudent() {
 
   const validateStep1 = () => {
     if (!formData.subject || !formData.grade || !formData.schoolType) {
-      showSweetAlert("error", "Missing Input", "Please fill in all required fields.");
+      showAlert("error", "Missing Input", "Please fill in all required fields.");
 
       return false;
     }
@@ -163,7 +127,7 @@ function FreeTrialStudent() {
       !formData.email ||
       !formData.password
     ) {
-     showSweetAlert("error", "Missing Input", "Please fill in all required personal information.");
+      showAlert("error", "Missing Input", "Please fill in all required personal information.");
 
       return false;
     }
@@ -174,7 +138,7 @@ function FreeTrialStudent() {
         !formData.guardianLastName ||
         !formData.guardianPhone)
     ) {
-      showSweetAlert(
+      showAlert(
         "error",
         "Guardian Info",
         "Please fill in all guardian information."
@@ -194,7 +158,7 @@ function FreeTrialStudent() {
     if (step === 3 && !validateStep3()) return;
 
     if (step === 3 && !formData.agreeToPolicy) {
-      showSweetAlert(
+      showAlert(
         "warning",
         "Agreement Required",
         "Please agree to the Privacy Policy."
@@ -205,19 +169,20 @@ function FreeTrialStudent() {
     if (step === 3) {
       console.log("Submitted:", formData);
 
-      if ((window as any).Swal) {
-        (window as any).Swal.fire({
-          icon: "success",
-          title: "Success!",
-          text: "Your request has been sent!",
-          confirmButtonColor: "#0B31BD",
-        }).then(() => {
-          window.location.href = "/free-trial-student-dash";
-        });
-      }
+      showAlert(
+        "success",
+        "Success!",
+        "Your request has been sent!"
+      ).then(() => {
+        window.location.href = "/free-trial-student-dash";
+      });
     } else {
       setStep((prev) => prev + 1);
     }
+  };
+
+  const handleBack = () => {
+    setStep((prev) => Math.max(1, prev - 1));
   };
 
   /* =========================
@@ -226,11 +191,6 @@ function FreeTrialStudent() {
 
   return (
     <>
-      {/* SweetAlert2 Script */}
-      <Script
-        src="https://cdn.jsdelivr.net/npm/sweetalert2@11"
-        strategy="afterInteractive"
-      />
 
 
 
@@ -272,6 +232,7 @@ function FreeTrialStudent() {
               step={step}
               totalSteps={3}
               onNext={handleNext}
+              onBack={handleBack}
               isLastStep={step === 3}
             />
           </div>

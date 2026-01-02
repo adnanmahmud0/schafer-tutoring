@@ -19,7 +19,7 @@ const Nav = () => {
               Schäfer Tutoring
             </Link>
           </div>
-          <button className="w-38 flex items-center justify-start gap-2 ps-4 py-2 bg-[#FF8A00] hover:bg-[#ee8607] text-white text-lg font-semibold rounded-xl active:scale-95 transition-all duration-200">
+          <button className="w-38 flex items-center justify-start gap-2 ps-4 py-2 bg-[#FF8A00] hover:bg-[#ee8607] text-white text-lg font-semibold rounded-lg active:scale-95 transition-all duration-200">
               {/* Logout Icon */}
                 <Image 
                   width={20} 
