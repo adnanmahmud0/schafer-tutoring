@@ -58,12 +58,12 @@ export default function TutorsSection() {
                   className="pl-6 md:pl-8 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
                 >
                   <div className="border rounded-xl border-[#4864CE] overflow-hidden bg-white shadow-md hover:shadow-xl transition-shadow duration-300">
-                    <div className="relative aspect-4/5">
+                    <div className="relative aspect-4/4">
                       <Image
                         src={tutor.image}
                         alt={tutor.name}
                         fill
-                        className="object-cover object-center"
+                        className="object-cover object-center rounded-full p-5"
                       />
                     </div>
                     <div className="py-6 px-4 text-center">

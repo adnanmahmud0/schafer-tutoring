@@ -1,28 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Upload, X } from "lucide-react";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-
-type SweetAlertType = "success" | "error" | "warning" | "info" | "question";
-
-declare global {
-  interface Window {
-    Swal: {
-      fire: (options: {
-        icon: SweetAlertType;
-        title: string;
-        text: string;
-        confirmButtonColor?: string;
-        confirmButtonText?: string;
-        allowOutsideClick?: boolean;
-        customClass?: Record<string, string>;
-      }) => Promise<{ isConfirmed: boolean }>;
-    };
-  }
-}
+import { showAlert } from "@/lib/sweetalert";
 
 interface FormData {
   subjects: string[];
@@ -82,16 +64,6 @@ const FreeTrialTeacher = () => {
     "Computer Science",
   ];
 
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://cdn.jsdelivr.net/npm/sweetalert2@11";
-    script.async = true;
-    document.body.appendChild(script);
-
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -132,7 +104,7 @@ const FreeTrialTeacher = () => {
 
   const validateStep1 = () => {
     if (selectedSubjects.length === 0) {
-      showSweetAlert(
+      showAlert(
         "error",
         "Missing Input",
         "Please select at least one subject to teach."
@@ -144,7 +116,7 @@ const FreeTrialTeacher = () => {
 
   const validateStep2 = () => {
     if (!formData.cv || !formData.abiturCertificate || !formData.officialId) {
-      showSweetAlert(
+      showAlert(
         "error",
         "Missing Documents",
         "Please upload all required documents."
@@ -167,7 +139,7 @@ const FreeTrialTeacher = () => {
       !formData.email ||
       !formData.password
     ) {
-      showSweetAlert(
+      showAlert(
         "error",
         "Missing Input",
         "Please fill in all required fields to continue."
@@ -191,42 +163,6 @@ const FreeTrialTeacher = () => {
     setStep((prev) => Math.max(1, prev - 1));
   };
 
-   const showSweetAlert = (
-  type: "success" | "error" | "warning",
-  title: string,
-  text: string
-) => {
-  if (typeof window !== "undefined" && (window as any).Swal) {
-    (window as any).Swal.fire({
-      icon: type,
-      title,
-      text,
-      confirmButtonColor: "#0B31BD",
-      didOpen: () => {
-        const popup = document.querySelector(".swal2-popup") as HTMLElement;
-        const icon = document.querySelector(".swal2-icon") as HTMLElement;
-        const titleEl = document.querySelector(".swal2-title") as HTMLElement;
-        const textEl = document.querySelector(".swal2-html-container") as HTMLElement;
-
-        // border (static)
-        if (popup) {
-          popup.style.border = "2px solid black";
-          popup.style.borderRadius = "12px";
-        }
-
-        // icon color
-        if (icon) {
-          icon.style.color = "#ff3333";
-          icon.style.borderColor = "#ff3333";
-        }
-
-        // text color (keep readable on default bg)
-        if (titleEl) titleEl.style.color = "#000";
-        if (textEl) textEl.style.color = "#000";
-      },
-    });
-  }
-};
 
   const handleSubmit = () => {
     if (!validateStep3()) {
@@ -234,7 +170,7 @@ const FreeTrialTeacher = () => {
     }
 
     if (!formData.agreeToPolicy) {
-      showSweetAlert(
+      showAlert(
         "warning",
         "Agreement Required",
         "Please agree to the Privacy Policy to continue."
@@ -249,24 +185,15 @@ const FreeTrialTeacher = () => {
 
     console.log("Form submitted:", submitData);
 
-    if (typeof window !== "undefined" && window.Swal) {
-      window.Swal.fire({
-        icon: "success",
-        title: "Success!",
-        text: "Your teacher application has been sent. We will get back to you shortly!",
-        confirmButtonColor: "#0B31BD",
-        confirmButtonText: "OK",
-        allowOutsideClick: false,
-        customClass: {
-          popup: "animate__animated animate__fadeInDown",
-          confirmButton: "font-medium",
-        },
-      }).then((result) => {
-        if (result.isConfirmed) {
-          window.location.href = "/free-trial-teacher-dash";
-        }
-      });
-    }
+    showAlert(
+      "success",
+      "Success!",
+      "Your teacher application has been sent. We will get back to you shortly!"
+    ).then((result) => {
+      if (result.isConfirmed) {
+        window.location.href = "/free-trial-teacher-dash";
+      }
+    });
   };
 
   return (
@@ -747,7 +674,7 @@ const FreeTrialTeacher = () => {
                         onClick={handleSubmit}
                         className="w-full max-w-md mx-auto bg-[#0B31BD] text-white py-3 rounded-md font-medium hover:bg-[#062183] transition-colors flex items-center justify-center gap-2"
                       >
-                        Send the Request
+                        Send
                       </button>
                     </div>
                   </div>

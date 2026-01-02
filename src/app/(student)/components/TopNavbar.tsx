@@ -66,7 +66,7 @@ export default function TopNavbar() {
 
   return (
     <>
-      <header className="h-16 sm:h-20 lg:h-24 bg-white fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-3 sm:px-4 md:px-16 max-w-full">
+      <header className="h-16 sm:h-20 lg:h-24 bg-white fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-3 sm:px-4 md:px-4 max-w-full">
 
         {/* Left: Hamburger + Title */}
         <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0 flex-shrink">

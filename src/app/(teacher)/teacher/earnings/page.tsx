@@ -1,6 +1,6 @@
 "use client";
-import { useState } from "react";
-import { Edit, ChevronLeft, ChevronRight, BookOpen } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Edit, BookOpen, Loader2, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,7 +13,6 @@ import {
 import Image from "next/image";
 
 export default function EarningsPage() {
-  const [currentPage, setCurrentPage] = useState(1);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editFormData, setEditFormData] = useState({
     recipient: "John Doe",
@@ -31,15 +30,48 @@ export default function EarningsPage() {
     { period: "Jul 25", sessions: 14, earnings: "265.80 €" },
     { period: "Jun 25", sessions: 20, earnings: "378.40 €" },
     { period: "May 25", sessions: 15, earnings: "289.50 €" },
+    { period: "Apr 25", sessions: 10, earnings: "195.00 €" },
+    { period: "Mar 25", sessions: 22, earnings: "410.20 €" },
+    { period: "Feb 25", sessions: 14, earnings: "258.00 €" },
+    { period: "Jan 25", sessions: 19, earnings: "345.50 €" },
+    { period: "Dec 24", sessions: 12, earnings: "220.00 €" },
+    { period: "Nov 24", sessions: 16, earnings: "298.40 €" },
   ];
 
-  const itemsPerPage = 3;
-  const totalPages = Math.ceil(earningsData.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = earningsData.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
+  // Infinite Scroll State
+  const [visibleCount, setVisibleCount] = useState(6);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const observerTarget = useRef<HTMLDivElement>(null);
+  const itemsPerPage = 6;
+
+  const displayedData = earningsData.slice(0, visibleCount);
+  const hasMore = visibleCount < earningsData.length;
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
+          setIsLoadingMore(true);
+          // Simulate network delay
+          setTimeout(() => {
+            setVisibleCount((prev) => prev + itemsPerPage);
+            setIsLoadingMore(false);
+          }, 800);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [hasMore, isLoadingMore]);
 
   const handleEditClick = () => {
     setEditFormData({ ...payoutData });
@@ -62,7 +94,7 @@ export default function EarningsPage() {
   return (
     <div className="space-y-4 sm:space-y-5 lg:space-y-6">
 
-    {/* Level Progress */}
+      {/* Level Progress */}
       <div className="bg-white rounded-lg shadow-sm p-4 sm:p-5 lg:p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg sm:text-xl font-semibold text-gray-800">Level Progress</h2>
@@ -124,7 +156,7 @@ export default function EarningsPage() {
           </h2>
           <Button
             onClick={handleEditClick}
-            className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 h-10 rounded-lg font-medium"
+            className="bg-[#002AC8] hover:bg-[#002AC8] text-white px-6 py-2 h-10 rounded-lg font-medium"
           >
             <Edit className="w-4 h-4 mr-2" />
             Edit
@@ -152,68 +184,47 @@ export default function EarningsPage() {
         </div>
       </div>
 
-      <div className="flex items-center justify-end gap-2">
-        <button
-          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-          disabled={currentPage === 1}
-          className="p-1.5 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          <ChevronLeft className="w-4 h-4 text-gray-600" />
-        </button>
-        <span className="text-sm text-gray-600 min-w-12 text-center">
-          {currentPage} / {totalPages}
-        </span>
-        <button
-          onClick={() =>
-            setCurrentPage(Math.min(totalPages, currentPage + 1))
-          }
-          disabled={currentPage === totalPages}
-          className="p-1.5 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          <ChevronRight className="w-4 h-4 text-gray-600" />
-        </button>
-      </div>
-
       {/* Earnings History Card */}
-      <div className="rounded-lg border border-gray-200 bg-white">
-        <div className="flex items-center justify-end mb-6"></div>
+      <div className="rounded-lg border border-gray-200 bg-white p-1">
+        <div className="pt-4 px-4 sm:px-5 lg:px-6">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
+            Earnings History
+          </h2>
+        </div>
 
-        {/* Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full ">
-            <thead>
-              <tr className="border-b border-gray-200 ">
-                <th className="text-left text-sm font-semibold text-gray-700 pb-3 px-3">
+        {/* Desktop Table View */}
+        <div className="hidden md:block overflow-x-auto border border-gray-200 rounded-lg m-5 -mb-9">
+          <table className="w-full border-collapse ">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-200">
                   Period
                 </th>
-                <th className="text-left text-sm font-semibold text-gray-700 pb-3 px-3">
+                <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-200">
                   Sessions
                 </th>
-                <th className="text-left text-sm font-semibold text-gray-700 pb-3 px-3">
+                <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-200">
                   Earnings
                 </th>
-                <th className="text-right text-sm font-semibold text-gray-700 pb-3 px-3">
+                <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-200">
                   Action
                 </th>
               </tr>
             </thead>
             <tbody>
-              {paginatedData.map((item, index) => (
-                <tr
-                  key={index}
-                  className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                >
-                  <td className="text-sm text-gray-900 py-3 px-3 font-medium">
+              {displayedData.map((item, index) => (
+                <tr key={index} className="hover:bg-gray-50">
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center border-gray-200 ${index !== displayedData.length - 1 ? 'border-b' : ''}`}>
                     {item.period}
                   </td>
-                  <td className="text-sm text-gray-700 py-3 px-3">
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center border-gray-200 ${index !== displayedData.length - 1 ? 'border-b' : ''}`}>
                     {item.sessions}
                   </td>
-                  <td className="text-sm text-gray-700 py-3 px-3 font-medium">
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium text-center border-gray-200 ${index !== displayedData.length - 1 ? 'border-b' : ''}`}>
                     {item.earnings}
                   </td>
-                  <td className="text-right py-3 px-3">
-                    <Button className="bg-[#002AC8] hover:bg-[#001F9C] text-white px-4 py-1 h-8 text-sm font-medium rounded-md">
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-center ${index !== displayedData.length - 1 ? 'border-b border-gray-200' : ''}`}>
+                    <Button className="bg-[#002AC8] text-white px-6 py-2 rounded-lg hover:bg-[#0024a8] transition-colors font-medium inline-flex items-center gap-2 h-auto">
                       Download
                     </Button>
                   </td>
@@ -221,6 +232,38 @@ export default function EarningsPage() {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="md:hidden space-y-4">
+          {displayedData.map((item, index) => (
+            <div key={index} className="border border-gray-200 rounded-lg p-4">
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div>
+                  <p className="text-xs text-gray-500 font-medium">Period</p>
+                  <p className="text-sm font-semibold text-gray-900">{item.period}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 font-medium">Sessions</p>
+                  <p className="text-sm font-semibold text-gray-900">{item.sessions}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="text-xs text-gray-500 font-medium">Earnings</p>
+                  <p className="text-base font-bold text-gray-900">{item.earnings}</p>
+                </div>
+              </div>
+              <Button className="w-full bg-[#002AC8] text-white px-4 py-2 rounded-lg hover:bg-[#0024a8] transition-colors font-medium inline-flex items-center justify-center gap-2 h-auto">
+                <Download className="w-4 h-4" />
+                Download
+              </Button>
+            </div>
+          ))}
+        </div>
+        {/* Infinite Scroll Trigger & Loader */}
+        <div ref={observerTarget} className="h-14 w-full flex items-center justify-center p-4">
+          {isLoadingMore && (
+            <Loader2 className="w-6 h-6 animate-spin text-[#002AC8]" />
+          )}
         </div>
       </div>
 
@@ -270,7 +313,7 @@ export default function EarningsPage() {
             <Button
               type="button"
               onClick={handleSaveChanges}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 h-10 font-medium"
+              className="bg-[#002AC8] hover:bg-[#002AC8] text-white px-6 h-10 font-medium"
             >
               Save Changes
             </Button>

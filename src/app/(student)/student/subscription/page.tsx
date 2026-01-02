@@ -1,16 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { CreditCard, Download, ChevronLeft, ChevronRight } from "lucide-react";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { useState, useEffect, useRef } from "react";
+import { CreditCard, Download, Loader2 } from "lucide-react";
 import Image from "next/image";
 
 interface PaymentRecord {
@@ -27,16 +18,47 @@ const paymentHistory: PaymentRecord[] = [
   { id: "4", period: "Jul 25", sessions: 14, amount: "196.00 €" },
   { id: "5", period: "Jun 25", sessions: 20, amount: "350.00 €" },
   { id: "6", period: "May 25", sessions: 15, amount: "262.50 €" },
+  { id: "7", period: "Apr 25", sessions: 10, amount: "185.00 €" },
+  { id: "8", period: "Mar 25", sessions: 22, amount: "410.00 €" },
+  { id: "9", period: "Feb 25", sessions: 14, amount: "250.00 €" },
+  { id: "10", period: "Jan 25", sessions: 19, amount: "340.00 €" },
 ];
 
 export default function StudentSubscriptionPage() {
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 3;
+  // Infinite Scroll State
+  const [visibleCount, setVisibleCount] = useState(6);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const observerTarget = useRef<HTMLDivElement>(null);
+  const itemsPerPage = 6;
 
-  const totalPages = Math.ceil(paymentHistory.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedData = paymentHistory.slice(startIndex, endIndex);
+  const displayedData = paymentHistory.slice(0, visibleCount);
+  const hasMore = visibleCount < paymentHistory.length;
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
+          setIsLoadingMore(true);
+          // Simulate network delay
+          setTimeout(() => {
+            setVisibleCount((prev) => prev + itemsPerPage);
+            setIsLoadingMore(false);
+          }, 800);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [hasMore, isLoadingMore]);
 
   return (
     <div className="space-y-4 sm:space-y-5 lg:space-y-6">
@@ -75,14 +97,14 @@ export default function StudentSubscriptionPage() {
       <div className="bg-white rounded-lg shadow-sm p-4 sm:p-5 lg:p-6">
         <div className="flex items-center justify-between mb-4 sm:mb-5 lg:mb-6">
           <h2 className="text-lg sm:text-xl font-semibold text-gray-800">Current Plan</h2>
-          <button className="px-4 sm:px-6 py-2 sm:py-2.5 bg-[#FF8A00] hover:bg-[#ee8607] text-white font-semibold rounded-lg transition-colors text-sm sm:text-base">
+          <button className="px-4 sm:px-6 py-2 sm:py-2.5 bg-[#002AC8] text-white font-semibold rounded-lg transition-colors text-sm sm:text-base">
             Change Plan
           </button>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Plan Card */}
-          <div className="bg-[#002AC8] text-white rounded-xl p-6">
+          <div className="bg-white border border-[#002AC8] rounded-xl p-6">
             <p className="text-sm font-medium mb-2 opacity-90">Plan</p>
             <p className="text-xl font-bold">Regular</p>
           </div>
@@ -109,9 +131,15 @@ export default function StudentSubscriptionPage() {
 
       {/* Payment Method Section */}
       <div className="bg-white rounded-lg shadow-sm p-4 sm:p-5 lg:p-6">
-        <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">Payment Method</h2>
-
         <div className="flex items-center justify-between">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">Payment Method</h2>
+          <button className="px-4 sm:px-6 py-2 bg-[#002AC8] text-white font-semibold rounded-lg transition-colors text-sm sm:text-base">
+            Change Method
+          </button>
+        </div>
+
+
+        <div className="">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
               <CreditCard className="w-6 h-6 text-gray-600" />
@@ -121,10 +149,6 @@ export default function StudentSubscriptionPage() {
               <p className="text-sm text-gray-500">Expires 12/2027</p>
             </div>
           </div>
-
-          <button className="px-4 sm:px-6 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-            Change Method
-          </button>
         </div>
       </div>
 
@@ -133,7 +157,7 @@ export default function StudentSubscriptionPage() {
         <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4 sm:mb-5 lg:mb-6">Payment Overview</h2>
 
         {/* Desktop Table View */}
-        <div className="hidden md:block overflow-x-auto border border-gray-200 rounded-lg">
+        <div className="hidden md:block overflow-x-auto border border-gray-200 rounded-lg -mb-14">
           <table className="w-full border-collapse">
             <thead className="bg-gray-50">
               <tr>
@@ -152,18 +176,18 @@ export default function StudentSubscriptionPage() {
               </tr>
             </thead>
             <tbody>
-              {paginatedData.map((record, index) => (
+              {displayedData.map((record, index) => (
                 <tr key={record.id} className="hover:bg-gray-50">
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center border-gray-200 ${index !== paginatedData.length - 1 ? 'border-b' : ''}`}>
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center border-gray-200 ${index !== displayedData.length - 1 ? 'border-b' : ''}`}>
                     {record.period}
                   </td>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center border-gray-200 ${index !== paginatedData.length - 1 ? 'border-b' : ''}`}>
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center border-gray-200 ${index !== displayedData.length - 1 ? 'border-b' : ''}`}>
                     {record.sessions}
                   </td>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium text-center border-gray-200 ${index !== paginatedData.length - 1 ? 'border-b' : ''}`}>
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium text-center border-gray-200 ${index !== displayedData.length - 1 ? 'border-b' : ''}`}>
                     {record.amount}
                   </td>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-center ${index !== paginatedData.length - 1 ? 'border-b border-gray-200' : ''}`}>
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-center ${index !== displayedData.length - 1 ? 'border-b border-gray-200' : ''}`}>
                     <button className="bg-[#002AC8] text-white px-6 py-2 rounded-lg hover:bg-[#0024a8] transition-colors font-medium inline-flex items-center gap-2">
                       Download
                     </button>
@@ -176,7 +200,7 @@ export default function StudentSubscriptionPage() {
 
         {/* Mobile Card View */}
         <div className="md:hidden space-y-4">
-          {paginatedData.map((record) => (
+          {displayedData.map((record) => (
             <div key={record.id} className="border border-gray-200 rounded-lg p-4">
               <div className="grid grid-cols-2 gap-3 mb-4">
                 <div>
@@ -200,56 +224,12 @@ export default function StudentSubscriptionPage() {
           ))}
         </div>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="mt-6 flex justify-center">
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                  />
-                </PaginationItem>
-
-                {[...Array(totalPages)].map((_, i) => {
-                  const pageNum = i + 1;
-                  if (
-                    pageNum === 1 ||
-                    pageNum === totalPages ||
-                    (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
-                  ) {
-                    return (
-                      <PaginationItem key={pageNum}>
-                        <PaginationLink
-                          onClick={() => setCurrentPage(pageNum)}
-                          isActive={currentPage === pageNum}
-                          className="cursor-pointer"
-                        >
-                          {pageNum}
-                        </PaginationLink>
-                      </PaginationItem>
-                    );
-                  } else if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
-                    return (
-                      <PaginationItem key={pageNum}>
-                        <PaginationEllipsis />
-                      </PaginationItem>
-                    );
-                  }
-                  return null;
-                })}
-
-                <PaginationItem>
-                  <PaginationNext
-                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          </div>
-        )}
+        {/* Infinite Scroll Trigger & Loader */}
+        <div ref={observerTarget} className="h-14 w-full flex items-center justify-center p-4">
+          {isLoadingMore && (
+            <Loader2 className="w-6 h-6 animate-spin text-[#002AC8]" />
+          )}
+        </div>
       </div>
     </div>
   );

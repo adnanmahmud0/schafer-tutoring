@@ -48,7 +48,7 @@ export default function HowItWorks() {
   });
 
   return (
-    <section className="bg-white py-16 lg:py-20">
+    <section className="bg-white pt-16 lg:py-20">
       <div ref={containerRef} className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-12 pb-5">
           <h2 className="text-4xl sm:text-5xl font-bold text-[#0B31BD] mb-2.5">
@@ -61,7 +61,7 @@ export default function HowItWorks() {
 
         {/* Mobile: Sticky Stack Effect */}
         <div className="md:hidden">
-          <main className="relative -mt-[15vh]">
+          <main className="relative -mt-[20vh]">
             {cards.map((card, i) => {
               const targetScale = 1 - (cards.length - 1 - i) * 0.00;
               const scale = useTransform(scrollYProgress, [i / cards.length, (i + 1) / cards.length], [1, targetScale]);
