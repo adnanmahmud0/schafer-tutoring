@@ -1,8 +1,13 @@
-import React from "react";
+"use client";
+
 import Banner from "./components/home/Banner";
-import Funcard from "./components/home/Funcard";
-import TutorPrice from "./components/home/TutorPrice";
 import Testimonial from "./components/home/Testimonial";
+import FAQSection from "./components/home/FAQSection";
+import PricingSection from "./components/home/PricingSection";
+import TutorsSection from "./components/home/TutorsSection";
+import Stats from "./components/home/Stats";
+import HowItWorks from "./components/home/HowItWorks";
+import Approach from "./components/home/Approach";
 
 export default function page() {
   return (
@@ -12,13 +17,25 @@ export default function page() {
           <Banner />
         </section>
         <section>
-          <Funcard />
+          <Stats />
         </section>
         <section>
-          <TutorPrice />
+          <HowItWorks />
+        </section>
+        <section>
+          <Approach />
+        </section>
+        <section>
+          <TutorsSection />
+        </section>
+        <section>
+          <PricingSection />
         </section>
         <section>
           <Testimonial />
+        </section>
+        <section>
+          <FAQSection />
         </section>
       </div>
     </>

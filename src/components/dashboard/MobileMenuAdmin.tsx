@@ -62,7 +62,7 @@ export default function MobileMenuAdmin({ isOpen, onClose }: MobileMenuProps) {
             onClick={onClose}
             className="p-1.5 sm:p-2 hover:bg-white/10 rounded-lg flex-shrink-0"
           >
-            <X className="w-5 h-5 sm:w-6 sm:h-6" />
+            {/* <X className="w-5 h-5 sm:w-6 sm:h-6" /> */}
           </button>
         </div>
 

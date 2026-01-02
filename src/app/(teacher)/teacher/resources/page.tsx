@@ -104,37 +104,36 @@ export default function Resources() {
 
   return (
     <div className="space-y-4 sm:space-y-5 lg:space-y-6">
-      {/* Header */}
       <div className="bg-white rounded-lg shadow-sm p-4 sm:p-5 lg:p-6">
-        <h1 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">
-          Resource Search
-        </h1>
-        <p className="text-sm text-gray-600">
-          Find educational materials from open education databases - filtered
-          by subject, grade, state, and material type
-        </p>
-      </div>
-
-      {/* Search Bar */}
-      <div className="bg-white rounded-lg shadow-sm p-4 sm:p-5 lg:p-6">
-        <div className="relative">
-          <Search
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-            size={20}
-          />
-          <Input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by topic, keyword, competencies..."
-            className="pl-12 h-11 text-base"
-          />
+        {/* Header */}
+        <div className=" pb-4 sm:pb-5 lg:pb-6">
+          <h1 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">
+            Resource Search
+          </h1>
+          <p className="text-sm text-gray-600">
+            Find educational materials from open education databases - filtered
+            by subject, grade, state, and material type
+          </p>
         </div>
-      </div>
 
-      {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm p-4 sm:p-5 lg:p-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        {/* Search Bar */}
+        <div className="py-4 sm:py-5 lg:py-6">
+          <div className="relative">
+            <Search
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+              size={20}
+            />
+            <Input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by topic, keyword, competencies..."
+              className="pl-12 h-11 text-base"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 ">
           <div>
             <label className="text-sm font-medium text-gray-700 block mb-2">
               Subject
@@ -243,6 +242,11 @@ export default function Resources() {
             </Select>
           </div>
         </div>
+      </div>
+
+
+      {/* Filters */}
+      <div className="bg-white rounded-lg shadow-sm p-4 sm:p-5 lg:p-6">
 
         {/* Results Count */}
         <div className="mb-6 flex items-center justify-between">
@@ -252,8 +256,8 @@ export default function Resources() {
             </span>{" "}
             results found
           </p>
-          <div>
-            <label className="text-sm font-medium text-gray-700 block mb-2">
+          <div className="flex gap-5 items-center">
+            <label className="text-sm font-medium text-gray-700 block">
               Sort By
             </label>
 
@@ -274,9 +278,10 @@ export default function Resources() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredResources.length > 0 ? (
             filteredResources.map((resource) => (
+              // card section
               <div
                 key={resource.id}
-                className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 hover:border-gray-300 overflow-hidden group"
+                className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 hover:border-gray-300 overflow-hidden group flex flex-col h-full"
               >
                 {/* Card Header */}
                 <div className="p-5 pb-4 border-b border-gray-100">
@@ -287,11 +292,10 @@ export default function Resources() {
                       </h3>
                     </div>
                     <span
-                      className={`text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0 ${
-                        resource.type === "PDF"
-                          ? "bg-blue-100 text-blue-700"
-                          : "bg-purple-100 text-purple-700"
-                      }`}
+                      className={`text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0 ${resource.type === "PDF"
+                        ? "bg-blue-100 text-blue-700"
+                        : "bg-purple-100 text-purple-700"
+                        }`}
                     >
                       {resource.type === "PDF" ? "📄 PDF" : "▶️ Video"}
                     </span>
@@ -302,20 +306,24 @@ export default function Resources() {
                 </div>
 
                 {/* Card Body */}
-                <div className="p-5">
+                <div className="p-5 flex-1 flex flex-col">
+
                   <p className="text-xs text-gray-600 mb-4 leading-relaxed">
                     {resource.description}
                   </p>
 
                   {resource.badgeColor && (
-                    <div
-                      className={`text-xs font-medium px-3 py-1.5 rounded-full inline-block mb-4 ${resource.badgeColor} text-amber-900`}
-                    >
-                      ⭐ {resource.tag}
+                    <div>
+                      <div
+                        className={`text-xs font-medium px-3 py-1.5 rounded-full inline-block mb-4 ${resource.badgeColor} text-amber-900`}
+                      >
+                        ⭐ {resource.tag}
+                      </div>
                     </div>
+
                   )}
 
-                  <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                  <div className="flex items-center justify-between pt-3 border-t border-gray-100 mt-auto">
                     <p className="text-xs text-gray-500">
                       Source:{" "}
                       <span className="font-medium text-gray-700">

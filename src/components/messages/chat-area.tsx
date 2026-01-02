@@ -270,7 +270,7 @@ export default function ChatArea({
         <div className="w-full ">
           <div className="bg-card border border-border rounded-lg p-4">
             <Textarea
-              placeholder="Type your Message..."
+              placeholder="Type Your Message..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               className="min-h-20 mb-3 resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none"
@@ -279,18 +279,18 @@ export default function ChatArea({
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
-                size="sm"
-                className="gap-2 text-foreground bg-transparent"
+
+                className="h-10 w-10 text-foreground bg-transparent"
               >
                 <Paperclip className="w-4 h-4" />
               </Button>
 
               <Button
                 variant="outline"
-                size="sm"
-                className="gap-2 text-foreground bg-transparent"
+
+                className="h-10 w-10 text-foreground bg-transparent"
               >
-                <Calendar className="w-4 h-4 text-blue-500" />
+                <Calendar className="text-[#0B31BD]" />
               </Button>
 
               <div className="flex-1" />
@@ -298,7 +298,7 @@ export default function ChatArea({
               <Button
                 size="icon"
                 variant="ghost"
-                className="shrink-0 bg-[#0B31BD] text-white"
+                className="shrink-0 bg-[#0B31BD] text-white hover:bg-[#0B31BD] hover:text-white"
                 onClick={handleSend}
               >
                 <ArrowUp className="w-4 h-4" />

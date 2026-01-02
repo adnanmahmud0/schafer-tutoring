@@ -319,11 +319,11 @@ export default function Session() {
 
   return (
     <>
-      <div className="bg-white rounded-lg shadow-sm p-4 sm:p-5 lg:p-6">
+      <div className="">
         {/* Header */}
-        <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-5 lg:mb-6">
+        {/* <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-5 lg:mb-6">
           Session Overview
-        </h2>
+        </h2> */}
 
         {/* Tabs */}
         <div className="flex gap-4 sm:gap-6 lg:gap-8 mb-6 sm:mb-7 lg:mb-8 border-b border-gray-200 overflow-x-auto">
@@ -354,7 +354,7 @@ export default function Session() {
           {sessions.map((session) => (
             <div
               key={session.id}
-              className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 rounded-lg hover:bg-gray-50 border-2 border-[#F6F6F7] transition-colors gap-3 sm:gap-0"
+              className="bg-white shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 rounded-lg hover:bg-gray-50 border border-[#F6F6F7] transition-colors gap-3 sm:gap-0"
             >
               {/* Left Content */}
               <div className="flex-1">

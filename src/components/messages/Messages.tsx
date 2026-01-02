@@ -9,7 +9,7 @@ export default function Messages() {
   const [showMobileChat, setShowMobileChat] = useState(false);
 
   return (
-    <div className="flex h-[calc(100vh-150px)] bg-background overflow-hidden">
+    <div className="flex h-[calc(101vh-150px)] bg-background overflow-hidden rounded-xl shadow-sm -mt-9 sm:-mt-4 md:-mt-1">
       {/* Sidebar Container */}
       <div
         className={`
