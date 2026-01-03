@@ -159,7 +159,39 @@ export {
   useCreateSessionRequest,
   useCancelSessionRequest,
   useExtendSessionRequest,
+  useMySessionRequests,
+  useMatchingSessionRequests,
+  useAcceptSessionRequest,
+  useSessionRequest,
+  useAllSessionRequests,
+  SESSION_REQUEST_STATUS,
 } from './use-session-requests';
+
+// Admin Stats Hooks
+export {
+  useOverviewStats,
+  useRevenueByMonth,
+  useUserDistribution,
+  useRecentActivity,
+  useDashboardStats,
+  useMonthlyRevenue,
+  usePopularSubjects,
+  useTopTutors,
+  useTopStudents,
+  useUserGrowth,
+} from './use-admin-stats';
+
+// Review Hooks
+export {
+  useCreateReview,
+  useMyReviews,
+  useUpdateReview,
+  useDeleteReview,
+  useTutorReviews,
+  useTutorReviewStats,
+  useReview,
+  useToggleReviewVisibility,
+} from './use-reviews';
 
 // Types
 export type { Subject, SubjectFilters, SubjectsResponse } from './use-subjects';
@@ -185,3 +217,23 @@ export type {
   SetupIntentResponse,
 } from './use-subscription';
 export type { SessionRequest, CreateSessionRequestData } from './use-session-requests';
+export type {
+  OverviewStats,
+  Statistic,
+  GrowthType,
+  RevenueByMonth,
+  UserDistribution,
+  RoleDistribution,
+  StatusDistribution,
+  ActivityLogItem,
+  ActivityLogResponse,
+  ActionType,
+  ActivityStatus,
+} from './use-admin-stats';
+export type {
+  SessionReview,
+  CreateReviewData,
+  UpdateReviewData,
+  ReviewStats,
+  ReviewsResponse,
+} from './use-reviews';
