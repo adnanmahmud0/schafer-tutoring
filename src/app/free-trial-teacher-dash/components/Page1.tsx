@@ -1,7 +1,12 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { FileText, Check, Loader2, AlertCircle, XCircle } from "lucide-react";
 import { useMyApplication, type ApplicationStatus } from "@/hooks/api";
+import { useStripeConnect } from "@/hooks/api/use-stripe";
+import { toast } from "sonner";
+import InterviewBookingSection from "./InterviewBookingSection";
+import ProfileSetupSection from "./ProfileSetupSection";
 
 // Helper functions
 const getStepFromStatus = (status: ApplicationStatus): number => {
@@ -43,7 +48,7 @@ const getStatusMessage = (
     case "SELECTED_FOR_INTERVIEW":
       return {
         title: "Congratulations! You have been selected for an interview.",
-        subtitle: "We will contact you shortly to schedule the interview.",
+        subtitle: "Please select an available interview slot below.",
         bgColor: "bg-green-50",
         borderColor: "border-green-500",
       };
@@ -72,10 +77,28 @@ const getStatusMessage = (
 };
 
 const Page1 = () => {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const { data: application, isLoading, error } = useMyApplication();
+  const { refetchStatus } = useStripeConnect();
   const [progressWidth, setProgressWidth] = useState("8%");
 
   const step = application ? getStepFromStatus(application.status) : 1;
+
+  // Handle Stripe onboarding callback
+  useEffect(() => {
+    const stripeOnboarding = searchParams.get("stripe_onboarding");
+
+    if (stripeOnboarding === "success") {
+      toast.success("Stripe account connected successfully!");
+      refetchStatus();
+      // Clean URL by removing query params
+      router.replace("/free-trial-teacher-dash", { scroll: false });
+    } else if (stripeOnboarding === "refresh") {
+      toast.info("Please complete your Stripe onboarding to continue.");
+      router.replace("/free-trial-teacher-dash", { scroll: false });
+    }
+  }, [searchParams, refetchStatus, router]);
 
   // Calculate progress width based on step and screen size
   useEffect(() => {
@@ -222,6 +245,23 @@ const Page1 = () => {
             </div>
           )}
         </div>
+
+        {/* Interview Booking Section - Only show when selected for interview */}
+        {application.status === "SELECTED_FOR_INTERVIEW" && (
+          <div className="mb-6">
+            <InterviewBookingSection applicationId={application._id} />
+          </div>
+        )}
+
+        {/* Profile Setup Section - Only show when approved */}
+        {application.status === "APPROVED" && (
+          <div className="mb-6">
+            <ProfileSetupSection
+              userEmail={application.email}
+              userName={application.name}
+            />
+          </div>
+        )}
 
         {/* Application Summary Card */}
         <div className="rounded-lg shadow-sm border border-gray-200 p-6 mb-6 bg-white">

@@ -1,5 +1,8 @@
 import './globals.css';
 import QueryProvider from '@/providers/query-provider';
+import SocketProvider from '@/providers/socket-provider';
+import VideoCallProvider from '@/providers/video-call-provider';
+import { VideoCallWrapper } from '@/components/video-call';
 import { Toaster } from 'sonner';
 
 export default function RootLayout({
@@ -11,8 +14,13 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <QueryProvider>
-          {children}
-          <Toaster position="top-right" richColors />
+          <SocketProvider>
+            <VideoCallProvider>
+              {children}
+              <VideoCallWrapper />
+              <Toaster position="top-right" richColors />
+            </VideoCallProvider>
+          </SocketProvider>
         </QueryProvider>
       </body>
     </html>

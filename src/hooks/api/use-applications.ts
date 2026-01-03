@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
+import { useAuthStore, type User } from '@/store/auth-store';
 
 // ============ Types ============
 export interface SubmitApplicationData {
@@ -34,10 +35,8 @@ export interface ApplicationResponse {
       email: string;
       status: string;
     };
-    user: {
-      _id: string;
-      email: string;
-    };
+    user: User;
+    accessToken: string;
   };
 }
 
@@ -114,10 +113,19 @@ const submitApplication = async (
 /**
  * Submit tutor application (Public - no auth required)
  * Creates user + application in one step
+ * Auto-login after successful submission
  */
 export const useSubmitApplication = () => {
+  const setAuth = useAuthStore((state) => state.setAuth);
+
   return useMutation({
     mutationFn: submitApplication,
+    onSuccess: (response) => {
+      // Auto-login if accessToken returned
+      if (response.data?.accessToken && response.data?.user) {
+        setAuth(response.data.user, response.data.accessToken);
+      }
+    },
   });
 };
 
@@ -125,7 +133,7 @@ export const useSubmitApplication = () => {
  * Get my application (Protected - APPLICANT role required)
  * Fetches the current user's tutor application
  */
-export const useMyApplication = () => {
+export const useMyApplication = (options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: ['myApplication'],
     queryFn: async () => {
@@ -134,5 +142,6 @@ export const useMyApplication = () => {
     },
     staleTime: 2 * 60 * 1000, // 2 min cache
     retry: false, // Don't retry on 404
+    enabled: options?.enabled ?? true,
   });
 };

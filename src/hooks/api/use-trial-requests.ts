@@ -73,6 +73,15 @@ export interface CreateTrialRequestData {
   documents?: File[];
 }
 
+// Populated tutor info when request is accepted
+export interface AcceptedTutor {
+  _id: string;
+  name: string;
+  email: string;
+  profilePicture?: string;
+  phone?: string;
+}
+
 export interface TrialRequest {
   _id: string;
   requestType: 'TRIAL';
@@ -90,7 +99,7 @@ export interface TrialRequest {
   preferredDateTime?: string;
   documents?: string[];
   status: TRIAL_REQUEST_STATUS;
-  acceptedTutorId?: string;
+  acceptedTutorId?: AcceptedTutor | string;
   chatId?: string;
   expiresAt: string;
   acceptedAt?: string;
@@ -301,6 +310,98 @@ export function useAcceptTrialRequest() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['trial-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['chats'] });
+    },
+  });
+}
+
+// ========================
+// Unified Request Types (SESSION + TRIAL)
+// ========================
+
+export interface UnifiedRequest {
+  _id: string;
+  requestType: 'SESSION' | 'TRIAL';
+  studentId?: {
+    _id: string;
+    name: string;
+    email: string;
+    profilePicture?: string;
+  };
+  studentInfo?: StudentInfo;
+  subject: {
+    _id: string;
+    name: string;
+  };
+  gradeLevel: string;
+  schoolType: string;
+  description: string;
+  learningGoals?: string;
+  preferredDateTime?: string;
+  documents?: string[];
+  status: string;
+  acceptedTutorId?: string;
+  chatId?: string;
+  expiresAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Get matching requests for tutor (both SESSION and TRIAL)
+ * GET /api/v1/session-requests/matching
+ * Uses MongoDB $unionWith to combine both collections
+ */
+export function useMatchingRequests(filters?: {
+  page?: number;
+  limit?: number;
+  requestType?: 'SESSION' | 'TRIAL';
+}) {
+  const { isAuthenticated, user } = useAuthStore();
+
+  return useQuery({
+    queryKey: ['matching-requests', filters],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/session-requests/matching', {
+        params: filters,
+      });
+      return data as {
+        data: UnifiedRequest[];
+        meta: {
+          total: number;
+          page: number;
+          limit: number;
+          totalPage: number;
+        };
+      };
+    },
+    enabled: isAuthenticated && user?.role === 'TUTOR',
+  });
+}
+
+/**
+ * Accept a session request (creates chat between tutor and student)
+ * PATCH /api/v1/session-requests/:id/accept
+ */
+export function useAcceptSessionRequest() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      introductoryMessage,
+    }: {
+      id: string;
+      introductoryMessage?: string;
+    }) => {
+      const { data } = await apiClient.patch(`/session-requests/${id}/accept`, {
+        introductoryMessage,
+      });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['matching-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['session-requests'] });
       queryClient.invalidateQueries({ queryKey: ['chats'] });
     },
   });

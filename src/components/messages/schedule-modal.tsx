@@ -8,7 +8,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 interface ScheduleModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSchedule: (date: string, time: string) => void;
+  onSchedule: (selectedDate: Date, time: string) => void;
 }
 
 export default function ScheduleModal({
@@ -16,13 +16,19 @@ export default function ScheduleModal({
   onClose,
   onSchedule,
 }: ScheduleModalProps) {
-  const [selectedDate, setSelectedDate] = useState<Date | null>(
-    new Date(2025, 10, 12)
-  );
-  const [selectedTime, setSelectedTime] = useState("09:00 PM");
-  const [currentMonth, setCurrentMonth] = useState(new Date(2025, 10));
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
+  const [selectedTime, setSelectedTime] = useState("10:00 AM");
+  const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const timeOptions = [
+    "12:00 AM",
+    "01:00 AM",
+    "02:00 AM",
+    "03:00 AM",
+    "04:00 AM",
+    "05:00 AM",
+    "06:00 AM",
+    "07:00 AM",
     "08:00 AM",
     "09:00 AM",
     "10:00 AM",
@@ -37,6 +43,8 @@ export default function ScheduleModal({
     "07:00 PM",
     "08:00 PM",
     "09:00 PM",
+    "10:00 PM",
+    "11:00 PM",
   ];
 
   const getDaysInMonth = (date: Date) => {
@@ -67,8 +75,7 @@ export default function ScheduleModal({
 
   const handleSchedule = () => {
     if (selectedDate) {
-      const formattedDate = selectedDate.toLocaleDateString("en-DE");
-      onSchedule(formattedDate, selectedTime);
+      onSchedule(selectedDate, selectedTime);
       onClose();
     }
   };

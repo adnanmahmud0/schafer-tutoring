@@ -10,10 +10,19 @@ export {
   useForgetPassword,
   useResetPassword,
   useChangePassword,
+  useRefreshToken,
 } from './use-auth';
 
-// Subject Hooks (Public)
-export { useSubjects, useActiveSubjects, useSubject } from './use-subjects';
+// Subject Hooks (Public + Admin)
+export {
+  useSubjects,
+  useActiveSubjects,
+  useSubject,
+  useAdminSubjects,
+  useCreateSubject,
+  useUpdateSubject,
+  useDeleteSubject,
+} from './use-subjects';
 
 // Session Hooks
 export {
@@ -28,6 +37,7 @@ export {
   useProposeSession,
   useAcceptSessionProposal,
   useRejectSessionProposal,
+  useTrialSession,
   // Admin
   useAdminSessions,
   useSessionStats,
@@ -112,13 +122,47 @@ export {
   useDeleteInterviewSlot,
   useCompleteInterviewSlot,
   useCancelInterviewSlot,
+  useAvailableInterviewSlots,
   useBookInterviewSlot,
   useRescheduleInterviewSlot,
+  useMyBookedInterview,
+  useCancelMyInterview,
   INTERVIEW_SLOT_STATUS,
 } from './use-interview-slots';
 
+// Stripe Connect Hooks
+export {
+  useCreateStripeAccount,
+  useGetOnboardingLink,
+  useStripeOnboardingStatus,
+  useStripeConnect,
+} from './use-stripe';
+
+// Subscription & Payment Method Hooks
+export {
+  useMySubscription,
+  usePlanUsage,
+  usePaymentHistory,
+  useCancelSubscription,
+  usePaymentMethods,
+  useCreateSetupIntent,
+  useAttachPaymentMethod,
+  useSetDefaultPaymentMethod,
+  useDeletePaymentMethod,
+  PLAN_DISPLAY_NAMES,
+  PLAN_DETAILS,
+  CARD_BRAND_ICONS,
+} from './use-subscription';
+
+// Session Request Hooks
+export {
+  useCreateSessionRequest,
+  useCancelSessionRequest,
+  useExtendSessionRequest,
+} from './use-session-requests';
+
 // Types
-export type { Subject } from './use-subjects';
+export type { Subject, SubjectFilters, SubjectsResponse } from './use-subjects';
 export type { Session, SessionFilters, UnifiedSession, UnifiedSessionFilters } from './use-sessions';
 export type { Student, StudentFilters } from './use-students';
 export type { Tutor, TutorFilters, TutorsResponse } from './use-tutors';
@@ -127,5 +171,17 @@ export type { Chat, Message } from './use-chats';
 export type { Notification } from './use-notifications';
 export type { SubmitApplicationData, ApplicationResponse, TutorApplication, ApplicationStatus } from './use-applications';
 export type { AdminApplication, AdminApplicationStatus, ApplicationFilters, AdminApplicationsResponse } from './use-admin-applications';
-export type { TrialRequest, CreateTrialRequestData, StudentInfo, GuardianInfo } from './use-trial-requests';
+export type { TrialRequest, AcceptedTutor, CreateTrialRequestData, StudentInfo, GuardianInfo } from './use-trial-requests';
 export type { InterviewSlot, InterviewSlotFilters } from './use-interview-slots';
+export type { StripeAccount, OnboardingStatus, CreateAccountResponse } from './use-stripe';
+export type {
+  Subscription,
+  SubscriptionTier,
+  SubscriptionStatus,
+  PlanUsage,
+  PaymentHistoryItem,
+  PaymentHistoryResponse,
+  PaymentMethod,
+  SetupIntentResponse,
+} from './use-subscription';
+export type { SessionRequest, CreateSessionRequestData } from './use-session-requests';

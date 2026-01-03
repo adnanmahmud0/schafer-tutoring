@@ -188,6 +188,31 @@ export function useCancelInterviewSlot() {
 
 // ============ APPLICANT HOOKS ============
 
+// Get available slots for APPLICANT to book
+export function useAvailableInterviewSlots() {
+  const { isAuthenticated, user } = useAuthStore();
+
+  return useQuery({
+    queryKey: ['interview-slots', 'available'],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      params.append('status', 'AVAILABLE');
+
+      const { data } = await apiClient.get(`/interview-slots?${params}`);
+      return data as {
+        data: InterviewSlot[];
+        meta: {
+          total: number;
+          page: number;
+          limit: number;
+          totalPage: number;
+        };
+      };
+    },
+    enabled: isAuthenticated && user?.role === 'APPLICANT',
+  });
+}
+
 // Book interview slot - Applicant Only
 export function useBookInterviewSlot() {
   const queryClient = useQueryClient();
@@ -230,6 +255,37 @@ export function useRescheduleInterviewSlot() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['interview-slots'] });
+      queryClient.invalidateQueries({ queryKey: ['my-booked-interview'] });
+    },
+  });
+}
+
+// Get my booked interview slot - Applicant Only
+export function useMyBookedInterview() {
+  const { isAuthenticated, user } = useAuthStore();
+
+  return useQuery({
+    queryKey: ['my-booked-interview'],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/interview-slots/my-interview');
+      return data.data as InterviewSlot | null;
+    },
+    enabled: isAuthenticated && user?.role === 'APPLICANT',
+  });
+}
+
+// Cancel my interview - Applicant Only
+export function useCancelMyInterview() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data } = await apiClient.patch(`/interview-slots/${id}/cancel-by-applicant`);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['interview-slots'] });
+      queryClient.invalidateQueries({ queryKey: ['my-booked-interview'] });
     },
   });
 }

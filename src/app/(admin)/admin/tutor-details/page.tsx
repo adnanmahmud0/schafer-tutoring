@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { FileText, ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,7 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { useTutor, useBlockTutor, useUnblockTutor } from '@/hooks/api';
 
-const TutorDetailsPage = () => {
+const TutorDetailsContent = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const id = searchParams.get('id') || '';
@@ -336,4 +337,10 @@ const TutorDetailsPage = () => {
   );
 };
 
-export default TutorDetailsPage;
+export default function TutorDetailsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-gray-400" /></div>}>
+      <TutorDetailsContent />
+    </Suspense>
+  );
+}

@@ -366,3 +366,53 @@ export function useRejectSessionProposal() {
     },
   });
 }
+
+// Counter-Propose Session - For Students (Protected)
+// Student can suggest alternative time for a session proposal
+export function useCounterProposeSession() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      messageId,
+      newStartTime,
+      newEndTime,
+      reason,
+    }: {
+      messageId: string;
+      newStartTime: string;
+      newEndTime: string;
+      reason?: string;
+    }) => {
+      const { data } = await apiClient.post(
+        `/sessions/proposals/${messageId}/counter`,
+        { newStartTime, newEndTime, reason }
+      );
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['messages'] });
+      queryClient.invalidateQueries({ queryKey: ['chats'] });
+    },
+  });
+}
+
+// Get Trial Session by Trial Request ID (Protected)
+export function useTrialSession(trialRequestId: string | undefined) {
+  const { isAuthenticated } = useAuthStore();
+
+  return useQuery({
+    queryKey: ['sessions', 'trial', trialRequestId],
+    queryFn: async () => {
+      // Fetch sessions with trialRequestId filter
+      const { data } = await apiClient.get('/sessions', {
+        params: {
+          trialRequestId,
+        },
+      });
+      // Return the first matching session
+      return data.data?.[0] as Session | null;
+    },
+    enabled: isAuthenticated && !!trialRequestId,
+  });
+}

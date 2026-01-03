@@ -4,6 +4,7 @@ import { Bell, Menu } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import MobileMenuTutor from "@/components/dashboard/MobileMenuTutor";
+import { useLogout } from "@/hooks/api/use-auth";
 
 export default function TopNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -11,6 +12,7 @@ export default function TopNavbar() {
   const [notificationMenuOpen, setNotificationMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const notificationMenuRef = useRef<HTMLDivElement>(null);
+  const { mutate: logout, isPending: isLoggingOut } = useLogout();
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -189,13 +191,14 @@ export default function TopNavbar() {
                   Profile
                 </Link>
                 <button
-                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 rounded-b-lg"
+                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-b-lg"
+                  disabled={isLoggingOut}
                   onClick={() => {
                     setUserMenuOpen(false);
-                    // TODO: logout logic
+                    logout();
                   }}
                 >
-                  Logout
+                  {isLoggingOut ? "Logging out..." : "Logout"}
                 </button>
               </div>
             )}

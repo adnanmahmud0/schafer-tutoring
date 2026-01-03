@@ -2,11 +2,20 @@
 
 import ChatArea from "@/components/messages/chat-area";
 import ConversationSidebar from "@/components/messages/conversation-sidebar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useChats } from "@/hooks/api/use-chats";
 
 export default function Messages() {
-  const [selectedConversation, setSelectedConversation] = useState("sarah");
+  const [selectedConversation, setSelectedConversation] = useState("");
   const [showMobileChat, setShowMobileChat] = useState(false);
+  const { data: chats } = useChats();
+
+  // Auto-select first chat when chats load
+  useEffect(() => {
+    if (chats && chats.length > 0 && !selectedConversation) {
+      setSelectedConversation(chats[0]._id);
+    }
+  }, [chats, selectedConversation]);
 
   return (
     <div className="flex h-[calc(100vh-150px)] bg-background overflow-hidden">
@@ -14,7 +23,7 @@ export default function Messages() {
       <div
         className={`
         h-full w-full md:w-56 shrink-0 border-r border-border
-        ${showMobileChat ? "hidden" : "block"} 
+        ${showMobileChat ? "hidden" : "block"}
         md:block
       `}
       >

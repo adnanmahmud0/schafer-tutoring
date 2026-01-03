@@ -1,31 +1,91 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import React, { useState, useRef } from 'react';
-import { Edit, Check, X, Camera } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Edit, Check, X, Camera, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useProfile } from '@/hooks/api/use-auth';
 
 export default function ProfilePage() {
+  const { data: profile, isLoading } = useProfile();
+
   const [isEditing, setIsEditing] = useState(false);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [profilePic, setProfilePic] = useState<string>(
-    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=96&h=96&fit=crop"
+    "https://i.ibb.co/z5YHLV9/profile.png"
   );
   const [tempPhoto, setTempPhoto] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
-    name: 'David Chen',
-    dateOfBirth: '26.11.2003',
-    email: 'schafertutoring@gmail.com',
-    phoneNumber: '+839571238',
-    street: 'Goethe Street',
-    number: '51',
-    zip: '8751',
-    city: 'Munich',
+    name: '',
+    dateOfBirth: '',
+    email: '',
+    phoneNumber: '',
+    street: '',
+    number: '',
+    zip: '',
+    city: '',
   });
 
   const [tempFormData, setTempFormData] = useState({ ...formData });
+
+  // Update form data when profile loads
+  useEffect(() => {
+    if (profile) {
+      const address = profile.tutorProfile?.address || '';
+      const addressParts = address.split(',').map(s => s.trim());
+      const streetPart = addressParts[0] || '';
+      const cityPart = addressParts[1] || '';
+
+      // Parse street and number
+      const streetMatch = streetPart.match(/^(.+?)\s*(\d+)?$/);
+      const street = streetMatch?.[1] || streetPart;
+      const number = streetMatch?.[2] || '';
+
+      // Parse zip and city
+      const cityMatch = cityPart.match(/^(\d+)?\s*(.+)?$/);
+      const zip = cityMatch?.[1] || '';
+      const city = cityMatch?.[2] || cityPart;
+
+      // Format date
+      let formattedDate = '';
+      if (profile.tutorProfile?.birthDate) {
+        const date = new Date(profile.tutorProfile.birthDate);
+        formattedDate = `${date.getDate().toString().padStart(2, '0')}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getFullYear()}`;
+      } else if (profile.dateOfBirth) {
+        const date = new Date(profile.dateOfBirth);
+        formattedDate = `${date.getDate().toString().padStart(2, '0')}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getFullYear()}`;
+      }
+
+      const newFormData = {
+        name: profile.name || '',
+        dateOfBirth: formattedDate,
+        email: profile.email || '',
+        phoneNumber: profile.phone || '',
+        street,
+        number,
+        zip,
+        city,
+      };
+
+      setFormData(newFormData);
+      setTempFormData(newFormData);
+
+      if (profile.profilePicture) {
+        setProfilePic(profile.profilePicture);
+      }
+    }
+  }, [profile]);
+
+  // Get subjects string for display
+  const getSubjectsString = () => {
+    if (!profile?.tutorProfile?.subjects || profile.tutorProfile.subjects.length === 0) {
+      return 'Tutor';
+    }
+    const subjectNames = profile.tutorProfile.subjects.map(s => s.name);
+    return `Tutor (${subjectNames.join(', ')})`;
+  };
 
   const handleEditClick = () => {
     setIsEditing(true);
@@ -75,6 +135,15 @@ export default function ProfilePage() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="space-y-4 sm:space-y-5 lg:space-y-6">
@@ -110,8 +179,8 @@ export default function ProfilePage() {
 
             {/* Name & Role */}
             <div className="flex-1 text-center sm:text-left sm:pt-2 lg:pt-4">
-              <h1 className="text-2xl sm:text-2xl lg:text-3xl font-bold text-gray-900">{formData.name}</h1>
-              <p className="text-sm sm:text-base lg:text-lg text-gray-600 mt-1">Tutor (Math, English & German)</p>
+              <h1 className="text-2xl sm:text-2xl lg:text-3xl font-bold text-gray-900">{formData.name || 'Loading...'}</h1>
+              <p className="text-sm sm:text-base lg:text-lg text-gray-600 mt-1">{getSubjectsString()}</p>
             </div>
           </div>
 

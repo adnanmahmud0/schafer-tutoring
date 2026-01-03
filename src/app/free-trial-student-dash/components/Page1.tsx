@@ -2,7 +2,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMyRequests, TRIAL_REQUEST_STATUS } from "@/hooks/api";
+import { useTrialSession, SESSION_STATUS } from "@/hooks/api/use-sessions";
 import { useAuthStore } from "@/store/auth-store";
+import Page2 from "./Page2";
+import Page3 from "./Page3";
 
 const SCHOOL_TYPE_LABELS: Record<string, string> = {
   GRUNDSCHULE: "Grundschule",
@@ -27,7 +30,7 @@ const Page1 = () => {
   }, []);
 
   // Fetch trial requests (filtered by TRIAL type)
-  const { data: requestsData, isLoading } = useMyRequests({
+  const { data: requestsData, isLoading: isLoadingRequests } = useMyRequests({
     requestType: "TRIAL",
     limit: 1,
   });
@@ -35,9 +38,22 @@ const Page1 = () => {
   // Get the latest trial request
   const trialRequest = requestsData?.data?.[0];
 
+  // Fetch trial session associated with this trial request
+  const { data: trialSession, isLoading: isLoadingSession } = useTrialSession(
+    trialRequest?._id
+  );
+
+  const isLoading = isLoadingRequests || isLoadingSession;
+
   // Determine step based on status
   const getStep = () => {
     if (!trialRequest) return 1;
+
+    // If trial session is completed, show step 3
+    if (trialSession?.status === SESSION_STATUS.COMPLETED) {
+      return 3;
+    }
+
     switch (trialRequest.status) {
       case TRIAL_REQUEST_STATUS.PENDING:
         return 1;
@@ -112,6 +128,16 @@ const Page1 = () => {
         </div>
       </div>
     );
+  }
+
+  // Show Page3 when trial session is completed
+  if (trialSession?.status === SESSION_STATUS.COMPLETED) {
+    return <Page3 />;
+  }
+
+  // Show Page2 with chat when request is accepted
+  if (trialRequest.status === TRIAL_REQUEST_STATUS.ACCEPTED) {
+    return <Page2 trialRequest={trialRequest} />;
   }
 
   // Status message based on request status

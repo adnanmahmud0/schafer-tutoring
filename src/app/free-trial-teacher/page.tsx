@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Upload, X, Loader2, CalendarIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -14,7 +14,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useSubmitApplication, useActiveSubjects } from "@/hooks/api";
+import { useSubmitApplication, useActiveSubjects, useMyApplication } from "@/hooks/api";
+import { useAuthStore } from "@/store/auth-store";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -43,11 +44,34 @@ interface SelectedSubject {
 
 const FreeTrialTeacher = () => {
   const router = useRouter();
+  const { isAuthenticated, user } = useAuthStore();
   const [step, setStep] = useState<number>(1);
   const [selectedSubjects, setSelectedSubjects] = useState<SelectedSubject[]>([]);
   const [showSubjectDropdown, setShowSubjectDropdown] =
     useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>("");
+
+  // Check if user already has an application (only for APPLICANT role)
+  // Only fetch if user is authenticated AND has APPLICANT role
+  const shouldCheckApplication = isAuthenticated && user?.role === "APPLICANT";
+  const { data: existingApplication, isLoading: isCheckingApplication } = useMyApplication({
+    enabled: shouldCheckApplication,
+  });
+
+  // Redirect existing tutors/applicants
+  useEffect(() => {
+    // If user is already a TUTOR, redirect to teacher dashboard
+    if (isAuthenticated && user?.role === "TUTOR") {
+      router.replace("/teacher/dashboard");
+      return;
+    }
+
+    // If user is APPLICANT and already has an application, redirect to application dashboard
+    if (isAuthenticated && user?.role === "APPLICANT" && existingApplication) {
+      router.replace("/free-trial-teacher-dash");
+      return;
+    }
+  }, [isAuthenticated, user, existingApplication, router]);
 
   // Fetch subjects from API
   const { data: availableSubjects = [], isLoading: subjectsLoading } = useActiveSubjects();
@@ -204,6 +228,18 @@ const FreeTrialTeacher = () => {
       },
     });
   };
+
+  // Show loading while checking for existing application
+  if (isAuthenticated && (user?.role === "TUTOR" || user?.role === "APPLICANT") && isCheckingApplication) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-10 h-10 animate-spin text-[#0B31BD]" />
+          <p className="text-gray-600">Checking your application status...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

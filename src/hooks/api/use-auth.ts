@@ -133,6 +133,25 @@ export function useLogout() {
   });
 }
 
+// Profile with tutorProfile (for profile page)
+export interface TutorProfileData {
+  _id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  dateOfBirth?: string;
+  profilePicture?: string;
+  role: string;
+  tutorProfile?: {
+    subjects?: Array<{ _id: string; name: string }>;
+    address?: string;
+    birthDate?: string;
+    bio?: string;
+    languages?: string[];
+    isVerified?: boolean;
+  };
+}
+
 // Get Profile Hook (Protected)
 export function useProfile() {
   const { isAuthenticated } = useAuthStore();
@@ -140,8 +159,8 @@ export function useProfile() {
   return useQuery({
     queryKey: ['profile'],
     queryFn: async () => {
-      const { data } = await apiClient.get('/users/profile');
-      return data.data as User;
+      const { data } = await apiClient.get('/user/profile');
+      return data.data as TutorProfileData;
     },
     enabled: isAuthenticated,
   });
@@ -154,7 +173,7 @@ export function useUpdateProfile() {
 
   return useMutation({
     mutationFn: async (profileData: Partial<User>) => {
-      const { data } = await apiClient.patch('/users/profile', profileData);
+      const { data } = await apiClient.patch('/user/profile', profileData);
       return data;
     },
     onSuccess: (response) => {
@@ -239,6 +258,39 @@ export function useChangePassword() {
         passwordData
       );
       return data;
+    },
+  });
+}
+
+// Refresh Token Hook - Get new access token with updated role
+export function useRefreshToken() {
+  const { setAuth } = useAuthStore();
+
+  return useMutation({
+    mutationFn: async () => {
+      // The refresh token is stored in httpOnly cookie, so just call the endpoint
+      const { data } = await apiClient.post<AuthResponse>('/auth/refresh-token');
+      return data;
+    },
+    onSuccess: (response) => {
+      const { accessToken } = response.data;
+
+      // Decode token to get updated user data (with new role)
+      const decoded = decodeToken(accessToken);
+      if (!decoded) {
+        throw new Error('Invalid token');
+      }
+
+      const user: User = {
+        _id: decoded.id,
+        email: decoded.email,
+        role: decoded.role as User['role'],
+        name: '',
+        isVerified: true,
+      };
+
+      // Update auth store with new token and user data
+      setAuth(user, accessToken);
     },
   });
 }

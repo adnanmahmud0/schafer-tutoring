@@ -8,36 +8,53 @@ export interface Chat {
   participants: {
     _id: string;
     name: string;
-    email: string;
-    avatar?: string;
-    role: string;
+    email?: string;
+    image?: string;  // Backend returns 'image', not 'avatar'
+    avatar?: string; // Alias for compatibility
+    role?: string;
   }[];
   lastMessage?: {
-    content: string;
+    text?: string;    // Backend returns 'text'
+    content?: string; // Alias for compatibility
     createdAt: string;
   };
   unreadCount: number;
+  presence?: {
+    isOnline: boolean;
+    lastActive?: number;
+  };
+  subject?: string; // Subject for tutoring chats
   createdAt: string;
   updatedAt: string;
 }
 
 export interface Message {
   _id: string;
-  chat: string;
+  chatId: string;
   sender: {
     _id: string;
     name: string;
-    avatar?: string;
+    profilePicture?: string; // Backend populates with profilePicture
+    avatar?: string;         // Alias for compatibility
   };
-  content: string;
-  type: 'TEXT' | 'SESSION_PROPOSAL' | 'FILE';
+  text?: string;             // Backend field name
+  content?: string;          // Virtual alias from backend
+  type: 'text' | 'image' | 'media' | 'doc' | 'mixed' | 'session_proposal';
   sessionProposal?: {
     subject: string;
-    scheduledAt: string;
+    startTime: string;
+    endTime: string;
     duration: number;
-    status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+    price: number;
+    description?: string;
+    status: 'PROPOSED' | 'ACCEPTED' | 'REJECTED' | 'EXPIRED';
+    sessionId?: string;
+    expiresAt: string;
+    // Legacy field alias
+    scheduledAt?: string;
   };
-  isRead: boolean;
+  readBy?: string[];
+  deliveredTo?: string[];
   createdAt: string;
 }
 
@@ -94,7 +111,12 @@ export function useSendMessage() {
       content: string;
       type?: 'TEXT' | 'FILE';
     }) => {
-      const { data } = await apiClient.post('/messages', messageData);
+      // Backend expects 'text' field, not 'content'
+      const { data } = await apiClient.post('/messages', {
+        chatId: messageData.chatId,
+        text: messageData.content,
+        type: messageData.type?.toLowerCase() || 'text',
+      });
       return data;
     },
     onSuccess: (_, variables) => {

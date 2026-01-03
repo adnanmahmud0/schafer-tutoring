@@ -7,7 +7,7 @@ export interface User {
   email: string;
   role: 'STUDENT' | 'TUTOR' | 'SUPER_ADMIN' | 'APPLICANT';
   avatar?: string;
-  isVerified: boolean;
+  isVerified?: boolean;
   phone?: string;
   address?: string;
 }

@@ -1,41 +1,132 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @next/next/no-img-element */
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useMessages, useSendMessage } from '@/hooks/api/use-chats';
+import { useAuthStore } from '@/store/auth-store';
+import { TrialRequest, AcceptedTutor } from '@/hooks/api/use-trial-requests';
+import { Loader2, Send, Paperclip } from 'lucide-react';
+import { useSocket } from '@/providers/socket-provider';
+import { useAcceptSessionProposal, useRejectSessionProposal } from '@/hooks/api/use-sessions';
+import SessionProposal from '@/components/messages/session-proposal';
+import ScheduleModal from '@/components/messages/schedule-modal';
+import { toast } from 'sonner';
 
-const Page2 = () => {
-  const [step, setStep] = useState(2);
+interface Page2Props {
+  trialRequest: TrialRequest;
+}
+
+const Page2 = ({ trialRequest }: Page2Props) => {
+  const step = 2;
   const [message, setMessage] = useState('');
+  const [progressWidth, setProgressWidth] = useState("55%");
+  const [isScheduleOpen, setIsScheduleOpen] = useState(false);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuthStore();
+  const { joinChat, leaveChat, isConnected } = useSocket();
 
-  const [messages, setMessages] = useState([
-    {
-      text: "Hi! Looking forward to our session. I've prepared some practice problems on algebra.",
-      sender: "tutor",
-      time: "2:30 PM"
-    },
-    {
-      text: "Thanks! See you soon.",
-      sender: "student",
-      time: "2:45 PM"
+  // Get tutor info from populated acceptedTutorId
+  const tutor = typeof trialRequest.acceptedTutorId === 'object'
+    ? trialRequest.acceptedTutorId as AcceptedTutor
+    : null;
+
+  // Handle both populated (object with _id) and non-populated (string) chatId
+  const chatId = typeof trialRequest.chatId === 'object' && trialRequest.chatId !== null
+    ? (trialRequest.chatId as { _id: string })._id
+    : (trialRequest.chatId as string) || '';
+
+  // Fetch messages from API
+  const { data: messagesData, isLoading: messagesLoading } = useMessages(chatId);
+  const { mutate: sendMessage, isPending: isSending } = useSendMessage();
+  const { mutate: acceptProposal, isPending: isAccepting } = useAcceptSessionProposal();
+  const { mutate: rejectProposal, isPending: isRejecting } = useRejectSessionProposal();
+
+  // Join/leave socket room when chatId changes
+  useEffect(() => {
+    if (chatId && isConnected) {
+      joinChat(chatId);
+      return () => {
+        leaveChat(chatId);
+      };
     }
-  ]);
+  }, [chatId, isConnected, joinChat, leaveChat]);
+
+  // Get tutor initials for avatar
+  const getTutorInitials = () => {
+    if (!tutor?.name) return 'T';
+    const names = tutor.name.split(' ');
+    if (names.length >= 2) {
+      return `${names[0][0]}${names[1][0]}`.toUpperCase();
+    }
+    return names[0][0].toUpperCase();
+  };
+
+  // Handle responsive progress bar (step 2 = 55% progress)
+  useEffect(() => {
+    const computeWidth = () => {
+      const w = typeof window !== "undefined" ? window.innerWidth : 0;
+      if (w <= 640) return "55%";
+      if (w <= 768) return "52%";
+      return "55%";
+    };
+    setProgressWidth(computeWidth());
+
+    const handleResize = () => setProgressWidth(computeWidth());
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [messagesData]);
 
   const handleSendMessage = () => {
-    if (message.trim()) {
-      const newMessage = {
-        text: message,
-        sender: "student",
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      setMessages([...messages, newMessage]);
+    if (message.trim() && chatId) {
+      sendMessage({
+        chatId,
+        content: message.trim(),
+        type: 'TEXT',
+      });
       setMessage('');
     }
   };
 
-  const handleKeyPress = (e: { key: string; shiftKey: any; preventDefault: () => void; }) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
+  };
+
+  const handleSessionAction = (messageId: string, action: string) => {
+    if (action === 'accepted') {
+      acceptProposal(messageId, {
+        onSuccess: () => {
+          toast.success('Session accepted! Check your upcoming sessions.');
+        },
+        onError: (error: any) => {
+          toast.error(error?.response?.data?.message || 'Failed to accept session');
+        },
+      });
+    } else if (action === 'declined') {
+      rejectProposal(messageId, {
+        onSuccess: () => {
+          toast.info('Session proposal declined');
+        },
+        onError: (error: any) => {
+          toast.error(error?.response?.data?.message || 'Failed to decline session');
+        },
+      });
+    }
+  };
+
+  const formatTime = (dateString: string) => {
+    return new Date(dateString).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   return (
@@ -53,14 +144,7 @@ const Page2 = () => {
 
               <div
                 className="absolute top-2.5 left-0 h-2 rounded-3xl bg-[#0B31BD] z-10 transition-all duration-700 ease-in-out"
-                style={{
-                  width:
-                    window.innerWidth <= 640
-                      ? step === 1 ? "22%" : step === 2 ? "55%" : "88%"
-                      : window.innerWidth <= 768
-                      ? step === 1 ? "18%" : step === 2 ? "52%" : "86%"
-                      : step === 1 ? "10%" : step === 2 ? "55%" : "95%"
-                }}
+                style={{ width: progressWidth }}
               ></div>
 
               {/* Step 1 */}
@@ -99,12 +183,20 @@ const Page2 = () => {
         {/* Tutor Profile Card */}
         <div className="rounded-lg p-6">
           <div className="flex items-start gap-4 pb-4">
-            <div className="w-12 h-12 rounded-full bg-[#0B31BD] flex items-center justify-center text-white font-semibold text-lg">
-              JM
-            </div>
+            {tutor?.profilePicture ? (
+              <img
+                src={tutor.profilePicture}
+                alt={tutor.name}
+                className="w-12 h-12 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-full bg-[#0B31BD] flex items-center justify-center text-white font-semibold text-lg">
+                {getTutorInitials()}
+              </div>
+            )}
             <div className="flex-1">
-              <p className="font-semibold text-gray-800">Jessica Martinez</p>
-              <p className="text-sm text-gray-600">Math Specialist</p>
+              <p className="font-semibold text-gray-800">{tutor?.name || 'Tutor'}</p>
+              <p className="text-sm text-gray-600">{trialRequest.subject?.name} Tutor</p>
             </div>
           </div>
         </div>
@@ -113,31 +205,73 @@ const Page2 = () => {
         <div className="rounded-lg shadow-sm border border-gray-200 p-6 mb-6 bg-white">
 
           {/* Chat Area */}
-          <div className="bg-gray-50 rounded-lg p-4 mb-4 h-96 overflow-y-auto space-y-4">
-            {messages.map((msg, index) => (
-              <div key={index} className={`flex gap-3 ${msg.sender === "student" ? "justify-end" : ""}`}>
-                {/* Tutor Avatar */}
-                {msg.sender === "tutor" && (
-                  <div className="w-8 h-8 rounded-full bg-[#0B31BD] flex-shrink-0 flex items-center justify-center text-white text-xs font-semibold">
-                    JM
-                  </div>
-                )}
-
-                <div className={msg.sender === "student" ? "text-right" : ""}>
-                  {msg.sender === "tutor" && (
-                    <p className="text-xs font-semibold text-gray-700">Jessica Martinez</p>
-                  )}
-                  
-                  <div className={`inline-block rounded-lg p-3 mt-1 max-w-xs ${msg.sender === "student" ? "bg-[#0B31BD] text-white" : "bg-white border border-gray-200"}`}>
-                    <p className="text-sm">{msg.text}</p>
-                  </div>
-                  
-                  <p className={`text-xs text-gray-500 mt-1 ${msg.sender === "student" ? "text-right" : ""}`}>
-                    {msg.time}
-                  </p>
-                </div>
+          <div
+            ref={chatContainerRef}
+            className="bg-gray-50 rounded-lg p-4 mb-4 h-96 overflow-y-auto space-y-4"
+          >
+            {messagesLoading ? (
+              <div className="flex items-center justify-center h-full">
+                <Loader2 className="w-6 h-6 animate-spin text-[#0B31BD]" />
               </div>
-            ))}
+            ) : messagesData && messagesData.length > 0 ? (
+              messagesData.map((msg) => {
+                const isStudent = msg.sender._id === user?._id;
+                const isTutor = !isStudent;
+
+                return (
+                  <div key={msg._id} className={`flex gap-3 ${isStudent ? "justify-end" : ""}`}>
+                    {/* Tutor Avatar */}
+                    {isTutor && (
+                      tutor?.profilePicture ? (
+                        <img
+                          src={tutor.profilePicture}
+                          alt={tutor.name}
+                          className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-[#0B31BD] flex-shrink-0 flex items-center justify-center text-white text-xs font-semibold">
+                          {getTutorInitials()}
+                        </div>
+                      )
+                    )}
+
+                    <div className={isStudent ? "text-right" : ""}>
+                      {isTutor && (
+                        <p className="text-xs font-semibold text-gray-700">{tutor?.name || 'Tutor'}</p>
+                      )}
+
+                      {/* Check if message has session proposal */}
+                      {(msg as any).sessionProposal ? (
+                        <SessionProposal
+                          date={new Date((msg as any).sessionProposal.startTime || (msg as any).sessionProposal.scheduledAt).toLocaleDateString()}
+                          time={new Date((msg as any).sessionProposal.startTime || (msg as any).sessionProposal.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          status={(msg as any).sessionProposal.status}
+                          isOwn={isStudent}
+                          isLoading={isAccepting || isRejecting}
+                          onAccept={() => handleSessionAction(msg._id, "accepted")}
+                          onReschedule={() => setIsScheduleOpen(true)}
+                          onDecline={() => handleSessionAction(msg._id, "declined")}
+                        />
+                      ) : (
+                        <>
+                          <div className={`inline-block rounded-lg p-3 mt-1 max-w-xs ${isStudent ? "bg-[#0B31BD] text-white" : "bg-white border border-gray-200"}`}>
+                            <p className="text-sm">{(msg as any).text || msg.content}</p>
+                          </div>
+
+                          <p className={`text-xs text-gray-500 mt-1 ${isStudent ? "text-right" : ""}`}>
+                            {formatTime(msg.createdAt)}
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="flex items-center justify-center h-full text-gray-500">
+                <p>No messages yet. Start the conversation!</p>
+              </div>
+            )}
           </div>
 
           {/* Input + Send + Attach */}
@@ -149,13 +283,19 @@ const Page2 = () => {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#0B31BD] focus:ring-2 focus:ring-blue-100 transition"
+                disabled={isSending}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#0B31BD] focus:ring-2 focus:ring-blue-100 transition disabled:opacity-50"
               />
               <button
                 onClick={handleSendMessage}
-                disabled={!message.trim()}
-                className="bg-[#0B31BD] text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                disabled={!message.trim() || isSending}
+                className="bg-[#0B31BD] text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center gap-2"
               >
+                {isSending ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
                 Send
               </button>
             </div>
@@ -163,20 +303,29 @@ const Page2 = () => {
             {/* Attach Button */}
             <div className="flex justify-between items-center">
               <label className="cursor-pointer flex items-center gap-2 text-gray-600 hover:text-[#0B31BD] transition-colors">
-                <input 
-                  type="file" 
-                  className="hidden" 
+                <input
+                  type="file"
+                  className="hidden"
                   accept="image/*,.pdf,.doc,.docx,.txt"
                 />
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                </svg>
+                <Paperclip className="h-5 w-5" />
                 <span className="text-sm font-medium">Attach file</span>
               </label>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Schedule Modal for reschedule */}
+      <ScheduleModal
+        isOpen={isScheduleOpen}
+        onClose={() => setIsScheduleOpen(false)}
+        onSchedule={(selectedDate, time) => {
+          // For now just close the modal - reschedule would need a separate API
+          setIsScheduleOpen(false);
+          toast.info('Reschedule request noted. Please discuss with your tutor.');
+        }}
+      />
     </div>
   );
 };
