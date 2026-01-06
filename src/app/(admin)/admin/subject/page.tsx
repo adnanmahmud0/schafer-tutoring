@@ -1,21 +1,17 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from "react";
 import {
-  Search,
-  MoreVertical,
-  BookOpen,
-  Plus,
-  Pencil,
-  Trash2,
-  Loader2,
-  CheckCircle,
-  XCircle,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import { Search, MoreVertical, BookOpen, Plus, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Pagination,
   PaginationContent,
@@ -24,13 +20,13 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from '@/components/ui/pagination';
+} from "@/components/ui/pagination";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -38,7 +34,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,26 +44,34 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
+} from "@/components/ui/alert-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { toast } from "sonner";
 import {
   useAdminSubjects,
   useCreateSubject,
   useUpdateSubject,
   useDeleteSubject,
   Subject,
-} from '@/hooks/api';
+} from "@/hooks/api";
 
-type SubjectTab = 'all' | 'active' | 'inactive';
+type SubjectTab = "all" | "active" | "inactive";
 
 const SubjectManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState<SubjectTab>('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState<SubjectTab>("all");
   const itemsPerPage = 10;
 
   // Modal states
@@ -78,7 +82,7 @@ const SubjectManagement = () => {
 
   // Form state
   const [formData, setFormData] = useState({
-    name: '',
+    name: "",
     isActive: true,
   });
 
@@ -87,7 +91,7 @@ const SubjectManagement = () => {
     page: currentPage,
     limit: itemsPerPage,
     searchTerm: searchTerm || undefined,
-    isActive: activeTab === 'all' ? undefined : activeTab === 'active',
+    isActive: activeTab === "all" ? undefined : activeTab === "active",
   };
 
   // Fetch subjects
@@ -115,7 +119,7 @@ const SubjectManagement = () => {
   // Create Subject
   const handleCreateSubject = async () => {
     if (!formData.name.trim()) {
-      toast.error('Subject name is required');
+      toast.error("Subject name is required");
       return;
     }
 
@@ -124,18 +128,18 @@ const SubjectManagement = () => {
         name: formData.name.trim(),
         isActive: formData.isActive,
       });
-      toast.success('Subject created successfully');
+      toast.success("Subject created successfully");
       setIsCreateModalOpen(false);
-      setFormData({ name: '', isActive: true });
+      setFormData({ name: "", isActive: true });
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to create subject');
+      toast.error(error?.message || "Failed to create subject");
     }
   };
 
   // Edit Subject
   const handleEditSubject = async () => {
     if (!selectedSubject || !formData.name.trim()) {
-      toast.error('Subject name is required');
+      toast.error("Subject name is required");
       return;
     }
 
@@ -145,12 +149,12 @@ const SubjectManagement = () => {
         name: formData.name.trim(),
         isActive: formData.isActive,
       });
-      toast.success('Subject updated successfully');
+      toast.success("Subject updated successfully");
       setIsEditModalOpen(false);
       setSelectedSubject(null);
-      setFormData({ name: '', isActive: true });
+      setFormData({ name: "", isActive: true });
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to update subject');
+      toast.error(error?.message || "Failed to update subject");
     }
   };
 
@@ -160,11 +164,11 @@ const SubjectManagement = () => {
 
     try {
       await deleteSubject.mutateAsync(selectedSubject._id);
-      toast.success('Subject deleted successfully');
+      toast.success("Subject deleted successfully");
       setIsDeleteDialogOpen(false);
       setSelectedSubject(null);
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to delete subject');
+      toast.error(error?.message || "Failed to delete subject");
     }
   };
 
@@ -175,9 +179,11 @@ const SubjectManagement = () => {
         id: subject._id,
         isActive: !subject.isActive,
       });
-      toast.success(`Subject ${subject.isActive ? 'deactivated' : 'activated'} successfully`);
+      toast.success(
+        `Subject ${subject.isActive ? "deactivated" : "activated"} successfully`
+      );
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to update subject status');
+      toast.error(error?.message || "Failed to update subject status");
     }
   };
 
@@ -196,31 +202,114 @@ const SubjectManagement = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: '2-digit',
+    return new Date(dateString).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
     });
   };
+
+  // Column definitions for TanStack Table
+  const columns: ColumnDef<Subject>[] = useMemo(
+    () => [
+      {
+        accessorKey: "name",
+        header: "Subject Name",
+        cell: ({ row }) => (
+          <span className="text-gray-900 font-medium text-sm">
+            {row.getValue("name")}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "isActive",
+        header: "Status",
+        cell: ({ row }) => {
+          const isActive = row.getValue("isActive") as boolean;
+          return (
+            <Badge
+              variant={isActive ? "default" : "secondary"}
+              className={
+                isActive
+                  ? "bg-green-100 text-green-700 hover:bg-green-100"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-100"
+              }
+            >
+              {isActive ? "Active" : "Inactive"}
+            </Badge>
+          );
+        },
+      },
+      {
+        accessorKey: "createdAt",
+        header: "Created At",
+        cell: ({ row }) => (
+          <span className="text-gray-600 text-sm">
+            {formatDate(row.getValue("createdAt"))}
+          </span>
+        ),
+      },
+      {
+        id: "actions",
+        header: "Action",
+        cell: ({ row }) => {
+          const subject = row.original;
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <MoreVertical size={16} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => openEditModal(subject)}>
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleToggleStatus(subject)}>
+                  {subject.isActive ? "Deactivate" : "Activate"}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="text-red-600"
+                  onClick={() => openDeleteDialog(subject)}
+                >
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        },
+      },
+    ],
+    []
+  );
+
+  // TanStack Table instance with server-side pagination
+  const table = useReactTable({
+    data: subjects,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    manualPagination: true,
+    pageCount: totalPages,
+  });
 
   // Skeleton rows for table loading
   const TableSkeleton = () => (
     <>
       {Array.from({ length: 5 }).map((_, index) => (
-        <tr key={index} className="border-b border-gray-100">
-          <td className="py-3 px-4">
+        <TableRow key={index}>
+          <TableCell className="py-3 px-4">
             <Skeleton className="h-4 w-32" />
-          </td>
-          <td className="py-3 px-4">
+          </TableCell>
+          <TableCell className="py-3 px-4">
             <Skeleton className="h-6 w-16 rounded-full" />
-          </td>
-          <td className="py-3 px-4">
+          </TableCell>
+          <TableCell className="py-3 px-4">
             <Skeleton className="h-4 w-24" />
-          </td>
-          <td className="py-3 px-4">
+          </TableCell>
+          <TableCell className="py-3 px-4">
             <Skeleton className="h-8 w-8 rounded" />
-          </td>
-        </tr>
+          </TableCell>
+        </TableRow>
       ))}
     </>
   );
@@ -229,7 +318,9 @@ const SubjectManagement = () => {
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <p className="text-red-500">Error loading subjects. Please try again.</p>
+        <p className="text-red-500">
+          Error loading subjects. Please try again.
+        </p>
       </div>
     );
   }
@@ -262,7 +353,7 @@ const SubjectManagement = () => {
         {/* Add Subject Button */}
         <Button
           onClick={() => {
-            setFormData({ name: '', isActive: true });
+            setFormData({ name: "", isActive: true });
             setIsCreateModalOpen(true);
           }}
           className="bg-black hover:bg-gray-800"
@@ -287,7 +378,11 @@ const SubjectManagement = () => {
       </div>
 
       {/* Table Section */}
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+      <Tabs
+        value={activeTab}
+        onValueChange={handleTabChange}
+        className="w-full"
+      >
         <Card>
           <CardHeader className="pb-4">
             <TabsList className="grid w-1/3 grid-cols-3 bg-transparent p-0 h-auto">
@@ -315,181 +410,133 @@ const SubjectManagement = () => {
           <CardContent>
             <TabsContent value={activeTab} className="space-y-4 mt-0">
               {/* Table */}
-              <div className="overflow-x-auto">
-                <div className="border border-gray-200 rounded-lg">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-gray-200">
-                        <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">
-                          Subject Name
-                        </th>
-                        <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">
-                          Status
-                        </th>
-                        <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">
-                          Created At
-                        </th>
-                        <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">
-                          Action
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {isLoading || isFetching ? (
-                        <TableSkeleton />
-                      ) : subjects.length === 0 ? (
-                        <tr>
-                          <td colSpan={4} className="py-8 text-center text-gray-500">
-                            No subjects found
-                          </td>
-                        </tr>
-                      ) : (
-                        subjects.map((subject) => (
-                          <tr
-                            key={subject._id}
-                            className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+              <div className="border border-gray-200 rounded-lg">
+                <Table>
+                  <TableHeader>
+                    {table.getHeaderGroups().map((headerGroup) => (
+                      <TableRow
+                        key={headerGroup.id}
+                        className="border-b border-gray-200"
+                      >
+                        {headerGroup.headers.map((header) => (
+                          <TableHead
+                            key={header.id}
+                            className="py-3 px-4 font-semibold text-gray-700 text-sm"
                           >
-                            <td className="py-3 px-4">
-                              <div className="flex items-center gap-3">
-                                <div className="bg-purple-100 p-2 rounded-lg">
-                                  <BookOpen className="text-purple-600" size={18} />
-                                </div>
-                                <span className="text-gray-900 font-medium text-sm">
-                                  {subject.name}
-                                </span>
-                              </div>
-                            </td>
-                            <td className="py-3 px-4">
-                              <Badge
-                                variant={subject.isActive ? 'default' : 'secondary'}
-                                className={
-                                  subject.isActive
-                                    ? 'bg-green-100 text-green-700 hover:bg-green-100'
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-100'
-                                }
-                              >
-                                {subject.isActive ? (
-                                  <CheckCircle size={12} className="mr-1" />
-                                ) : (
-                                  <XCircle size={12} className="mr-1" />
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext()
                                 )}
-                                {subject.isActive ? 'Active' : 'Inactive'}
-                              </Badge>
-                            </td>
-                            <td className="py-3 px-4 text-gray-600 text-sm">
-                              {formatDate(subject.createdAt)}
-                            </td>
-                            <td className="py-3 px-4">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-8 w-8 p-0"
-                                  >
-                                    <MoreVertical size={16} />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem
-                                    onClick={() => openEditModal(subject)}
-                                  >
-                                    <Pencil size={14} className="mr-2" />
-                                    Edit
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={() => handleToggleStatus(subject)}
-                                  >
-                                    {subject.isActive ? (
-                                      <>
-                                        <XCircle size={14} className="mr-2" />
-                                        Deactivate
-                                      </>
-                                    ) : (
-                                      <>
-                                        <CheckCircle size={14} className="mr-2" />
-                                        Activate
-                                      </>
-                                    )}
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    className="text-red-600"
-                                    onClick={() => openDeleteDialog(subject)}
-                                  >
-                                    <Trash2 size={14} className="mr-2" />
-                                    Delete
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+                          </TableHead>
+                        ))}
+                      </TableRow>
+                    ))}
+                  </TableHeader>
+                  <TableBody>
+                    {isLoading || isFetching ? (
+                      <TableSkeleton />
+                    ) : table.getRowModel().rows?.length ? (
+                      table.getRowModel().rows.map((row) => (
+                        <TableRow
+                          key={row.id}
+                          className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                        >
+                          {row.getVisibleCells().map((cell) => (
+                            <TableCell key={cell.id} className="py-3 px-4">
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext()
+                              )}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell
+                          colSpan={columns.length}
+                          className="py-8 text-center text-gray-500"
+                        >
+                          No subjects found
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
               </div>
 
               {/* Pagination */}
               {subjects.length > 0 && (
                 <div className="flex items-center justify-between pt-6">
                   <p className="text-sm text-gray-500 whitespace-nowrap">
-                    Showing {(currentPage - 1) * itemsPerPage + 1} to{' '}
-                    {Math.min(currentPage * itemsPerPage, pagination?.total || 0)} of{' '}
-                    {pagination?.total || 0} results
+                    Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+                    {Math.min(
+                      currentPage * itemsPerPage,
+                      pagination?.total || 0
+                    )}{" "}
+                    of {pagination?.total || 0} results
                   </p>
                   <Pagination className="justify-end mx-0">
                     <PaginationContent>
                       <PaginationItem>
                         <PaginationPrevious
-                          onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                          onClick={() =>
+                            setCurrentPage((prev) => Math.max(1, prev - 1))
+                          }
                           className={
                             currentPage === 1
-                              ? 'pointer-events-none opacity-50'
-                              : 'cursor-pointer'
+                              ? "pointer-events-none opacity-50"
+                              : "cursor-pointer"
                           }
                         />
                       </PaginationItem>
 
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                        if (
-                          page === 1 ||
-                          page === totalPages ||
-                          (page >= currentPage - 1 && page <= currentPage + 1)
-                        ) {
-                          return (
-                            <PaginationItem key={page}>
-                              <PaginationLink
-                                onClick={() => setCurrentPage(page)}
-                                isActive={page === currentPage}
-                                className="cursor-pointer"
-                              >
-                                {page}
-                              </PaginationLink>
-                            </PaginationItem>
-                          );
-                        } else if (
-                          (page === 2 && currentPage > 3) ||
-                          (page === totalPages - 1 && currentPage < totalPages - 2)
-                        ) {
-                          return (
-                            <PaginationItem key={page}>
-                              <PaginationEllipsis />
-                            </PaginationItem>
-                          );
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                        (page) => {
+                          if (
+                            page === 1 ||
+                            page === totalPages ||
+                            (page >= currentPage - 1 && page <= currentPage + 1)
+                          ) {
+                            return (
+                              <PaginationItem key={page}>
+                                <PaginationLink
+                                  onClick={() => setCurrentPage(page)}
+                                  isActive={page === currentPage}
+                                  className="cursor-pointer"
+                                >
+                                  {page}
+                                </PaginationLink>
+                              </PaginationItem>
+                            );
+                          } else if (
+                            (page === 2 && currentPage > 3) ||
+                            (page === totalPages - 1 &&
+                              currentPage < totalPages - 2)
+                          ) {
+                            return (
+                              <PaginationItem key={page}>
+                                <PaginationEllipsis />
+                              </PaginationItem>
+                            );
+                          }
+                          return null;
                         }
-                        return null;
-                      })}
+                      )}
 
                       <PaginationItem>
                         <PaginationNext
                           onClick={() =>
-                            setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                            setCurrentPage((prev) =>
+                              Math.min(totalPages, prev + 1)
+                            )
                           }
                           className={
                             currentPage === totalPages
-                              ? 'pointer-events-none opacity-50'
-                              : 'cursor-pointer'
+                              ? "pointer-events-none opacity-50"
+                              : "cursor-pointer"
                           }
                         />
                       </PaginationItem>
@@ -518,7 +565,9 @@ const SubjectManagement = () => {
                 id="name"
                 placeholder="e.g., Mathematics, Physics"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
               />
             </div>
             <div className="flex items-center justify-between">
@@ -533,7 +582,10 @@ const SubjectManagement = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCreateModalOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsCreateModalOpen(false)}
+            >
               Cancel
             </Button>
             <Button
@@ -564,7 +616,9 @@ const SubjectManagement = () => {
                 id="edit-name"
                 placeholder="e.g., Mathematics, Physics"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
               />
             </div>
             <div className="flex items-center justify-between">
@@ -597,13 +651,16 @@ const SubjectManagement = () => {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will delete the subject &quot;{selectedSubject?.name}&quot;. This action
-              cannot be undone.
+              This will delete the subject &quot;{selectedSubject?.name}&quot;.
+              This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -28,7 +28,6 @@ export interface InterviewSlot {
   endTime: string;
   status: keyof typeof INTERVIEW_SLOT_STATUS;
   agoraChannelName?: string;
-  notes?: string;
   cancellationReason?: string;
   bookedAt?: string;
   completedAt?: string;
@@ -98,7 +97,6 @@ export function useCreateInterviewSlot() {
     mutationFn: async (slotData: {
       startTime: string;
       endTime: string;
-      notes?: string;
     }) => {
       const { data } = await apiClient.post('/interview-slots', slotData);
       return data;
@@ -121,7 +119,6 @@ export function useUpdateInterviewSlot() {
       id: string;
       startTime?: string;
       endTime?: string;
-      notes?: string;
     }) => {
       const { data } = await apiClient.patch(`/interview-slots/${id}`, slotData);
       return data;

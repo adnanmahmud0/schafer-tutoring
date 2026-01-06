@@ -31,6 +31,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import {
   useInterviewSlots,
@@ -53,10 +60,24 @@ const AvailableSlots = () => {
   const [selectedSlot, setSelectedSlot] = useState<InterviewSlot | null>(null);
   const [cancellationReason, setCancellationReason] = useState('');
 
-  // Create slot form state
-  const [startTime, setStartTime] = useState('09:00');
-  const [endTime, setEndTime] = useState('09:30');
-  const [notes, setNotes] = useState('');
+  // Create slot form state - selectedHour is the starting hour (0-23)
+  const [selectedHour, setSelectedHour] = useState<string>('9');
+
+  // Generate 24 hourly time slots for dropdown
+  const timeSlots = Array.from({ length: 24 }, (_, i) => {
+    const startHour = i;
+    const endHour = (i + 1) % 24;
+    const formatHour = (hour: number) => {
+      if (hour === 0) return '12:00 AM';
+      if (hour === 12) return '12:00 PM';
+      if (hour < 12) return `${hour}:00 AM`;
+      return `${hour - 12}:00 PM`;
+    };
+    return {
+      value: String(i),
+      label: `${formatHour(startHour)} - ${formatHour(endHour)}`,
+    };
+  });
 
   // Filter state
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -106,24 +127,18 @@ const AvailableSlots = () => {
       return;
     }
 
+    const hour = parseInt(selectedHour, 10);
+
     const startDateTime = new Date(selectedDate);
-    const [startHour, startMinute] = startTime.split(':').map(Number);
-    startDateTime.setHours(startHour, startMinute, 0, 0);
+    startDateTime.setHours(hour, 0, 0, 0);
 
     const endDateTime = new Date(selectedDate);
-    const [endHour, endMinute] = endTime.split(':').map(Number);
-    endDateTime.setHours(endHour, endMinute, 0, 0);
-
-    if (endDateTime <= startDateTime) {
-      toast.error('End time must be after start time');
-      return;
-    }
+    endDateTime.setHours(hour + 1, 0, 0, 0);
 
     createSlot(
       {
         startTime: startDateTime.toISOString(),
         endTime: endDateTime.toISOString(),
-        notes: notes || undefined,
       },
       {
         onSuccess: () => {
@@ -193,9 +208,7 @@ const AvailableSlots = () => {
 
   // Reset form
   const resetForm = () => {
-    setStartTime('09:00');
-    setEndTime('09:30');
-    setNotes('');
+    setSelectedHour('9');
   };
 
   // Get status badge color
@@ -385,7 +398,6 @@ const AvailableSlots = () => {
                       <TableHead>Date & Time</TableHead>
                       <TableHead>Applicant</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead>Notes</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -414,56 +426,74 @@ const AvailableSlots = () => {
                             )}
                           </TableCell>
                           <TableCell>{getStatusBadge(slot.status)}</TableCell>
-                          <TableCell>
-                            <span className="text-sm text-gray-500 truncate max-w-[150px] block">
-                              {slot.notes || '-'}
-                            </span>
-                          </TableCell>
                           <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-1">
-                              {slot.status === INTERVIEW_SLOT_STATUS.BOOKED && (
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  onClick={() => handleCompleteSlot(slot._id)}
-                                  disabled={isCompleting}
-                                  title="Mark as Completed"
-                                >
-                                  <Check className="w-4 h-4 text-green-600" />
-                                </Button>
-                              )}
-                              {(slot.status === INTERVIEW_SLOT_STATUS.AVAILABLE ||
-                                slot.status === INTERVIEW_SLOT_STATUS.BOOKED) && (
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  onClick={() => {
-                                    setSelectedSlot(slot);
-                                    setIsCancelModalOpen(true);
-                                  }}
-                                  title="Cancel Slot"
-                                >
-                                  <X className="w-4 h-4 text-orange-600" />
-                                </Button>
-                              )}
-                              {slot.status === INTERVIEW_SLOT_STATUS.AVAILABLE && (
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  onClick={() => handleDeleteSlot(slot._id)}
-                                  disabled={isDeleting}
-                                  title="Delete Slot"
-                                >
-                                  <Trash2 className="w-4 h-4 text-red-600" />
-                                </Button>
-                              )}
-                            </div>
+                            <TooltipProvider delayDuration={100}>
+                              <div className="flex items-center justify-end gap-1">
+                                {slot.status === INTERVIEW_SLOT_STATUS.BOOKED && (
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        onClick={() => handleCompleteSlot(slot._id)}
+                                        disabled={isCompleting}
+                                        className="hover:bg-green-50"
+                                      >
+                                        <Check className="w-4 h-4 text-green-600" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top">
+                                      <p>Mark as Completed</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                )}
+                                {(slot.status === INTERVIEW_SLOT_STATUS.AVAILABLE ||
+                                  slot.status === INTERVIEW_SLOT_STATUS.BOOKED) && (
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        onClick={() => {
+                                          setSelectedSlot(slot);
+                                          setIsCancelModalOpen(true);
+                                        }}
+                                        className="hover:bg-orange-50"
+                                      >
+                                        <X className="w-4 h-4 text-orange-600" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top">
+                                      <p>Cancel Slot</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                )}
+                                {slot.status === INTERVIEW_SLOT_STATUS.AVAILABLE && (
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        onClick={() => handleDeleteSlot(slot._id)}
+                                        disabled={isDeleting}
+                                        className="hover:bg-red-50"
+                                      >
+                                        <Trash2 className="w-4 h-4 text-red-600" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top">
+                                      <p>Delete Slot</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                )}
+                              </div>
+                            </TooltipProvider>
                           </TableCell>
                         </TableRow>
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                        <TableCell colSpan={4} className="text-center py-8 text-gray-500">
                           No interview slots found
                         </TableCell>
                       </TableRow>
@@ -505,62 +535,139 @@ const AvailableSlots = () => {
 
       {/* Create Slot Modal */}
       <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Calendar className="w-5 h-5" />
+              <Calendar className="w-5 h-5 text-[#0B31BD]" />
               Create Interview Slot
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4">
-            {/* Date Display */}
-            <div>
-              <Label>Date</Label>
-              <Input
-                type="date"
-                value={selectedDate ? format(selectedDate, 'yyyy-MM-dd') : ''}
-                onChange={(e) => setSelectedDate(new Date(e.target.value))}
-                className="mt-1"
-              />
-            </div>
-
-            {/* Time Selection */}
-            <div className="grid grid-cols-2 gap-4">
+          <ScrollArea className="max-h-[60vh] pr-4">
+            <div className="space-y-5">
+              {/* Date Display */}
               <div>
-                <Label>Start Time</Label>
+                <Label className="text-sm font-medium text-gray-700">Select Date</Label>
                 <Input
-                  type="time"
-                  value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
-                  className="mt-1"
+                  type="date"
+                  value={selectedDate ? format(selectedDate, 'yyyy-MM-dd') : ''}
+                  onChange={(e) => setSelectedDate(new Date(e.target.value))}
+                  className="mt-1.5"
                 />
               </div>
+
+              {/* Time Slot Selection - Grid Layout */}
               <div>
-                <Label>End Time</Label>
-                <Input
-                  type="time"
-                  value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
-                  className="mt-1"
-                />
+                <Label className="text-sm font-medium text-gray-700">Select Time Slot (1 Hour)</Label>
+
+                {/* Morning Slots */}
+                <div className="mt-3">
+                  <p className="text-xs font-medium text-gray-500 mb-2 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-yellow-400"></span>
+                    Morning
+                  </p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {timeSlots.slice(6, 12).map((slot) => (
+                      <button
+                        key={slot.value}
+                        type="button"
+                        onClick={() => setSelectedHour(slot.value)}
+                        className={`
+                          px-3 py-2.5 text-xs font-medium rounded-lg border transition-all
+                          ${selectedHour === slot.value
+                            ? 'bg-[#0B31BD] text-white border-[#0B31BD] shadow-sm'
+                            : 'bg-white text-gray-700 border-gray-200 hover:border-[#0B31BD] hover:bg-blue-50'
+                          }
+                        `}
+                      >
+                        {slot.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Afternoon Slots */}
+                <div className="mt-4">
+                  <p className="text-xs font-medium text-gray-500 mb-2 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-orange-400"></span>
+                    Afternoon
+                  </p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {timeSlots.slice(12, 18).map((slot) => (
+                      <button
+                        key={slot.value}
+                        type="button"
+                        onClick={() => setSelectedHour(slot.value)}
+                        className={`
+                          px-3 py-2.5 text-xs font-medium rounded-lg border transition-all
+                          ${selectedHour === slot.value
+                            ? 'bg-[#0B31BD] text-white border-[#0B31BD] shadow-sm'
+                            : 'bg-white text-gray-700 border-gray-200 hover:border-[#0B31BD] hover:bg-blue-50'
+                          }
+                        `}
+                      >
+                        {slot.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Evening Slots */}
+                <div className="mt-4">
+                  <p className="text-xs font-medium text-gray-500 mb-2 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-purple-400"></span>
+                    Evening
+                  </p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {timeSlots.slice(18, 24).map((slot) => (
+                      <button
+                        key={slot.value}
+                        type="button"
+                        onClick={() => setSelectedHour(slot.value)}
+                        className={`
+                          px-3 py-2.5 text-xs font-medium rounded-lg border transition-all
+                          ${selectedHour === slot.value
+                            ? 'bg-[#0B31BD] text-white border-[#0B31BD] shadow-sm'
+                            : 'bg-white text-gray-700 border-gray-200 hover:border-[#0B31BD] hover:bg-blue-50'
+                          }
+                        `}
+                      >
+                        {slot.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Night/Early Morning Slots (Collapsible) */}
+                <details className="mt-4">
+                  <summary className="text-xs font-medium text-gray-400 cursor-pointer hover:text-gray-600 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-gray-400"></span>
+                    Night / Early Morning (12 AM - 6 AM)
+                  </summary>
+                  <div className="grid grid-cols-3 gap-2 mt-2">
+                    {timeSlots.slice(0, 6).map((slot) => (
+                      <button
+                        key={slot.value}
+                        type="button"
+                        onClick={() => setSelectedHour(slot.value)}
+                        className={`
+                          px-3 py-2.5 text-xs font-medium rounded-lg border transition-all
+                          ${selectedHour === slot.value
+                            ? 'bg-[#0B31BD] text-white border-[#0B31BD] shadow-sm'
+                            : 'bg-white text-gray-700 border-gray-200 hover:border-[#0B31BD] hover:bg-blue-50'
+                          }
+                        `}
+                      >
+                        {slot.label}
+                      </button>
+                    ))}
+                  </div>
+                </details>
               </div>
             </div>
+          </ScrollArea>
 
-            {/* Notes */}
-            <div>
-              <Label>Notes (Optional)</Label>
-              <Textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Add any notes about this interview slot..."
-                className="mt-1"
-                rows={3}
-              />
-            </div>
-          </div>
-
-          <DialogFooter>
+          <DialogFooter className="mt-2">
             <Button
               variant="outline"
               onClick={() => {

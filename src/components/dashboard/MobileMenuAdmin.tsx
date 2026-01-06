@@ -2,16 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  X,
-  Calendar,
-  MessageCircle,
-  CreditCard,
-  User,
-  LogOut,
-  BookOpen,
-  Headset as headset,
-} from "lucide-react";
+import { X } from "lucide-react";
+import { useLogout } from "@/hooks/api";
 
 /* ================= TYPES ================= */
 
@@ -39,6 +31,7 @@ const menuItems = [
 
 export default function MobileMenuAdmin({ isOpen, onClose }: MobileMenuProps) {
   const pathname = usePathname();
+  const { mutate: logout, isPending: isLoggingOut } = useLogout();
 
   if (!isOpen) return null;
 
@@ -90,6 +83,20 @@ export default function MobileMenuAdmin({ isOpen, onClose }: MobileMenuProps) {
               </Link>
             );
           })}
+
+          {/* Logout Button */}
+          <button
+            onClick={() => {
+              logout();
+              onClose();
+            }}
+            disabled={isLoggingOut}
+            className="flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-3 sm:py-4 rounded-lg transition-all text-red-300 hover:bg-red-500/20 w-full mt-4"
+          >
+            <span className="text-base sm:text-lg">
+              {isLoggingOut ? "Logging out..." : "Logout"}
+            </span>
+          </button>
         </nav>
       </div>
     </>

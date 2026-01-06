@@ -17,11 +17,11 @@ const DesktopMenu = () => {
   const getDashboardLink = () => {
     switch (user?.role) {
       case "SUPER_ADMIN":
-        return "/admin/dashboard";
+        return "/admin/overview";
       case "TUTOR":
-        return "/teacher/dashboard";
+        return "/teacher/overview";
       case "STUDENT":
-        return "/student/dashboard";
+        return "/student/session";
       case "APPLICANT":
         return "/free-trial-teacher-dash";
       default:
