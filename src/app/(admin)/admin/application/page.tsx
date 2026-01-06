@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, MoreVertical, FileText } from 'lucide-react';
+import { Search, MoreVertical, FileText, Clock, UserCheck, CheckCircle, XCircle, Loader2, ArrowUp, ArrowDown } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -32,6 +32,7 @@ import {
   useRejectApplication,
   type AdminApplicationStatus,
 } from '@/hooks/api';
+import { useApplicationStats } from '@/hooks/api/use-admin-stats';
 
 const ApplicationManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -49,6 +50,9 @@ const ApplicationManagement = () => {
 
   // Fetch applications
   const { data, isLoading, isFetching, error } = useAdminApplications(filters);
+
+  // Fetch application stats
+  const { data: stats, isLoading: statsLoading } = useApplicationStats();
 
   // Mutations
   const { mutate: selectForInterview, isPending: isSelecting } = useSelectForInterview();
@@ -187,27 +191,68 @@ const ApplicationManagement = () => {
     );
   }
 
+  // Stats cards configuration
+  const statsConfig = [
+    { label: 'Total', data: stats?.total, icon: FileText, bgColor: 'bg-blue-50', iconColor: 'text-blue-600' },
+    { label: 'Pending', data: stats?.pending, icon: Clock, bgColor: 'bg-yellow-50', iconColor: 'text-yellow-600' },
+    { label: 'Interview', data: stats?.interview, icon: UserCheck, bgColor: 'bg-indigo-50', iconColor: 'text-indigo-600' },
+    { label: 'Approved', data: stats?.approved, icon: CheckCircle, bgColor: 'bg-green-50', iconColor: 'text-green-600' },
+    { label: 'Rejected', data: stats?.rejected, icon: XCircle, bgColor: 'bg-red-50', iconColor: 'text-red-600' },
+  ];
+
   return (
     <div className="space-y-6">
-      {/* Stats Card */}
-      <div className="w-1/4">
-        <Card className="border-gray-200 hover:shadow-md transition-shadow">
-          <CardContent className="pt-6">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="bg-blue-50 p-2 rounded-full w-fit mb-2">
-                  <FileText className="text-blue-600" size={24} />
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        {statsLoading ? (
+          // Loading skeleton
+          Array.from({ length: 5 }).map((_, index) => (
+            <Card key={index} className="border-gray-200">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-center h-24">
+                  <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
                 </div>
-                <p className="text-sm font-medium text-gray-600 mb-2">
-                  Total Applications
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          statsConfig.map((stat, index) => (
+            <Card
+              key={index}
+              className="border-gray-200 hover:shadow-md transition-shadow"
+            >
+              <CardContent className="pt-6">
+                <div className={`${stat.bgColor} p-2 rounded-full w-fit mb-2`}>
+                  <stat.icon className={stat.iconColor} size={24} />
+                </div>
+                <p className="text-sm font-medium text-gray-600 mb-1">
+                  {stat.label}
                 </p>
-                <p className="text-3xl font-bold text-gray-900">
-                  {meta?.total || 0}
+                <p className="text-2xl font-bold text-gray-900 mb-1">
+                  {stat.data?.count ?? 0}
                 </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                {stat.data && (
+                  <div className={`flex items-center gap-1 text-xs ${
+                    stat.data.growthType === 'increase' ? 'text-green-600' :
+                    stat.data.growthType === 'decrease' ? 'text-red-600' : 'text-gray-500'
+                  }`}>
+                    {stat.data.growthType === 'increase' ? (
+                      <ArrowUp className="w-3 h-3" />
+                    ) : stat.data.growthType === 'decrease' ? (
+                      <ArrowDown className="w-3 h-3" />
+                    ) : null}
+                    <span>
+                      {stat.data.growthType === 'no_change'
+                        ? 'No change'
+                        : `${stat.data.growth > 0 ? '+' : ''}${stat.data.growth}%`}
+                    </span>
+                    <span className="text-gray-500">vs last month</span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))
+        )}
       </div>
 
       {/* Search */}

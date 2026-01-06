@@ -48,7 +48,7 @@ const decodeToken = (token: string): { id: string; role: string; email: string }
 
 // Role-based redirect map
 const REDIRECT_MAP: Record<string, string> = {
-  STUDENT: '/student/overview',
+  STUDENT: '/student/session',
   TUTOR: '/teacher/overview',
   SUPER_ADMIN: '/admin/overview',
   APPLICANT: '/free-trial-teacher-dash',
@@ -111,23 +111,48 @@ export function useRegister() {
 
 // Logout Hook (Protected)
 export function useLogout() {
-  const { logout } = useAuthStore();
   const queryClient = useQueryClient();
   const router = useRouter();
 
+  const clearAllAuthData = () => {
+    // Clear React Query cache
+    queryClient.clear();
+
+    if (typeof window !== 'undefined') {
+      // Clear localStorage FIRST (before zustand can re-persist)
+      localStorage.removeItem('auth-storage');
+
+      // Clear sessionStorage
+      sessionStorage.clear();
+
+      // Clear all cookies from frontend (non-httpOnly ones)
+      document.cookie.split(';').forEach((cookie) => {
+        const name = cookie.split('=')[0].trim();
+        document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+      });
+    }
+
+    // Clear Zustand store AFTER localStorage removal
+    useAuthStore.getState().logout();
+
+    // Force clear localStorage again to ensure it's gone
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth-storage');
+    }
+  };
+
   return useMutation({
     mutationFn: async () => {
-      await apiClient.post('/auth/logout');
+      try {
+        await apiClient.post('/auth/logout');
+      } catch (error) {
+        // Ignore API errors - we'll clear local state anyway
+        console.warn('Logout API failed, clearing local state:', error);
+      }
     },
-    onSuccess: () => {
-      logout();
-      queryClient.clear();
-      router.push('/login');
-    },
-    onError: () => {
-      // Even if API fails, logout locally
-      logout();
-      queryClient.clear();
+    onSettled: () => {
+      // Always clear local auth data and redirect, whether API succeeded or failed
+      clearAllAuthData();
       router.push('/login');
     },
   });

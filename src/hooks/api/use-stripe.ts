@@ -54,7 +54,7 @@ export function useGetOnboardingLink() {
 // Get Stripe Onboarding Status
 export function useStripeOnboardingStatus() {
   const { isAuthenticated, user } = useAuthStore();
-  const isTutorOrApplicant = user?.role === 'tutor' || user?.role === 'applicant';
+  const isTutorOrApplicant = user?.role === 'TUTOR' || user?.role === 'APPLICANT';
 
   return useQuery({
     queryKey: ['stripe-onboarding-status'],

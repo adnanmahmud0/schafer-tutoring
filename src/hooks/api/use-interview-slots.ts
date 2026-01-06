@@ -27,8 +27,7 @@ export interface InterviewSlot {
   startTime: string;
   endTime: string;
   status: keyof typeof INTERVIEW_SLOT_STATUS;
-  googleMeetLink?: string;
-  googleCalendarEventId?: string;
+  agoraChannelName?: string;
   notes?: string;
   cancellationReason?: string;
   bookedAt?: string;
@@ -232,6 +231,8 @@ export function useBookInterviewSlot() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['interview-slots'] });
+      queryClient.invalidateQueries({ queryKey: ['my-booked-interview'] });
+      queryClient.invalidateQueries({ queryKey: ['my-application'] });
     },
   });
 }
@@ -280,12 +281,84 @@ export function useCancelMyInterview() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { data } = await apiClient.patch(`/interview-slots/${id}/cancel-by-applicant`);
+      const { data } = await apiClient.patch(`/interview-slots/${id}/cancel`);
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['interview-slots'] });
       queryClient.invalidateQueries({ queryKey: ['my-booked-interview'] });
+      queryClient.invalidateQueries({ queryKey: ['my-application'] });
     },
+  });
+}
+
+// ============ SCHEDULED MEETINGS (Admin) ============
+
+export interface ScheduledMeeting {
+  _id: string;
+  applicantName: string;
+  applicantEmail: string;
+  applicantPhone: string;
+  subjects: string[];
+  startTime: string;
+  endTime: string;
+  agoraChannelName: string | null;
+  bookedAt: string;
+  adminId: {
+    _id: string;
+    name: string;
+    email: string;
+  };
+}
+
+export interface ScheduledMeetingsFilters {
+  page?: number;
+  limit?: number;
+  sort?: string;
+}
+
+// ============ MEETING TOKEN ============
+
+export interface MeetingTokenResponse {
+  token: string;
+  channelName: string;
+  uid: number;
+  appId: string;
+}
+
+// Get meeting token for Agora video call
+export function useGetInterviewMeetingToken() {
+  return useMutation({
+    mutationFn: async (slotId: string) => {
+      const { data } = await apiClient.get(`/interview-slots/${slotId}/meeting-token`);
+      return data.data as MeetingTokenResponse;
+    },
+  });
+}
+
+// Get all scheduled meetings - Admin Only
+export function useScheduledMeetings(filters: ScheduledMeetingsFilters = {}) {
+  const { isAuthenticated, user } = useAuthStore();
+
+  return useQuery({
+    queryKey: ['scheduled-meetings', filters],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (filters.page) params.append('page', String(filters.page));
+      if (filters.limit) params.append('limit', String(filters.limit));
+      if (filters.sort) params.append('sort', filters.sort);
+
+      const { data } = await apiClient.get(`/interview-slots/scheduled-meetings?${params}`);
+      return data as {
+        data: ScheduledMeeting[];
+        pagination: {
+          total: number;
+          page: number;
+          limit: number;
+          totalPage: number;
+        };
+      };
+    },
+    enabled: isAuthenticated && user?.role === 'SUPER_ADMIN',
   });
 }

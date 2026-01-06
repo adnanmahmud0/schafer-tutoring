@@ -13,11 +13,15 @@ import { useAuthStore } from '@/store/auth-store';
 interface SocketContextType {
   socket: Socket | null;
   isConnected: boolean;
+  joinChat: (chatId: string) => void;
+  leaveChat: (chatId: string) => void;
 }
 
 const SocketContext = createContext<SocketContextType>({
   socket: null,
   isConnected: false,
+  joinChat: () => {},
+  leaveChat: () => {},
 });
 
 export function useSocket() {
@@ -27,7 +31,21 @@ export function useSocket() {
 export default function SocketProvider({ children }: { children: ReactNode }) {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const { token, user } = useAuthStore();
+  const { accessToken: token, user } = useAuthStore();
+
+  // Join a chat room
+  const joinChat = (chatId: string) => {
+    if (socket && isConnected) {
+      socket.emit('JOIN_CHAT', { chatId });
+    }
+  };
+
+  // Leave a chat room
+  const leaveChat = (chatId: string) => {
+    if (socket && isConnected) {
+      socket.emit('LEAVE_CHAT', { chatId });
+    }
+  };
 
   useEffect(() => {
     if (!token || !user) {
@@ -69,7 +87,7 @@ export default function SocketProvider({ children }: { children: ReactNode }) {
   }, [token, user]);
 
   return (
-    <SocketContext.Provider value={{ socket, isConnected }}>
+    <SocketContext.Provider value={{ socket, isConnected, joinChat, leaveChat }}>
       {children}
     </SocketContext.Provider>
   );

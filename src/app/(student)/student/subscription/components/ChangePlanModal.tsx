@@ -10,14 +10,14 @@ import { cn } from '@/lib/utils';
 interface ChangePlanModalProps {
   isOpen: boolean;
   onClose: () => void;
-  currentPlan?: SubscriptionTier;
+  currentPlan?: SubscriptionTier | null;
 }
 
-export function ChangePlanModal({ isOpen, onClose, currentPlan = 'free' }: ChangePlanModalProps) {
-  const [selectedPlan, setSelectedPlan] = useState<SubscriptionTier>(currentPlan);
+export function ChangePlanModal({ isOpen, onClose, currentPlan }: ChangePlanModalProps) {
+  const [selectedPlan, setSelectedPlan] = useState<SubscriptionTier>(currentPlan || 'FLEXIBLE');
   const [isLoading, setIsLoading] = useState(false);
 
-  const plans: SubscriptionTier[] = ['free', 'basic', 'premium', 'enterprise'];
+  const plans: SubscriptionTier[] = ['FLEXIBLE', 'REGULAR', 'LONG_TERM'];
 
   const handleChangePlan = async () => {
     if (selectedPlan === currentPlan) {
@@ -77,9 +77,10 @@ export function ChangePlanModal({ isOpen, onClose, currentPlan = 'free' }: Chang
 
                 <h3 className="font-semibold text-lg">{PLAN_DISPLAY_NAMES[plan]}</h3>
                 <div className="mt-1">
-                  <span className="text-2xl font-bold">${details.price}</span>
-                  <span className="text-gray-500">/month</span>
+                  <span className="text-2xl font-bold">${details.pricePerHour}</span>
+                  <span className="text-gray-500">/hour</span>
                 </div>
+                <p className="text-xs text-gray-500 mt-1">{details.commitment}</p>
 
                 <ul className="mt-4 space-y-2">
                   {details.features.map((feature, index) => (

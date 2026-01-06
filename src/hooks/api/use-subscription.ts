@@ -3,44 +3,62 @@ import { apiClient } from '@/lib/api-client';
 import { useAuthStore } from '@/store/auth-store';
 
 // Types
-export type SubscriptionTier = 'free' | 'basic' | 'premium' | 'enterprise';
-export type SubscriptionStatus = 'active' | 'cancelled' | 'past_due' | 'trialing' | 'incomplete';
+export type SubscriptionTier = 'FLEXIBLE' | 'REGULAR' | 'LONG_TERM';
+export type SubscriptionStatus = 'PENDING' | 'ACTIVE' | 'EXPIRED' | 'CANCELLED';
 
 export interface Subscription {
   _id: string;
-  user: string;
-  stripeSubscriptionId: string;
+  studentId: string;
   tier: SubscriptionTier;
+  pricePerHour: number;
+  commitmentMonths: number;
+  minimumHours: number;
+  startDate: string;
+  endDate: string;
   status: SubscriptionStatus;
-  currentPeriodStart: string;
-  currentPeriodEnd: string;
-  cancelAtPeriodEnd: boolean;
+  totalHoursTaken: number;
+  stripePaymentIntentId?: string;
+  paidAt?: string;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface PlanUsage {
-  sessionsUsed: number;
-  sessionsLimit: number;
-  messagesUsed: number;
-  messagesLimit: number;
-  storageUsed: number;
-  storageLimit: number;
+  plan: {
+    name: SubscriptionTier | null;
+    status: SubscriptionStatus | null;
+    pricePerHour: number | null;
+    minimumHours: number | null;
+    commitmentMonths: number | null;
+    startDate: string | null;
+    endDate: string | null;
+  };
+  usage: {
+    hoursRemaining: number | null;
+    sessionsCompleted: number;
+    totalHoursTaken: number;
+  };
+  spending: {
+    currentMonthSpending: number;
+    totalSpending: number;
+  };
 }
 
 export interface PaymentHistoryItem {
-  _id: string;
+  id: string;
+  period: string;
+  sessions: number;
   amount: number;
   currency: string;
   status: 'succeeded' | 'pending' | 'failed' | 'refunded';
-  description: string;
+  description?: string;
   createdAt: string;
   invoiceUrl?: string;
 }
 
 export interface PaymentHistoryResponse {
   data: PaymentHistoryItem[];
-  meta: {
+  pagination: {
     page: number;
     limit: number;
     total: number;
@@ -63,28 +81,29 @@ export interface SetupIntentResponse {
 
 // Constants
 export const PLAN_DISPLAY_NAMES: Record<SubscriptionTier, string> = {
-  free: 'Free',
-  basic: 'Basic',
-  premium: 'Premium',
-  enterprise: 'Enterprise',
+  FLEXIBLE: 'Flexible',
+  REGULAR: 'Regular',
+  LONG_TERM: 'Long Term',
 };
 
-export const PLAN_DETAILS: Record<SubscriptionTier, { price: number; features: string[] }> = {
-  free: {
-    price: 0,
-    features: ['Limited sessions', 'Basic support'],
+export const PLAN_DETAILS: Record<SubscriptionTier, { pricePerHour: number; minimumHours: number; commitment: string; features: string[] }> = {
+  FLEXIBLE: {
+    pricePerHour: 30,
+    minimumHours: 0,
+    commitment: 'No commitment',
+    features: ['No minimum hours', 'Cancel anytime', 'Pay per session'],
   },
-  basic: {
-    price: 9.99,
-    features: ['10 sessions/month', 'Email support', 'Session recordings'],
+  REGULAR: {
+    pricePerHour: 28,
+    minimumHours: 4,
+    commitment: '1 month',
+    features: ['Minimum 4 hours/month', '1 month commitment', '7% savings'],
   },
-  premium: {
-    price: 29.99,
-    features: ['Unlimited sessions', 'Priority support', 'Session recordings', 'Analytics'],
-  },
-  enterprise: {
-    price: 99.99,
-    features: ['Everything in Premium', 'Dedicated support', 'Custom integrations'],
+  LONG_TERM: {
+    pricePerHour: 25,
+    minimumHours: 4,
+    commitment: '3 months',
+    features: ['Minimum 4 hours/month', '3 months commitment', '17% savings'],
   },
 };
 
@@ -162,7 +181,7 @@ export function useCancelSubscription() {
 // Get Payment Methods
 export function usePaymentMethods() {
   const { isAuthenticated, user } = useAuthStore();
-  const isStudent = user?.role === 'student';
+  const isStudent = user?.role === 'STUDENT';
 
   return useQuery({
     queryKey: ['payment-methods'],

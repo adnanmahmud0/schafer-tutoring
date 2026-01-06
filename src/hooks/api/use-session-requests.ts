@@ -80,7 +80,7 @@ export function useCreateSessionRequest() {
 // Get My Session Requests (Student)
 export function useMySessionRequests() {
   const { isAuthenticated, user } = useAuthStore();
-  const isStudent = user?.role === 'student';
+  const isStudent = user?.role === 'STUDENT';
 
   return useQuery({
     queryKey: ['my-session-requests'],
@@ -129,7 +129,7 @@ export function useExtendSessionRequest() {
 // Get Matching Session Requests (Tutor)
 export function useMatchingSessionRequests() {
   const { isAuthenticated, user } = useAuthStore();
-  const isTutor = user?.role === 'tutor';
+  const isTutor = user?.role === 'TUTOR';
 
   return useQuery({
     queryKey: ['matching-session-requests'],
@@ -180,7 +180,7 @@ export function useAllSessionRequests(filters?: {
   limit?: number;
 }) {
   const { isAuthenticated, user } = useAuthStore();
-  const isAdmin = user?.role === 'super_admin';
+  const isAdmin = user?.role === 'SUPER_ADMIN';
 
   return useQuery({
     queryKey: ['all-session-requests', filters],

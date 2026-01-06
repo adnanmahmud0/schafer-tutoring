@@ -295,3 +295,36 @@ export function useUserGrowth(year?: number, months?: number[]) {
     enabled: isAuthenticated && isAdmin,
   });
 }
+
+// Application Stat Item with growth
+export interface ApplicationStatItem {
+  count: number;
+  growth: number;
+  growthType: 'increase' | 'decrease' | 'no_change';
+}
+
+// Application Stats Interface
+export interface ApplicationStats {
+  total: ApplicationStatItem;
+  pending: ApplicationStatItem;
+  interview: ApplicationStatItem;
+  approved: ApplicationStatItem;
+  rejected: ApplicationStatItem;
+  revision: ApplicationStatItem;
+}
+
+// Application Stats Hook
+export function useApplicationStats() {
+  const { isAuthenticated, user } = useAuthStore();
+  const isAdmin = user?.role === 'SUPER_ADMIN';
+
+  return useQuery({
+    queryKey: ['admin-application-stats'],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/admin/application-stats');
+      return data.data as ApplicationStats;
+    },
+    enabled: isAuthenticated && isAdmin,
+    staleTime: 60 * 1000, // 1 minute cache
+  });
+}

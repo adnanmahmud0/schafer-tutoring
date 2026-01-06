@@ -127,6 +127,8 @@ export {
   useRescheduleInterviewSlot,
   useMyBookedInterview,
   useCancelMyInterview,
+  useScheduledMeetings,
+  useGetInterviewMeetingToken,
   INTERVIEW_SLOT_STATUS,
 } from './use-interview-slots';
 
@@ -204,7 +206,7 @@ export type { Notification } from './use-notifications';
 export type { SubmitApplicationData, ApplicationResponse, TutorApplication, ApplicationStatus } from './use-applications';
 export type { AdminApplication, AdminApplicationStatus, ApplicationFilters, AdminApplicationsResponse } from './use-admin-applications';
 export type { TrialRequest, AcceptedTutor, CreateTrialRequestData, StudentInfo, GuardianInfo } from './use-trial-requests';
-export type { InterviewSlot, InterviewSlotFilters } from './use-interview-slots';
+export type { InterviewSlot, InterviewSlotFilters, ScheduledMeeting, ScheduledMeetingsFilters, MeetingTokenResponse } from './use-interview-slots';
 export type { StripeAccount, OnboardingStatus, CreateAccountResponse } from './use-stripe';
 export type {
   Subscription,

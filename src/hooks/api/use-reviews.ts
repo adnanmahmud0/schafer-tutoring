@@ -104,7 +104,7 @@ export function useCreateReview() {
 // Get My Reviews (Student)
 export function useMyReviews(page = 1, limit = 10) {
   const { isAuthenticated, user } = useAuthStore();
-  const isStudent = user?.role === 'student';
+  const isStudent = user?.role === 'STUDENT';
 
   return useQuery({
     queryKey: ['my-reviews', page, limit],

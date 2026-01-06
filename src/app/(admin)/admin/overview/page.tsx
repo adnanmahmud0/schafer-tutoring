@@ -82,7 +82,7 @@ const Overview = () => {
   // Transform revenue data for chart
   const revenueData = revenueByMonth?.map((item) => ({
     month: monthNames[item.month - 1] || `M${item.month}`,
-    revenue: item.revenue || 0,
+    revenue: item.totalRevenue || 0,
   })) || [];
 
   // Transform user distribution for pie chart

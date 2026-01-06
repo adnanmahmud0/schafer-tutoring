@@ -263,79 +263,81 @@ const Page1 = () => {
           </div>
         )}
 
-        {/* Application Summary Card */}
-        <div className="rounded-lg shadow-sm border border-gray-200 p-6 mb-6 bg-white">
-          <h3 className="text-xl font-semibold text-gray-800 mb-6">
-            Application Summary
-          </h3>
+        {/* Application Summary Card - Hide when SELECTED_FOR_INTERVIEW */}
+        {application.status !== "SELECTED_FOR_INTERVIEW" && (
+          <div className="rounded-lg shadow-sm border border-gray-200 p-6 mb-6 bg-white">
+            <h3 className="text-xl font-semibold text-gray-800 mb-6">
+              Application Summary
+            </h3>
 
-          <div className="space-y-6">
-            {/* Name */}
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Name</p>
-              <p className="text-gray-800 font-medium">{application.name}</p>
-            </div>
-
-            {/* Subjects */}
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Subjects</p>
-              <p className="text-gray-800 font-medium">
-                {application.subjects.map((s) => s.name).join(", ") || "No subjects selected"}
-              </p>
-            </div>
-
-            {/* Email and Phone */}
-            <div className="grid grid-cols-2 gap-6">
+            <div className="space-y-6">
+              {/* Name */}
               <div>
-                <p className="text-sm text-gray-600 mb-1">E-Mail</p>
-                <p className="text-gray-800 font-medium">{application.email}</p>
+                <p className="text-sm text-gray-600 mb-1">Name</p>
+                <p className="text-gray-800 font-medium">{application.name}</p>
               </div>
+
+              {/* Subjects */}
               <div>
-                <p className="text-sm text-gray-600 mb-1">Phone</p>
-                <p className="text-gray-800 font-medium">{application.phoneNumber}</p>
+                <p className="text-sm text-gray-600 mb-1">Subjects</p>
+                <p className="text-gray-800 font-medium">
+                  {application.subjects.map((s) => s.name).join(", ") || "No subjects selected"}
+                </p>
               </div>
-            </div>
 
-            {/* Documents Section */}
-            <div>
-              <p className="text-sm text-gray-600 mb-4 font-semibold">Documents</p>
-              <div className="grid grid-cols-3 gap-4">
-                {/* CV */}
-                <a
-                  href={application.cv}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="border border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer"
-                >
-                  <FileText className="w-8 h-8 text-gray-400 mb-3" />
-                  <p className="text-sm font-medium text-gray-700">CV</p>
-                </a>
+              {/* Email and Phone */}
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">E-Mail</p>
+                  <p className="text-gray-800 font-medium">{application.email}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Phone</p>
+                  <p className="text-gray-800 font-medium">{application.phoneNumber}</p>
+                </div>
+              </div>
 
-                {/* Abitur Certificate */}
-                <a
-                  href={application.abiturCertificate}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="border border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer"
-                >
-                  <FileText className="w-8 h-8 text-gray-400 mb-3" />
-                  <p className="text-sm font-medium text-gray-700">Abitur Certificate</p>
-                </a>
+              {/* Documents Section */}
+              <div>
+                <p className="text-sm text-gray-600 mb-4 font-semibold">Documents</p>
+                <div className="grid grid-cols-3 gap-4">
+                  {/* CV */}
+                  <a
+                    href={application.cv}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="border border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer"
+                  >
+                    <FileText className="w-8 h-8 text-gray-400 mb-3" />
+                    <p className="text-sm font-medium text-gray-700">CV</p>
+                  </a>
 
-                {/* ID Document */}
-                <a
-                  href={application.officialId}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="border border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer"
-                >
-                  <FileText className="w-8 h-8 text-gray-400 mb-3" />
-                  <p className="text-sm font-medium text-gray-700">ID-Document</p>
-                </a>
+                  {/* Abitur Certificate */}
+                  <a
+                    href={application.abiturCertificate}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="border border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer"
+                  >
+                    <FileText className="w-8 h-8 text-gray-400 mb-3" />
+                    <p className="text-sm font-medium text-gray-700">Abitur Certificate</p>
+                  </a>
+
+                  {/* ID Document */}
+                  <a
+                    href={application.officialId}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="border border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer"
+                  >
+                    <FileText className="w-8 h-8 text-gray-400 mb-3" />
+                    <p className="text-sm font-medium text-gray-700">ID-Document</p>
+                  </a>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Info Message */}
         <div className="border bg-[#E2E6F5] border-[#0B31BD] rounded-lg p-4">
