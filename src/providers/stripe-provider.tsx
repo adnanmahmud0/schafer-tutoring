@@ -33,8 +33,13 @@ export function StripeProvider({ children, clientSecret }: StripeProviderProps) 
     : undefined;
 
   if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
-    console.warn('Stripe publishable key is not set');
-    return <>{children}</>;
+    console.error('❌ STRIPE ERROR: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is not set in environment variables');
+    return (
+      <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+        <p className="font-medium">Stripe Configuration Error</p>
+        <p className="text-sm">Stripe publishable key is missing. Please check your environment configuration.</p>
+      </div>
+    );
   }
 
   return (

@@ -181,6 +181,26 @@ export default function VideoCallProvider({ children }: { children: ReactNode })
       console.error('Call error:', message);
     });
 
+    // Session-based call joined successfully
+    socket.on('SESSION_CALL_JOINED', ({ callId, channelName, token, uid, callType, isNew }) => {
+      console.log('Session call joined:', { callId, channelName, callType, isNew });
+      setCurrentCall((prev) => prev ? { ...prev, callId, channelName } : {
+        callId,
+        channelName,
+        callType,
+        otherUser: { id: '', name: '' },
+      });
+      // Join Agora channel with the token
+      agora.join(channelName, token, uid);
+    });
+
+    // Session call is ready (notifies the other user)
+    socket.on('SESSION_CALL_READY', ({ callId, channelName, sessionId, callType, caller }) => {
+      console.log('Session call ready, other user joined:', { callId, channelName, caller });
+      // This notifies that another user has started the session call
+      // The current user can also join now
+    });
+
     return () => {
       socket.off('CALL_INITIATED');
       socket.off('INCOMING_CALL');
@@ -193,6 +213,8 @@ export default function VideoCallProvider({ children }: { children: ReactNode })
       socket.off('CALL_PARTICIPANT_LEFT');
       socket.off('CALL_BOTH_CONNECTED');
       socket.off('CALL_ERROR');
+      socket.off('SESSION_CALL_JOINED');
+      socket.off('SESSION_CALL_READY');
     };
   }, [socket, agora]);
 
@@ -258,19 +280,32 @@ export default function VideoCallProvider({ children }: { children: ReactNode })
   }, [socket, currentCall, agora]);
 
   // Join a session-based call (for tutoring sessions)
+  // Both users will join the SAME channel based on sessionId
   const joinSessionCall = useCallback((
     sessionId: string,
     otherUserId: string,
     otherUserName: string
   ) => {
-    // For session calls, we initiate a video call to the other participant
-    initiateCall(otherUserId, 'video', undefined, sessionId);
-    setCurrentCall((prev) => prev ? {
-      ...prev,
-      sessionId,
+    if (!socket || !isConnected) {
+      console.error('Socket not connected');
+      return;
+    }
+
+    setCurrentCall({
+      callId: '', // Will be set when SESSION_CALL_JOINED response comes
+      channelName: '',
+      callType: 'video',
       otherUser: { id: otherUserId, name: otherUserName },
-    } : null);
-  }, [initiateCall]);
+      sessionId,
+    });
+
+    // Emit session-based call join - both users will get same channel
+    socket.emit('CALL_JOIN_SESSION', {
+      sessionId,
+      otherUserId,
+      callType: 'video',
+    });
+  }, [socket, isConnected]);
 
   const value: VideoCallContextType = {
     isInCall: agora.callState === 'connected',

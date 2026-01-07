@@ -23,6 +23,23 @@ interface AuthState {
   logout: () => void;
 }
 
+// Helper to set cookie (accessible by middleware)
+const setAuthCookie = (token: string) => {
+  if (typeof document !== 'undefined') {
+    // Set cookie with 7 days expiry (same as typical refresh token)
+    const expires = new Date();
+    expires.setDate(expires.getDate() + 7);
+    document.cookie = `accessToken=${token};path=/;expires=${expires.toUTCString()};SameSite=Lax`;
+  }
+};
+
+// Helper to clear auth cookie
+const clearAuthCookie = () => {
+  if (typeof document !== 'undefined') {
+    document.cookie = 'accessToken=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT';
+  }
+};
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
@@ -31,6 +48,7 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
 
       setAuth: (user, accessToken) => {
+        setAuthCookie(accessToken); // Set cookie for middleware
         set({ user, accessToken, isAuthenticated: true });
       },
 
@@ -45,6 +63,7 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: () => {
+        clearAuthCookie(); // Clear cookie on logout
         set({ user: null, accessToken: null, isAuthenticated: false });
       },
     }),

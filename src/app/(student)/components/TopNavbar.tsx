@@ -4,6 +4,8 @@ import { Bell, Menu } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import MobileMenuStudent from "@/components/dashboard/MobileMenuStudent";
+import { useLogout } from "@/hooks/api";
+import { useAuthStore } from "@/store/auth-store";
 
 export default function TopNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -11,6 +13,9 @@ export default function TopNavbar() {
   const [notificationMenuOpen, setNotificationMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const notificationMenuRef = useRef<HTMLDivElement>(null);
+
+  const { mutate: logout, isPending: isLoggingOut } = useLogout();
+  const { user } = useAuthStore();
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -165,13 +170,13 @@ export default function TopNavbar() {
           >
             <div className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 rounded-full overflow-hidden border-2 border-[#0B31BD] flex-shrink-0">
               <div className="w-full h-full bg-[#0B31BD] flex items-center justify-center text-white font-bold text-sm sm:text-base lg:text-lg">
-                J
+                {user?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || "S"}
               </div>
             </div>
 
             <div className="hidden sm:block">
               <h3 className="font-semibold text-sm lg:text-base whitespace-nowrap">
-                John Doe
+                {user?.name || "Student"}
               </h3>
               <p className="text-xs lg:text-sm whitespace-nowrap">Student</p>
             </div>
@@ -186,13 +191,14 @@ export default function TopNavbar() {
                   Profile
                 </Link>
                 <button
-                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 rounded-b-lg"
+                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-b-lg"
+                  disabled={isLoggingOut}
                   onClick={() => {
                     setUserMenuOpen(false);
-                    // TODO: logout logic
+                    logout();
                   }}
                 >
-                  Logout
+                  {isLoggingOut ? "Logging out..." : "Logout"}
                 </button>
               </div>
             )}

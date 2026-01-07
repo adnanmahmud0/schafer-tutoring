@@ -28,6 +28,17 @@ export interface Chat {
   updatedAt: string;
 }
 
+export interface Attachment {
+  type: 'image' | 'audio' | 'video' | 'file';
+  url: string;
+  name?: string;
+  size?: number;
+  mime?: string;
+  width?: number;
+  height?: number;
+  duration?: number;
+}
+
 export interface Message {
   _id: string;
   chatId: string;
@@ -40,6 +51,7 @@ export interface Message {
   text?: string;             // Backend field name
   content?: string;          // Virtual alias from backend
   type: 'text' | 'image' | 'media' | 'doc' | 'mixed' | 'session_proposal';
+  attachments?: Attachment[];
   sessionProposal?: {
     subject: string;
     startTime: string;
@@ -136,6 +148,51 @@ export function useMarkChatAsRead() {
       return data;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['chats'] });
+    },
+  });
+}
+
+// Send Message with Attachments (Protected)
+export function useSendMessageWithAttachment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (messageData: {
+      chatId: string;
+      text?: string;
+      files: File[];
+    }) => {
+      const formData = new FormData();
+      formData.append('chatId', messageData.chatId);
+
+      if (messageData.text) {
+        formData.append('text', messageData.text);
+      }
+
+      // Categorize files by type and append to FormData
+      messageData.files.forEach((file) => {
+        const mimeType = file.type.toLowerCase();
+
+        if (mimeType.startsWith('image/')) {
+          formData.append('image', file);
+        } else if (mimeType.startsWith('video/') || mimeType.startsWith('audio/')) {
+          formData.append('media', file);
+        } else {
+          // PDF and other documents
+          formData.append('doc', file);
+        }
+      });
+
+      const { data } = await apiClient.post('/messages', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['messages', variables.chatId] });
       queryClient.invalidateQueries({ queryKey: ['chats'] });
     },
   });

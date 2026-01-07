@@ -24,6 +24,28 @@ export {
   useDeleteSubject,
 } from './use-subjects';
 
+// Grade Hooks (Public + Admin)
+export {
+  useGrades,
+  useActiveGrades,
+  useGrade,
+  useAdminGrades,
+  useCreateGrade,
+  useUpdateGrade,
+  useDeleteGrade,
+} from './use-grades';
+
+// School Type Hooks (Public + Admin)
+export {
+  useSchoolTypes,
+  useActiveSchoolTypes,
+  useSchoolType,
+  useAdminSchoolTypes,
+  useCreateSchoolType,
+  useUpdateSchoolType,
+  useDeleteSchoolType,
+} from './use-school-types';
+
 // Session Hooks
 export {
   useUpcomingSessions,
@@ -197,6 +219,8 @@ export {
 
 // Types
 export type { Subject, SubjectFilters, SubjectsResponse } from './use-subjects';
+export type { Grade, GradeFilters, GradesResponse } from './use-grades';
+export type { SchoolType, SchoolTypeFilters, SchoolTypesResponse } from './use-school-types';
 export type { Session, SessionFilters, UnifiedSession, UnifiedSessionFilters } from './use-sessions';
 export type { Student, StudentFilters } from './use-students';
 export type { Tutor, TutorFilters, TutorsResponse } from './use-tutors';

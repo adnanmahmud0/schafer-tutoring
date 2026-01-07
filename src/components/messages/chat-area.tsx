@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Paperclip, Calendar, ArrowUp, ArrowLeft, Loader2, Headphones } from "lucide-react";
+import { Paperclip, Calendar, ArrowUp, ArrowLeft, Loader2, Headphones, X, FileText, Image as ImageIcon, Film } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import ScheduleModal from "./schedule-modal";
 import SessionProposal from "./session-proposal";
 import { Textarea } from "../ui/textarea";
-import { useMessages, useSendMessage, useMarkChatAsRead, useChats, Chat } from "@/hooks/api/use-chats";
+import { useMessages, useSendMessage, useMarkChatAsRead, useChats, Chat, useSendMessageWithAttachment, Attachment } from "@/hooks/api/use-chats";
 import { useAuthStore } from "@/store/auth-store";
 import { useSocket } from "@/providers/socket-provider";
 import { useProposeSession, useAcceptSessionProposal, useRejectSessionProposal, useCounterProposeSession, useCancelSession } from "@/hooks/api/use-sessions";
@@ -26,7 +26,9 @@ export default function ChatArea({
   const [message, setMessage] = useState("");
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [counterProposalMessageId, setCounterProposalMessageId] = useState<string | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuthStore();
   const { joinChat, leaveChat, isConnected } = useSocket();
 
@@ -50,13 +52,14 @@ export default function ChatArea({
   // Get messages from API (skip for support chat)
   const { data: messages, isLoading: messagesLoading } = useMessages(isSupportChat ? '' : conversationId);
   const { mutate: sendMessage, isPending: isSending } = useSendMessage();
+  const { mutate: sendMessageWithAttachment, isPending: isUploadingSending } = useSendMessageWithAttachment();
   const { mutate: markAsRead } = useMarkChatAsRead();
   const { mutate: proposeSession, isPending: isProposing } = useProposeSession();
   const { mutate: acceptProposal, isPending: isAccepting } = useAcceptSessionProposal();
   const { mutate: rejectProposal, isPending: isRejecting } = useRejectSessionProposal();
   const { mutate: counterPropose, isPending: isCounterProposing } = useCounterProposeSession();
   const { mutate: cancelSession, isPending: isCancelling } = useCancelSession();
-  const { initiateCall } = useVideoCall();
+  const { joinSessionCall } = useVideoCall();
 
   // Check if user is a tutor (can send session proposals)
   const isTutor = user?.role === 'TUTOR';
@@ -100,13 +103,31 @@ export default function ChatArea({
   }, [conversationId, isSupportChat, currentChat?.unreadCount, markAsRead]);
 
   const handleSend = () => {
-    if (message.trim() && conversationId && !isSupportChat) {
-      sendMessage({
-        chatId: conversationId,
-        content: message.trim(),
-        type: 'TEXT',
-      });
-      setMessage("");
+    if (conversationId && !isSupportChat) {
+      // If there are files selected, send with attachments
+      if (selectedFiles.length > 0) {
+        sendMessageWithAttachment({
+          chatId: conversationId,
+          text: message.trim() || undefined,
+          files: selectedFiles,
+        }, {
+          onSuccess: () => {
+            setMessage("");
+            setSelectedFiles([]);
+          },
+          onError: (error: any) => {
+            toast.error(error?.response?.data?.message || 'Failed to send attachment');
+          },
+        });
+      } else if (message.trim()) {
+        // Text only message
+        sendMessage({
+          chatId: conversationId,
+          content: message.trim(),
+          type: 'TEXT',
+        });
+        setMessage("");
+      }
     }
   };
 
@@ -115,6 +136,64 @@ export default function ChatArea({
       e.preventDefault();
       handleSend();
     }
+  };
+
+  // File handling functions
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    // Validate file types and sizes
+    const validFiles: File[] = [];
+    const maxSize = 10 * 1024 * 1024; // 10MB max per file
+
+    files.forEach(file => {
+      if (file.size > maxSize) {
+        toast.error(`${file.name} is too large. Max size is 10MB`);
+        return;
+      }
+
+      const mimeType = file.type.toLowerCase();
+      const isValidType =
+        mimeType.startsWith('image/') ||
+        mimeType.startsWith('video/') ||
+        mimeType.startsWith('audio/') ||
+        mimeType === 'application/pdf';
+
+      if (!isValidType) {
+        toast.error(`${file.name} is not supported. Use images, videos, audio, or PDF`);
+        return;
+      }
+
+      validFiles.push(file);
+    });
+
+    // Limit to 3 files total
+    const newFiles = [...selectedFiles, ...validFiles].slice(0, 3);
+    setSelectedFiles(newFiles);
+
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const getFileIcon = (file: File) => {
+    const mimeType = file.type.toLowerCase();
+    if (mimeType.startsWith('image/')) return <ImageIcon className="w-4 h-4" />;
+    if (mimeType.startsWith('video/')) return <Film className="w-4 h-4" />;
+    return <FileText className="w-4 h-4" />;
+  };
+
+  const getFilePreview = (file: File) => {
+    if (file.type.startsWith('image/')) {
+      return URL.createObjectURL(file);
+    }
+    return null;
   };
 
   const handleSchedule = (selectedDate: Date, time: string) => {
@@ -376,13 +455,13 @@ export default function ChatArea({
                         onDecline={() => handleSessionAction(msg._id, "declined")}
                         onCancel={() => handleSessionAction(msg._id, "cancelled", (msg.sessionProposal as any).sessionId)}
                         onJoinSession={() => {
-                          // Initiate Agora video call with the other participant
-                          if (otherParticipant) {
-                            initiateCall(
+                          // Join session-based video call with the other participant
+                          // Both users will join the same channel based on sessionId
+                          if (otherParticipant && (msg.sessionProposal as any)?.sessionId) {
+                            joinSessionCall(
+                              (msg.sessionProposal as any).sessionId,
                               otherParticipant._id,
-                              'video',
-                              conversationId,
-                              (msg.sessionProposal as any).sessionId
+                              otherParticipant.name || 'User'
                             );
                           }
                         }}
@@ -396,7 +475,55 @@ export default function ChatArea({
                               : "bg-card border border-border rounded-bl-none"
                           }`}
                         >
-                          <p className="text-sm wrap-break-word">{messageContent}</p>
+                          {/* Display attachments */}
+                          {msg.attachments && msg.attachments.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-2">
+                              {msg.attachments.map((attachment, idx) => (
+                                <div key={idx} className="relative">
+                                  {attachment.type === 'image' ? (
+                                    <a
+                                      href={attachment.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                    >
+                                      <img
+                                        src={attachment.url}
+                                        alt={attachment.name || 'Image'}
+                                        className="max-w-[200px] max-h-[200px] rounded object-cover cursor-pointer hover:opacity-90"
+                                      />
+                                    </a>
+                                  ) : attachment.type === 'video' ? (
+                                    <video
+                                      src={attachment.url}
+                                      controls
+                                      className="max-w-[250px] max-h-[200px] rounded"
+                                    />
+                                  ) : attachment.type === 'audio' ? (
+                                    <audio
+                                      src={attachment.url}
+                                      controls
+                                      className="max-w-[250px]"
+                                    />
+                                  ) : (
+                                    <a
+                                      href={attachment.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center gap-2 p-2 bg-background rounded hover:bg-muted transition-colors"
+                                    >
+                                      <FileText className="w-5 h-5 text-primary" />
+                                      <span className="text-sm truncate max-w-[150px]">
+                                        {attachment.name || 'Document'}
+                                      </span>
+                                    </a>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {messageContent && (
+                            <p className="text-sm wrap-break-word">{messageContent}</p>
+                          )}
                         </div>
                         <span className="text-xs text-muted-foreground mt-1 block">
                           {formatTime(msg.createdAt)}
@@ -419,20 +546,71 @@ export default function ChatArea({
       <div className="w-full flex bg-background p-4">
         <div className="w-full">
           <div className="bg-card border border-border rounded-lg p-4">
+            {/* File Preview */}
+            {selectedFiles.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-3">
+                {selectedFiles.map((file, index) => {
+                  const preview = getFilePreview(file);
+                  return (
+                    <div
+                      key={index}
+                      className="relative group bg-muted rounded-lg p-2 flex items-center gap-2"
+                    >
+                      {preview ? (
+                        <img
+                          src={preview}
+                          alt={file.name}
+                          className="w-12 h-12 object-cover rounded"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 flex items-center justify-center bg-background rounded">
+                          {getFileIcon(file)}
+                        </div>
+                      )}
+                      <div className="flex flex-col max-w-[100px]">
+                        <span className="text-xs truncate">{file.name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {(file.size / 1024).toFixed(0)} KB
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => removeFile(index)}
+                        className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
             <Textarea
               placeholder="Type your Message..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyPress}
-              disabled={isSending}
+              disabled={isSending || isUploadingSending}
               className="min-h-20 mb-3 resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none"
             />
 
             <div className="flex items-center gap-2">
+              {/* Hidden file input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/*,video/*,audio/*,.pdf"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+
               <Button
                 variant="outline"
                 size="sm"
                 className="gap-2 text-foreground bg-transparent"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={selectedFiles.length >= 3 || isUploadingSending}
               >
                 <Paperclip className="w-4 h-4" />
               </Button>
@@ -460,9 +638,9 @@ export default function ChatArea({
                 variant="ghost"
                 className="shrink-0 bg-[#0B31BD] text-white disabled:opacity-50"
                 onClick={handleSend}
-                disabled={!message.trim() || isSending}
+                disabled={(!message.trim() && selectedFiles.length === 0) || isSending || isUploadingSending}
               >
-                {isSending ? (
+                {(isSending || isUploadingSending) ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   <ArrowUp className="w-4 h-4" />

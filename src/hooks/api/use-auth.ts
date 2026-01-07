@@ -35,6 +35,17 @@ interface AuthResponse {
   };
 }
 
+interface ProfileResponse {
+  success: boolean;
+  data: {
+    _id: string;
+    role: string;
+    studentProfile?: {
+      hasCompletedTrial?: boolean;
+    };
+  };
+}
+
 // Decode JWT token to get user data
 const decodeToken = (token: string): { id: string; role: string; email: string } | null => {
   try {
@@ -54,6 +65,27 @@ const REDIRECT_MAP: Record<string, string> = {
   APPLICANT: '/free-trial-teacher-dash',
 };
 
+// Helper function to get redirect path for students based on trial status
+const getStudentRedirectPath = async (accessToken: string): Promise<string> => {
+  try {
+    // Fetch profile to check trial status
+    const { data } = await apiClient.get<ProfileResponse>('/user/profile', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    // If student hasn't completed trial, redirect to free trial dashboard
+    if (data.data?.studentProfile?.hasCompletedTrial === false) {
+      return '/free-trial-student-dash';
+    }
+
+    // Otherwise, redirect to regular student dashboard
+    return '/student/session';
+  } catch {
+    // If profile fetch fails, default to regular student dashboard
+    return '/student/session';
+  }
+};
+
 // Login Hook (Public)
 export function useLogin() {
   const { setAuth } = useAuthStore();
@@ -67,7 +99,7 @@ export function useLogin() {
       );
       return data;
     },
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       const { accessToken } = response.data;
 
       // Decode token to get user data
@@ -85,7 +117,14 @@ export function useLogin() {
       };
 
       setAuth(user, accessToken);
-      router.push(REDIRECT_MAP[user.role] || '/');
+
+      // For students, check trial completion status before redirect
+      if (user.role === 'STUDENT') {
+        const redirectPath = await getStudentRedirectPath(accessToken);
+        router.push(redirectPath);
+      } else {
+        router.push(REDIRECT_MAP[user.role] || '/');
+      }
     },
   });
 }

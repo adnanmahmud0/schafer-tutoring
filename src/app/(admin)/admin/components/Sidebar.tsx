@@ -11,6 +11,8 @@ const menuItems = [
   { label: "Session", href: "/admin/session" },
   { label: "Application",  href: "/admin/application" },
   { label: "Subject",  href: "/admin/subject" },
+  { label: "Grade",  href: "/admin/grade" },
+  { label: "School Type",  href: "/admin/school-type" },
   { label: "Transaction",  href: "/admin/transaction" },
   { label: "Meeting List",  href: "/admin/meeting-list" },
   { label: "Available Slot",  href: "/admin/available-slot" },

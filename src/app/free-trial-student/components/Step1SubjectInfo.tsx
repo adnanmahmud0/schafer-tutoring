@@ -5,7 +5,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { useActiveSubjects } from "@/hooks/api";
+import { useActiveSubjects, useActiveGrades, useActiveSchoolTypes } from "@/hooks/api";
 
 interface Step1Props {
   formData: any;
@@ -13,8 +13,10 @@ interface Step1Props {
 }
 
 export const Step1SubjectInfo = ({ formData, setFormData }: Step1Props) => {
-  // Fetch subjects from backend API
+  // Fetch data from backend API
   const { data: subjects = [], isLoading: subjectsLoading } = useActiveSubjects();
+  const { data: grades = [], isLoading: gradesLoading } = useActiveGrades();
+  const { data: schoolTypes = [], isLoading: schoolTypesLoading } = useActiveSchoolTypes();
 
   return (
     <div className="space-y-6">
@@ -63,11 +65,21 @@ export const Step1SubjectInfo = ({ formData, setFormData }: Step1Props) => {
             <SelectValue placeholder="Select your Grade" />
           </SelectTrigger>
           <SelectContent>
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].map((grade) => (
-              <SelectItem key={grade} value={String(grade)}>
-                Grade {grade}
-              </SelectItem>
-            ))}
+            {gradesLoading ? (
+              <div className="px-2 py-1.5 text-sm text-gray-500">
+                Loading...
+              </div>
+            ) : grades.length === 0 ? (
+              <div className="px-2 py-1.5 text-sm text-gray-500">
+                No grades available
+              </div>
+            ) : (
+              grades.map((grade) => (
+                <SelectItem key={grade._id} value={grade.name}>
+                  {grade.name}
+                </SelectItem>
+              ))
+            )}
           </SelectContent>
         </Select>
       </div>
@@ -86,14 +98,21 @@ export const Step1SubjectInfo = ({ formData, setFormData }: Step1Props) => {
             <SelectValue placeholder="Select your School Type" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="GRUNDSCHULE">Grundschule (Primary)</SelectItem>
-            <SelectItem value="HAUPTSCHULE">Hauptschule</SelectItem>
-            <SelectItem value="REALSCHULE">Realschule</SelectItem>
-            <SelectItem value="GYMNASIUM">Gymnasium</SelectItem>
-            <SelectItem value="GESAMTSCHULE">Gesamtschule</SelectItem>
-            <SelectItem value="BERUFSSCHULE">Berufsschule (Vocational)</SelectItem>
-            <SelectItem value="UNIVERSITY">University</SelectItem>
-            <SelectItem value="OTHER">Other</SelectItem>
+            {schoolTypesLoading ? (
+              <div className="px-2 py-1.5 text-sm text-gray-500">
+                Loading...
+              </div>
+            ) : schoolTypes.length === 0 ? (
+              <div className="px-2 py-1.5 text-sm text-gray-500">
+                No school types available
+              </div>
+            ) : (
+              schoolTypes.map((schoolType) => (
+                <SelectItem key={schoolType._id} value={schoolType.name}>
+                  {schoolType.name}
+                </SelectItem>
+              ))
+            )}
           </SelectContent>
         </Select>
       </div>

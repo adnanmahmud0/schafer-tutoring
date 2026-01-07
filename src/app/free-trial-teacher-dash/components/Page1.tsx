@@ -54,10 +54,10 @@ const getStatusMessage = (
       };
     case "APPROVED":
       return {
-        title: "Congratulations! Your application has been approved.",
-        subtitle: "Please complete your profile setup to start tutoring.",
-        bgColor: "bg-green-50",
-        borderColor: "border-green-500",
+        title: "You have been approved as a tutor on our platform.",
+        subtitle: "Please complete the profile setup to start teaching.",
+        bgColor: "bg-[#FFF9E6]",
+        borderColor: "border-l-4 border-l-[#FFB800] border-t-0 border-r-0 border-b-0",
       };
     case "REJECTED":
       return {
@@ -263,8 +263,8 @@ const Page1 = () => {
           </div>
         )}
 
-        {/* Application Summary Card - Hide when SELECTED_FOR_INTERVIEW */}
-        {application.status !== "SELECTED_FOR_INTERVIEW" && (
+        {/* Application Summary Card - Hide when SELECTED_FOR_INTERVIEW or APPROVED */}
+        {application.status !== "SELECTED_FOR_INTERVIEW" && application.status !== "APPROVED" && (
           <div className="rounded-lg shadow-sm border border-gray-200 p-6 mb-6 bg-white">
             <h3 className="text-xl font-semibold text-gray-800 mb-6">
               Application Summary
@@ -339,13 +339,15 @@ const Page1 = () => {
           </div>
         )}
 
-        {/* Info Message */}
-        <div className="border bg-[#E2E6F5] border-[#0B31BD] rounded-lg p-4">
-          <p className="text-[#0B31BD] text-sm">
-            You can return to this page at any time to check the progress of
-            your application by login.
-          </p>
-        </div>
+        {/* Info Message - Hide when APPROVED */}
+        {application.status !== "APPROVED" && (
+          <div className="border bg-[#E2E6F5] border-[#0B31BD] rounded-lg p-4">
+            <p className="text-[#0B31BD] text-sm">
+              You can return to this page at any time to check the progress of
+              your application by login.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

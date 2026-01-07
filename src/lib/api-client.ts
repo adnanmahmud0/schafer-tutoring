@@ -57,6 +57,8 @@ const isPublicEndpoint = (url: string, method: string): boolean => {
   if (url.startsWith('/auth/')) return true;
   if (url === '/users' && method === 'POST') return true;
   if (url.startsWith('/subjects') && method === 'GET') return true;
+  if (url.startsWith('/grades') && method === 'GET') return true;
+  if (url.startsWith('/school-types') && method === 'GET') return true;
   if (url === '/trial-requests' && method === 'POST') return true;
   if (url === '/applications' && method === 'POST') return true;
   return false;

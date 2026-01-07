@@ -172,14 +172,14 @@ export default function SessionProposal({
       );
     }
 
-    // Starting soon (within 15 minutes) - different design
+    // Starting soon (within 15 minutes) - show Join button
     if (startingSoon) {
       return (
         <div className="bg-card border border-border rounded-xl p-5 max-w-xs shadow-sm">
           {/* Header */}
           <div className="flex items-center justify-between mb-5">
-            <h3 className="font-semibold text-foreground">Session in progress</h3>
-            <span className="text-xs bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-medium">
+            <h3 className="font-semibold text-foreground">Session starting soon</h3>
+            <span className="text-xs bg-orange-50 text-orange-600 px-3 py-1 rounded-full font-medium animate-pulse">
               Starting soon
             </span>
           </div>
@@ -196,15 +196,24 @@ export default function SessionProposal({
           </div>
 
           {/* Time Section */}
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-3 mb-5">
             <Clock className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
             <div>
               <p className="text-xs text-muted-foreground font-medium uppercase">TIME</p>
               <p className="text-sm font-medium text-foreground">
-                {time}{endTime ? ` – ${endTime}` : ''}
+                {time}{endTime ? ` – ${endTime}` : ''}{timeUntil ? ` (${timeUntil})` : ''}
               </p>
             </div>
           </div>
+
+          {/* Join Session Button */}
+          <Button
+            onClick={onJoinSession}
+            className="w-full bg-[#0B31BD] hover:bg-[#0B31BD]/90 text-white rounded-lg h-10"
+          >
+            <Video className="w-4 h-4 mr-2" />
+            Join session
+          </Button>
         </div>
       );
     }

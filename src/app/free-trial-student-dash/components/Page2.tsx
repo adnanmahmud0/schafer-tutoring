@@ -1,14 +1,15 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
-import { useMessages, useSendMessage } from '@/hooks/api/use-chats';
+import { useMessages, useSendMessage, useSendMessageWithAttachment } from '@/hooks/api/use-chats';
 import { useAuthStore } from '@/store/auth-store';
 import { TrialRequest, AcceptedTutor } from '@/hooks/api/use-trial-requests';
-import { Loader2, Send, Paperclip } from 'lucide-react';
+import { Loader2, Send, Paperclip, X, FileText, Image as ImageIcon, Film } from 'lucide-react';
 import { useSocket } from '@/providers/socket-provider';
 import { useAcceptSessionProposal, useRejectSessionProposal } from '@/hooks/api/use-sessions';
 import SessionProposal from '@/components/messages/session-proposal';
 import ScheduleModal from '@/components/messages/schedule-modal';
+import { useVideoCall } from '@/providers/video-call-provider';
 import { toast } from 'sonner';
 
 interface Page2Props {
@@ -20,7 +21,9 @@ const Page2 = ({ trialRequest }: Page2Props) => {
   const [message, setMessage] = useState('');
   const [progressWidth, setProgressWidth] = useState("55%");
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuthStore();
   const { joinChat, leaveChat, isConnected } = useSocket();
 
@@ -37,8 +40,10 @@ const Page2 = ({ trialRequest }: Page2Props) => {
   // Fetch messages from API
   const { data: messagesData, isLoading: messagesLoading } = useMessages(chatId);
   const { mutate: sendMessage, isPending: isSending } = useSendMessage();
+  const { mutate: sendMessageWithAttachment, isPending: isUploadingSending } = useSendMessageWithAttachment();
   const { mutate: acceptProposal, isPending: isAccepting } = useAcceptSessionProposal();
   const { mutate: rejectProposal, isPending: isRejecting } = useRejectSessionProposal();
+  const { joinSessionCall } = useVideoCall();
 
   // Join/leave socket room when chatId changes
   useEffect(() => {
@@ -83,13 +88,31 @@ const Page2 = ({ trialRequest }: Page2Props) => {
   }, [messagesData]);
 
   const handleSendMessage = () => {
-    if (message.trim() && chatId) {
-      sendMessage({
-        chatId,
-        content: message.trim(),
-        type: 'TEXT',
-      });
-      setMessage('');
+    if (chatId) {
+      // If there are files selected, send with attachments
+      if (selectedFiles.length > 0) {
+        sendMessageWithAttachment({
+          chatId,
+          text: message.trim() || undefined,
+          files: selectedFiles,
+        }, {
+          onSuccess: () => {
+            setMessage('');
+            setSelectedFiles([]);
+          },
+          onError: (error: any) => {
+            toast.error(error?.response?.data?.message || 'Failed to send attachment');
+          },
+        });
+      } else if (message.trim()) {
+        // Text only message
+        sendMessage({
+          chatId,
+          content: message.trim(),
+          type: 'TEXT',
+        });
+        setMessage('');
+      }
     }
   };
 
@@ -98,6 +121,61 @@ const Page2 = ({ trialRequest }: Page2Props) => {
       e.preventDefault();
       handleSendMessage();
     }
+  };
+
+  // File handling functions
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    const validFiles: File[] = [];
+    const maxSize = 10 * 1024 * 1024; // 10MB max per file
+
+    files.forEach(file => {
+      if (file.size > maxSize) {
+        toast.error(`${file.name} is too large. Max size is 10MB`);
+        return;
+      }
+
+      const mimeType = file.type.toLowerCase();
+      const isValidType =
+        mimeType.startsWith('image/') ||
+        mimeType.startsWith('video/') ||
+        mimeType.startsWith('audio/') ||
+        mimeType === 'application/pdf';
+
+      if (!isValidType) {
+        toast.error(`${file.name} is not supported. Use images, videos, audio, or PDF`);
+        return;
+      }
+
+      validFiles.push(file);
+    });
+
+    const newFiles = [...selectedFiles, ...validFiles].slice(0, 3);
+    setSelectedFiles(newFiles);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const getFileIcon = (file: File) => {
+    const mimeType = file.type.toLowerCase();
+    if (mimeType.startsWith('image/')) return <ImageIcon className="w-4 h-4" />;
+    if (mimeType.startsWith('video/')) return <Film className="w-4 h-4" />;
+    return <FileText className="w-4 h-4" />;
+  };
+
+  const getFilePreview = (file: File) => {
+    if (file.type.startsWith('image/')) {
+      return URL.createObjectURL(file);
+    }
+    return null;
   };
 
   const handleSessionAction = (messageId: string, action: string) => {
@@ -245,17 +323,79 @@ const Page2 = ({ trialRequest }: Page2Props) => {
                         <SessionProposal
                           date={new Date((msg as any).sessionProposal.startTime || (msg as any).sessionProposal.scheduledAt).toLocaleDateString()}
                           time={new Date((msg as any).sessionProposal.startTime || (msg as any).sessionProposal.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          endTime={(msg as any).sessionProposal.endTime ? new Date((msg as any).sessionProposal.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : undefined}
+                          startTimeRaw={(msg as any).sessionProposal.startTime || (msg as any).sessionProposal.scheduledAt}
+                          endTimeRaw={(msg as any).sessionProposal.endTime}
                           status={(msg as any).sessionProposal.status}
                           isOwn={isStudent}
                           isLoading={isAccepting || isRejecting}
                           onAccept={() => handleSessionAction(msg._id, "accepted")}
                           onReschedule={() => setIsScheduleOpen(true)}
                           onDecline={() => handleSessionAction(msg._id, "declined")}
+                          onJoinSession={() => {
+                            // Join session-based video call with the tutor
+                            // Both users will join the same channel based on sessionId
+                            if (tutor?._id && (msg as any).sessionProposal?.sessionId) {
+                              joinSessionCall(
+                                (msg as any).sessionProposal.sessionId,
+                                tutor._id,
+                                tutor.name || 'Tutor'
+                              );
+                            }
+                          }}
                         />
                       ) : (
                         <>
                           <div className={`inline-block rounded-lg p-3 mt-1 max-w-xs ${isStudent ? "bg-[#0B31BD] text-white" : "bg-white border border-gray-200"}`}>
-                            <p className="text-sm">{(msg as any).text || msg.content}</p>
+                            {/* Display attachments */}
+                            {(msg as any).attachments && (msg as any).attachments.length > 0 && (
+                              <div className="flex flex-wrap gap-2 mb-2">
+                                {(msg as any).attachments.map((attachment: any, idx: number) => (
+                                  <div key={idx} className="relative">
+                                    {attachment.type === 'image' ? (
+                                      <a
+                                        href={attachment.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                      >
+                                        <img
+                                          src={attachment.url}
+                                          alt={attachment.name || 'Image'}
+                                          className="max-w-[180px] max-h-[180px] rounded object-cover cursor-pointer hover:opacity-90"
+                                        />
+                                      </a>
+                                    ) : attachment.type === 'video' ? (
+                                      <video
+                                        src={attachment.url}
+                                        controls
+                                        className="max-w-[200px] max-h-[150px] rounded"
+                                      />
+                                    ) : attachment.type === 'audio' ? (
+                                      <audio
+                                        src={attachment.url}
+                                        controls
+                                        className="max-w-[200px]"
+                                      />
+                                    ) : (
+                                      <a
+                                        href={attachment.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className={`flex items-center gap-2 p-2 rounded hover:opacity-80 transition-opacity ${isStudent ? "bg-blue-600" : "bg-gray-100"}`}
+                                      >
+                                        <FileText className="w-5 h-5" />
+                                        <span className="text-sm truncate max-w-[120px]">
+                                          {attachment.name || 'Document'}
+                                        </span>
+                                      </a>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            {((msg as any).text || msg.content) && (
+                              <p className="text-sm">{(msg as any).text || msg.content}</p>
+                            )}
                           </div>
 
                           <p className={`text-xs text-gray-500 mt-1 ${isStudent ? "text-right" : ""}`}>
@@ -276,6 +416,45 @@ const Page2 = ({ trialRequest }: Page2Props) => {
 
           {/* Input + Send + Attach */}
           <div className="space-y-3">
+            {/* File Preview */}
+            {selectedFiles.length > 0 && (
+              <div className="flex flex-wrap gap-2 p-2 bg-gray-100 rounded-lg">
+                {selectedFiles.map((file, index) => {
+                  const preview = getFilePreview(file);
+                  return (
+                    <div
+                      key={index}
+                      className="relative group bg-white rounded-lg p-2 flex items-center gap-2 border border-gray-200"
+                    >
+                      {preview ? (
+                        <img
+                          src={preview}
+                          alt={file.name}
+                          className="w-10 h-10 object-cover rounded"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 flex items-center justify-center bg-gray-100 rounded">
+                          {getFileIcon(file)}
+                        </div>
+                      )}
+                      <div className="flex flex-col max-w-[80px]">
+                        <span className="text-xs truncate">{file.name}</span>
+                        <span className="text-xs text-gray-500">
+                          {(file.size / 1024).toFixed(0)} KB
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => removeFile(index)}
+                        className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
             <div className="flex gap-3">
               <input
                 type="text"
@@ -283,15 +462,15 @@ const Page2 = ({ trialRequest }: Page2Props) => {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                disabled={isSending}
+                disabled={isSending || isUploadingSending}
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#0B31BD] focus:ring-2 focus:ring-blue-100 transition disabled:opacity-50"
               />
               <button
                 onClick={handleSendMessage}
-                disabled={!message.trim() || isSending}
+                disabled={(!message.trim() && selectedFiles.length === 0) || isSending || isUploadingSending}
                 className="bg-[#0B31BD] text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center gap-2"
               >
-                {isSending ? (
+                {(isSending || isUploadingSending) ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   <Send className="w-4 h-4" />
@@ -302,15 +481,22 @@ const Page2 = ({ trialRequest }: Page2Props) => {
 
             {/* Attach Button */}
             <div className="flex justify-between items-center">
-              <label className="cursor-pointer flex items-center gap-2 text-gray-600 hover:text-[#0B31BD] transition-colors">
-                <input
-                  type="file"
-                  className="hidden"
-                  accept="image/*,.pdf,.doc,.docx,.txt"
-                />
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/*,video/*,audio/*,.pdf"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={selectedFiles.length >= 3 || isUploadingSending}
+                className="cursor-pointer flex items-center gap-2 text-gray-600 hover:text-[#0B31BD] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 <Paperclip className="h-5 w-5" />
-                <span className="text-sm font-medium">Attach file</span>
-              </label>
+                <span className="text-sm font-medium">Attach file (max 3)</span>
+              </button>
             </div>
           </div>
         </div>
