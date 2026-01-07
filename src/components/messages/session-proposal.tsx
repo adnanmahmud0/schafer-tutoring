@@ -10,7 +10,7 @@ interface SessionProposalProps {
   startTimeRaw?: Date | string;
   endTimeRaw?: Date | string;
   meetLink?: string;
-  status?: 'PROPOSED' | 'ACCEPTED' | 'REJECTED' | 'EXPIRED' | 'COUNTER_PROPOSED';
+  status?: 'PROPOSED' | 'ACCEPTED' | 'REJECTED' | 'EXPIRED' | 'COUNTER_PROPOSED' | 'CANCELLED';
   isOwn?: boolean;
   isLoading?: boolean;
   userRole?: string;
@@ -111,6 +111,12 @@ export default function SessionProposal({
             <RefreshCw className="w-3 h-3" /> Rescheduled
           </span>
         );
+      case 'CANCELLED':
+        return (
+          <span className="text-xs bg-red-100 text-red-700 px-3 py-1 rounded-full flex items-center gap-1">
+            <X className="w-3 h-3" /> Cancelled
+          </span>
+        );
       default:
         return (
           <span className="text-xs bg-orange-100 text-orange-700 px-3 py-1 rounded-full">
@@ -123,6 +129,41 @@ export default function SessionProposal({
   const timeUntil = getTimeUntilSession();
   const startingSoon = isStartingSoon();
   const inProgress = isInProgress();
+
+  // Cancelled session - show cancelled card (no action buttons)
+  if (status === 'CANCELLED') {
+    return (
+      <div className="bg-card border border-border rounded-lg p-4 max-w-xs opacity-75">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold text-foreground">Session cancelled</h3>
+          {getStatusBadge()}
+        </div>
+
+        {/* Date Section */}
+        <div className="flex items-start gap-3 mb-3">
+          <Calendar className="w-4 h-4 text-muted-foreground mt-1 shrink-0" />
+          <div>
+            <p className="text-xs text-muted-foreground font-medium">DATE</p>
+            <p className="text-sm font-medium text-muted-foreground line-through">
+              {date}
+            </p>
+          </div>
+        </div>
+
+        {/* Time Section */}
+        <div className="flex items-start gap-3">
+          <Clock className="w-4 h-4 text-muted-foreground mt-1 shrink-0" />
+          <div>
+            <p className="text-xs text-muted-foreground font-medium">TIME</p>
+            <p className="text-sm font-medium text-muted-foreground line-through">
+              {time}{endTime ? ` – ${endTime}` : ''}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Accepted session - Upcoming session card design
   if (status === 'ACCEPTED') {

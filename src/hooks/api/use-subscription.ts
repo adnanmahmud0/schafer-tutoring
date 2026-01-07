@@ -36,11 +36,17 @@ export interface PlanUsage {
   usage: {
     hoursRemaining: number | null;
     sessionsCompleted: number;
-    totalHoursTaken: number;
+    hoursUsed: number;
+    sessionsRemaining: number | null;
   };
   spending: {
     currentMonthSpending: number;
     totalSpending: number;
+    bufferCharges: number;
+  };
+  upcoming: {
+    scheduledSessions: number;
+    upcomingHours: number;
   };
 }
 
@@ -138,7 +144,7 @@ export function usePlanUsage() {
   return useQuery({
     queryKey: ['plan-usage'],
     queryFn: async () => {
-      const { data } = await apiClient.get('/subscriptions/usage');
+      const { data } = await apiClient.get('/subscriptions/my-plan-usage');
       return data.data as PlanUsage;
     },
     enabled: isAuthenticated,
@@ -152,10 +158,19 @@ export function usePaymentHistory(page = 1, limit = 10) {
   return useQuery({
     queryKey: ['payment-history', page, limit],
     queryFn: async () => {
-      const { data } = await apiClient.get('/payments/history', {
+      const { data } = await apiClient.get('/subscriptions/payment-history', {
         params: { page, limit },
       });
-      return data as PaymentHistoryResponse;
+      // Map backend response to frontend expected format
+      return {
+        data: data.data,
+        pagination: {
+          page: data.pagination?.page || page,
+          limit: data.pagination?.limit || limit,
+          total: data.pagination?.total || 0,
+          totalPages: data.pagination?.totalPage || data.pagination?.totalPages || 1,
+        },
+      } as PaymentHistoryResponse;
     },
     enabled: isAuthenticated,
   });
@@ -187,7 +202,8 @@ export function usePaymentMethods() {
     queryKey: ['payment-methods'],
     queryFn: async () => {
       const { data } = await apiClient.get('/payment-methods');
-      return data.data as PaymentMethod[];
+      // Backend returns { paymentMethods: [...], defaultPaymentMethodId: "..." }
+      return (data.data?.paymentMethods || []) as PaymentMethod[];
     },
     enabled: isAuthenticated && isStudent,
   });

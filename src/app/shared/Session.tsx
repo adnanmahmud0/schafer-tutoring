@@ -2,19 +2,24 @@
 "use client";
 
 import React, { useState } from "react";
-import { Calendar, Clock, Star, Mic, Square, Check } from "lucide-react";
+import { Calendar, Clock, Star, Mic, Square, Check, Loader2 } from "lucide-react";
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import { useUpcomingSessions, useCompletedSessions, Session as SessionType } from "@/hooks/api/use-sessions";
+import { useSubmitTutorFeedback, FEEDBACK_TYPE } from "@/hooks/api/use-tutor-feedback";
+import { format } from "date-fns";
 
 type FeedbackStep = "audio" | "text" | "success";
 
 function AudioFeedbackModal({
   isOpen,
   onClose,
+  session,
 }: {
   isOpen: boolean;
   onClose: () => void;
+  session: SessionType | null;
 }) {
   const [currentStep, setCurrentStep] = useState<FeedbackStep>("audio");
   const [rating, setRating] = useState(0);
@@ -24,6 +29,8 @@ function AudioFeedbackModal({
   const [recordingInterval, setRecordingInterval] =
     useState<NodeJS.Timeout | null>(null);
   const [feedbackText, setFeedbackText] = useState("");
+
+  const submitFeedback = useSubmitTutorFeedback();
 
   React.useEffect(() => {
     if (!isOpen) {
@@ -51,12 +58,28 @@ function AudioFeedbackModal({
     setRecordingInterval(interval);
   };
 
-  const stopRecording = () => {
+  const stopRecording = async () => {
     setIsRecording(false);
     if (recordingInterval) {
       clearInterval(recordingInterval);
     }
-    setCurrentStep("success");
+
+    if (!session || rating === 0) return;
+
+    try {
+      // TODO: Implement actual audio upload and get URL
+      // For now, we'll skip to text if no audio URL
+      await submitFeedback.mutateAsync({
+        sessionId: session._id,
+        rating,
+        feedbackType: FEEDBACK_TYPE.AUDIO,
+        feedbackAudioUrl: '', // TODO: Replace with actual uploaded audio URL
+        audioDuration: recordingTime,
+      });
+      setCurrentStep("success");
+    } catch (error) {
+      console.error('Failed to submit audio feedback:', error);
+    }
   };
 
   const handleSkipAudio = () => {
@@ -71,8 +94,20 @@ function AudioFeedbackModal({
     setRating(value);
   };
 
-  const handleSubmitText = () => {
-    setCurrentStep("success");
+  const handleSubmitText = async () => {
+    if (!session || rating === 0 || feedbackText.length < 10) return;
+
+    try {
+      await submitFeedback.mutateAsync({
+        sessionId: session._id,
+        rating,
+        feedbackType: FEEDBACK_TYPE.TEXT,
+        feedbackText,
+      });
+      setCurrentStep("success");
+    } catch (error) {
+      console.error('Failed to submit text feedback:', error);
+    }
   };
 
   const handleClose = () => {
@@ -162,13 +197,14 @@ function AudioFeedbackModal({
               </button>
               <button
                 onClick={stopRecording}
-                disabled={!isRecording}
-                className={`flex-1 px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 lg:py-3 text-white rounded-lg font-medium text-sm sm:text-base transition ${
-                  isRecording
-                    ? "bg-gray-400 hover:bg-gray-500 cursor-pointer"
+                disabled={!isRecording || rating === 0 || submitFeedback.isPending}
+                className={`flex-1 px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 lg:py-3 text-white rounded-lg font-medium text-sm sm:text-base transition flex items-center justify-center gap-2 ${
+                  isRecording && rating > 0 && !submitFeedback.isPending
+                    ? "bg-blue-600 hover:bg-blue-700 cursor-pointer"
                     : "bg-gray-300 cursor-not-allowed"
                 }`}
               >
+                {submitFeedback.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
                 Submit
               </button>
             </div>
@@ -222,8 +258,14 @@ function AudioFeedbackModal({
               </button>
               <button
                 onClick={handleSubmitText}
-                className="flex-1 px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 lg:py-3 bg-gray-400 hover:bg-gray-500 text-white rounded-lg font-medium text-sm sm:text-base transition"
+                disabled={rating === 0 || feedbackText.length < 10 || submitFeedback.isPending}
+                className={`flex-1 px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 lg:py-3 text-white rounded-lg font-medium text-sm sm:text-base transition flex items-center justify-center gap-2 ${
+                  rating > 0 && feedbackText.length >= 10 && !submitFeedback.isPending
+                    ? "bg-blue-600 hover:bg-blue-700"
+                    : "bg-gray-300 cursor-not-allowed"
+                }`}
               >
+                {submitFeedback.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
                 Submit
               </button>
             </div>
@@ -267,55 +309,37 @@ function AudioFeedbackModal({
 export default function Session() {
   const [activeTab, setActiveTab] = useState("upcoming");
   const [showAudioFeedbackModal, setShowAudioFeedbackModal] = useState(false);
+  const [selectedSession, setSelectedSession] = useState<SessionType | null>(null);
 
-  const upcomingSessions = [
-    {
-      id: 1,
-      studentName: "David Brown",
-      date: "Friday, 14.11.2025",
-      time: "3:00 PM",
-      subject: "Physics",
-      isTrialSession: false,
-    },
-    {
-      id: 2,
-      studentName: "Lisa Anderson",
-      date: "Friday, 14.11.2025",
-      time: "3:00 PM",
-      subject: "Mathematics",
-      isTrialSession: true,
-    },
-    {
-      id: 3,
-      studentName: "Sarah Johnson",
-      date: "Friday, 14.11.2025",
-      time: "3:00 PM",
-      subject: "Chemistry",
-      isTrialSession: false,
-    },
-  ];
+  // Fetch real session data from API
+  const { data: upcomingSessions = [], isLoading: upcomingLoading } = useUpcomingSessions();
+  const { data: completedSessions = [], isLoading: completedLoading } = useCompletedSessions();
 
-  const completedSessions = [
-    {
-      id: 4,
-      studentName: "David Brown",
-      date: "Friday, 14.11.2025",
-      time: "3:00 PM",
-      subject: "Physics",
-      isTrialSession: false,
-    },
-    {
-      id: 5,
-      studentName: "Lisa Anderson",
-      date: "Friday, 14.11.2025",
-      time: "3:00 PM",
-      subject: "Mathematics",
-      isTrialSession: true,
-    },
-  ];
+  const sessions = activeTab === "upcoming" ? upcomingSessions : completedSessions;
+  const isLoading = activeTab === "upcoming" ? upcomingLoading : completedLoading;
 
-  const sessions =
-    activeTab === "upcoming" ? upcomingSessions : completedSessions;
+  const handleGiveFeedback = (session: SessionType) => {
+    // Don't open modal if feedback already given
+    if (session.tutorFeedbackId) return;
+    setSelectedSession(session);
+    setShowAudioFeedbackModal(true);
+  };
+
+  const formatSessionDate = (startTime: string) => {
+    try {
+      return format(new Date(startTime), "EEEE, dd.MM.yyyy");
+    } catch {
+      return startTime;
+    }
+  };
+
+  const formatSessionTime = (startTime: string) => {
+    try {
+      return format(new Date(startTime), "h:mm a");
+    } catch {
+      return startTime;
+    }
+  };
 
   return (
     <>
@@ -345,70 +369,93 @@ export default function Session() {
                 : "text-gray-600 hover:text-gray-900"
             }`}
           >
-            Completed
+            Completed ({completedSessions.length})
           </button>
         </div>
 
         {/* Sessions List */}
         <div className="space-y-3 sm:space-y-4">
-          {sessions.map((session) => (
-            <div
-              key={session.id}
-              className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 rounded-lg hover:bg-gray-50 border-2 border-[#F6F6F7] transition-colors gap-3 sm:gap-0"
-            >
-              {/* Left Content */}
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1.5 sm:mb-2 flex-wrap">
-                  <h3 className="font-semibold text-sm sm:text-base text-gray-900">
-                    {session.studentName}
-                  </h3>
-                  {session.isTrialSession && (
-                    <span className="text-xs font-semibold text-[#FF8A00] bg-orange-100 px-2 py-0.5 sm:py-1 rounded-3xl">
-                      Trial Session
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
-                  <div className="flex items-center gap-1 w-40">
-                    <Calendar size={14} className="text-gray-400 sm:w-4 sm:h-4" />
-                    <span>{session.date}</span>
-                  </div>
-                  <div className="flex items-center gap-1 w-32">
-                    <Clock size={14} className="text-gray-400 sm:w-4 sm:h-4" />
-                    <span>{session.time}</span>
-                  </div>
-                  <a
-                    href="#"
-                    className="text-[#405ED5] hover:text-[#3052D2] font-medium"
-                  >
-                    {session.subject}
-                  </a>
-                </div>
-              </div>
-
-              {/* Action Button */}
-              <button
-                onClick={() =>
-                  activeTab === "completed" && setShowAudioFeedbackModal(true)
-                }
-                className={`sm:ml-4 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-colors w-full sm:w-auto ${
-                  activeTab === "upcoming"
-                    ? "bg-gray-500 text-white hover:bg-gray-600"
-                    : "bg-[#002AC8] text-white hover:bg-[#3052D2]"
-                }`}
-              >
-                {activeTab === "upcoming" ? "Start Session" : "Give Feedback"}
-              </button>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
             </div>
-          ))}
+          ) : sessions.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No {activeTab} sessions found
+            </div>
+          ) : (
+            sessions.map((session) => (
+              <div
+                key={session._id}
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 rounded-lg hover:bg-gray-50 border-2 border-[#F6F6F7] transition-colors gap-3 sm:gap-0"
+              >
+                {/* Left Content */}
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1.5 sm:mb-2 flex-wrap">
+                    <h3 className="font-semibold text-sm sm:text-base text-gray-900">
+                      {session.studentId?.name || "Unknown Student"}
+                    </h3>
+                    {session.isTrial && (
+                      <span className="text-xs font-semibold text-[#FF8A00] bg-orange-100 px-2 py-0.5 sm:py-1 rounded-3xl">
+                        Trial Session
+                      </span>
+                    )}
+                    {activeTab === "completed" && session.tutorFeedbackId && (
+                      <span className="text-xs font-semibold text-green-600 bg-green-100 px-2 py-0.5 sm:py-1 rounded-3xl">
+                        Feedback Given
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
+                    <div className="flex items-center gap-1 w-40">
+                      <Calendar size={14} className="text-gray-400 sm:w-4 sm:h-4" />
+                      <span>{formatSessionDate(session.startTime)}</span>
+                    </div>
+                    <div className="flex items-center gap-1 w-32">
+                      <Clock size={14} className="text-gray-400 sm:w-4 sm:h-4" />
+                      <span>{formatSessionTime(session.startTime)}</span>
+                    </div>
+                    <span className="text-[#405ED5] font-medium">
+                      {session.subject || "N/A"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Action Button */}
+                <button
+                  onClick={() =>
+                    activeTab === "completed" && handleGiveFeedback(session)
+                  }
+                  disabled={activeTab === "completed" && !!session.tutorFeedbackId}
+                  className={`sm:ml-4 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-colors w-full sm:w-auto ${
+                    activeTab === "upcoming"
+                      ? "bg-gray-500 text-white hover:bg-gray-600"
+                      : session.tutorFeedbackId
+                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                        : "bg-[#002AC8] text-white hover:bg-[#3052D2]"
+                  }`}
+                >
+                  {activeTab === "upcoming"
+                    ? "Start Session"
+                    : session.tutorFeedbackId
+                      ? "Feedback Given"
+                      : "Give Feedback"}
+                </button>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
       {/* Audio Feedback Modal */}
       <AudioFeedbackModal
         isOpen={showAudioFeedbackModal}
-        onClose={() => setShowAudioFeedbackModal(false)}
+        onClose={() => {
+          setShowAudioFeedbackModal(false);
+          setSelectedSession(null);
+        }}
+        session={selectedSession}
       />
     </>
   );

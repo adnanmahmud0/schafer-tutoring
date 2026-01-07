@@ -217,6 +217,29 @@ export {
   useToggleReviewVisibility,
 } from './use-reviews';
 
+// Tutor Feedback Hooks
+export {
+  useSubmitTutorFeedback,
+  usePendingFeedbacks,
+  useTutorFeedbacks,
+  useFeedbackBySession,
+  useReceivedFeedbacks,
+  FEEDBACK_TYPE,
+  FEEDBACK_STATUS,
+} from './use-tutor-feedback';
+
+// Tutor Earnings Hooks
+export {
+  useTutorStats,
+  usePayoutSettings,
+  useUpdatePayoutSettings,
+  useEarningsHistory,
+  LEVEL_DISPLAY_NAMES,
+  LEVEL_NUMBERS,
+  PAYOUT_STATUS_LABELS,
+  PAYOUT_STATUS_COLORS,
+} from './use-tutor-earnings';
+
 // Types
 export type { Subject, SubjectFilters, SubjectsResponse } from './use-subjects';
 export type { Grade, GradeFilters, GradesResponse } from './use-grades';
@@ -263,3 +286,17 @@ export type {
   ReviewStats,
   ReviewsResponse,
 } from './use-reviews';
+export type {
+  TutorSessionFeedback,
+  SubmitFeedbackData,
+  PendingFeedbacksResponse,
+  TutorFeedbacksResponse,
+} from './use-tutor-feedback';
+export type {
+  TutorLevel,
+  PayoutStatus,
+  PayoutSettings,
+  TutorStats,
+  EarningsHistoryItem,
+  EarningsHistoryResponse,
+} from './use-tutor-earnings';

@@ -11,6 +11,31 @@ interface ScheduleModalProps {
   onSchedule: (selectedDate: Date, time: string) => void;
 }
 
+// ============================================
+// 🧪 TEST MODE CONFIGURATION
+// ============================================
+// Set to true for testing - shows 5 minute intervals
+// Set to false for production - shows hourly intervals
+const TEST_MODE = true;
+// ============================================
+
+// Generate time options based on mode
+const generateTimeOptions = () => {
+  const options: string[] = [];
+  const interval = TEST_MODE ? 5 : 60; // 5 min or 1 hour
+
+  for (let hour = 0; hour < 24; hour++) {
+    for (let minute = 0; minute < 60; minute += interval) {
+      const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+      const period = hour < 12 ? 'AM' : 'PM';
+      const hourStr = hour12.toString().padStart(2, '0');
+      const minStr = minute.toString().padStart(2, '0');
+      options.push(`${hourStr}:${minStr} ${period}`);
+    }
+  }
+  return options;
+};
+
 export default function ScheduleModal({
   isOpen,
   onClose,
@@ -20,32 +45,7 @@ export default function ScheduleModal({
   const [selectedTime, setSelectedTime] = useState("10:00 AM");
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  const timeOptions = [
-    "12:00 AM",
-    "01:00 AM",
-    "02:00 AM",
-    "03:00 AM",
-    "04:00 AM",
-    "05:00 AM",
-    "06:00 AM",
-    "07:00 AM",
-    "08:00 AM",
-    "09:00 AM",
-    "10:00 AM",
-    "11:00 AM",
-    "12:00 PM",
-    "01:00 PM",
-    "02:00 PM",
-    "03:00 PM",
-    "04:00 PM",
-    "05:00 PM",
-    "06:00 PM",
-    "07:00 PM",
-    "08:00 PM",
-    "09:00 PM",
-    "10:00 PM",
-    "11:00 PM",
-  ];
+  const timeOptions = generateTimeOptions();
 
   const getDaysInMonth = (date: Date) => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();

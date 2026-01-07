@@ -39,6 +39,7 @@ export interface Session {
     email: string;
     profilePicture?: string;
     phone?: string;
+    averageRating?: number;
   };
   subject: string;
   description?: string;
@@ -50,6 +51,9 @@ export interface Session {
   status: keyof typeof SESSION_STATUS;
   paymentStatus: keyof typeof PAYMENT_STATUS;
   googleMeetLink?: string;
+  isTrial?: boolean;
+  reviewId?: string | object;
+  tutorFeedbackId?: string | object;
   createdAt: string;
   updatedAt: string;
 }

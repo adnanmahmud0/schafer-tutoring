@@ -94,7 +94,7 @@ export function useCreateReview() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['my-reviews'] });
-      queryClient.invalidateQueries({ queryKey: ['completed-sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['sessions', 'completed'] });
       // Invalidate tutor reviews if we know the tutor
       queryClient.invalidateQueries({ queryKey: ['tutor-reviews'] });
     },

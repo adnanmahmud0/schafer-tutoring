@@ -1,10 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Loader2, Upload, Calendar } from 'lucide-react';
+import { Loader2, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -14,9 +13,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { toast } from 'sonner';
 import { useActiveSubjects } from '@/hooks/api/use-subjects';
 import { useCreateSessionRequest } from '@/hooks/api/use-session-requests';
-import { SCHOOL_TYPE, GRADE_LEVEL } from '@/hooks/api/use-trial-requests';
+import { useActiveGrades } from '@/hooks/api/use-grades';
+import { useActiveSchoolTypes } from '@/hooks/api/use-school-types';
 
 interface NewSessionRequestModalProps {
   isOpen: boolean;
@@ -24,23 +25,25 @@ interface NewSessionRequestModalProps {
 }
 
 export function NewSessionRequestModal({ isOpen, onClose }: NewSessionRequestModalProps) {
+  // Simplified form: only subject, gradeLevel, schoolType, learningGoals, documents
+  // No description or preferredDateTime needed (unlike trial request)
   const [formData, setFormData] = useState({
     subject: '',
     gradeLevel: '',
     schoolType: '',
-    description: '',
     learningGoals: '',
-    preferredDateTime: '',
   });
   const [documents, setDocuments] = useState<File[]>([]);
 
   const { data: subjects, isLoading: subjectsLoading } = useActiveSubjects();
+  const { data: grades, isLoading: gradesLoading } = useActiveGrades();
+  const { data: schoolTypes, isLoading: schoolTypesLoading } = useActiveSchoolTypes();
   const createRequest = useCreateSessionRequest();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.subject || !formData.gradeLevel || !formData.schoolType || !formData.description) {
+    if (!formData.subject || !formData.gradeLevel || !formData.schoolType) {
       return;
     }
 
@@ -49,24 +52,24 @@ export function NewSessionRequestModal({ isOpen, onClose }: NewSessionRequestMod
         subject: formData.subject,
         gradeLevel: formData.gradeLevel,
         schoolType: formData.schoolType,
-        description: formData.description,
         learningGoals: formData.learningGoals || undefined,
-        preferredDateTime: formData.preferredDateTime || undefined,
       });
+
+      // Show success toast
+      toast.success('Session request created successfully!');
 
       // Reset form and close
       setFormData({
         subject: '',
         gradeLevel: '',
         schoolType: '',
-        description: '',
         learningGoals: '',
-        preferredDateTime: '',
       });
       setDocuments([]);
       onClose();
     } catch (error) {
       console.error('Failed to create session request:', error);
+      toast.error('Failed to create session request');
     }
   };
 
@@ -121,11 +124,17 @@ export function NewSessionRequestModal({ isOpen, onClose }: NewSessionRequestMod
                 <SelectValue placeholder="Select grade level" />
               </SelectTrigger>
               <SelectContent>
-                {Object.values(GRADE_LEVEL).map((grade) => (
-                  <SelectItem key={grade} value={grade}>
-                    {grade.replace(/_/g, ' ')}
+                {gradesLoading ? (
+                  <SelectItem value="loading" disabled>
+                    Loading...
                   </SelectItem>
-                ))}
+                ) : (
+                  grades?.map((grade) => (
+                    <SelectItem key={grade._id} value={grade.name}>
+                      {grade.name}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -141,25 +150,19 @@ export function NewSessionRequestModal({ isOpen, onClose }: NewSessionRequestMod
                 <SelectValue placeholder="Select school type" />
               </SelectTrigger>
               <SelectContent>
-                {Object.values(SCHOOL_TYPE).map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {type.replace(/_/g, ' ')}
+                {schoolTypesLoading ? (
+                  <SelectItem value="loading" disabled>
+                    Loading...
                   </SelectItem>
-                ))}
+                ) : (
+                  schoolTypes?.map((type) => (
+                    <SelectItem key={type._id} value={type.name}>
+                      {type.name}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
-          </div>
-
-          {/* Description */}
-          <div className="space-y-2">
-            <Label htmlFor="description">What do you need help with? *</Label>
-            <Textarea
-              id="description"
-              placeholder="Describe what you need help with..."
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              rows={3}
-            />
           </div>
 
           {/* Learning Goals */}
@@ -172,21 +175,6 @@ export function NewSessionRequestModal({ isOpen, onClose }: NewSessionRequestMod
               onChange={(e) => setFormData({ ...formData, learningGoals: e.target.value })}
               rows={2}
             />
-          </div>
-
-          {/* Preferred DateTime */}
-          <div className="space-y-2">
-            <Label htmlFor="preferredDateTime">Preferred Date & Time (Optional)</Label>
-            <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                id="preferredDateTime"
-                type="datetime-local"
-                className="pl-10"
-                value={formData.preferredDateTime}
-                onChange={(e) => setFormData({ ...formData, preferredDateTime: e.target.value })}
-              />
-            </div>
           </div>
 
           {/* Documents Upload */}

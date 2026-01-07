@@ -26,9 +26,8 @@ export interface SessionRequest {
   };
   gradeLevel: string;
   schoolType: string;
-  description: string;
+  description?: string;
   learningGoals?: string;
-  preferredDateTime?: string;
   documents?: string[];
   status: SESSION_REQUEST_STATUS;
   acceptedTutorId?: string;
@@ -49,9 +48,7 @@ export interface CreateSessionRequestData {
   subject: string;
   gradeLevel: string;
   schoolType: string;
-  description: string;
   learningGoals?: string;
-  preferredDateTime?: string;
   documents?: string[];
 }
 
@@ -97,10 +94,8 @@ export function useCancelSessionRequest() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, reason }: { id: string; reason?: string }) => {
-      const { data } = await apiClient.patch(`/session-requests/${id}/cancel`, {
-        cancellationReason: reason,
-      });
+    mutationFn: async (id: string) => {
+      const { data } = await apiClient.patch(`/session-requests/${id}/cancel`);
       return data.data as SessionRequest;
     },
     onSuccess: () => {

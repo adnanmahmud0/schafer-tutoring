@@ -1,14 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { Calendar, Clock, Star, Check, Video, Loader2, Plus } from "lucide-react";
+import { Calendar, Clock, Star, Check, Video, Loader2, Plus, FileText, X, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { toast } from "sonner";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUpcomingSessions, useCompletedSessions, Session } from "@/hooks/api/use-sessions";
+import { useMySessionRequests, useCancelSessionRequest, useExtendSessionRequest, SessionRequest } from "@/hooks/api/use-session-requests";
 import { useCreateReview } from "@/hooks/api/use-reviews";
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { NewSessionRequestModal } from "./components/NewSessionRequestModal";
 
 function FeedbackModal({
@@ -41,6 +43,7 @@ function FeedbackModal({
         wouldRecommend: rating >= 4,
         isPublic: true,
       });
+      toast.success("Feedback submitted successfully!");
       setShowSuccess(true);
       setTimeout(() => {
         onClose();
@@ -50,6 +53,7 @@ function FeedbackModal({
       }, 2000);
     } catch (error) {
       console.error("Failed to submit review:", error);
+      toast.error("Failed to submit feedback. Please try again.");
     }
   };
 
@@ -175,6 +179,163 @@ interface ExtendedSession extends Session {
   isTrial?: boolean;
 }
 
+// Cancel Request Confirmation Modal
+function CancelRequestModal({
+  isOpen,
+  onClose,
+  onConfirm,
+  isPending,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  isPending: boolean;
+}) {
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md bg-white border-0 p-0 overflow-hidden" aria-describedby={undefined}>
+        <VisuallyHidden>
+          <DialogTitle>Cancel Request</DialogTitle>
+        </VisuallyHidden>
+        <div className="py-6 sm:py-8 px-4 sm:px-6 space-y-4 sm:space-y-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 text-center">
+            Cancel Request
+          </h2>
+          <p className="text-sm text-gray-600 text-center">
+            Are you sure you want to cancel this session request?
+          </p>
+
+          <div className="flex gap-3 sm:gap-4 pt-3 sm:pt-4">
+            <Button
+              variant="outline"
+              onClick={onClose}
+              className="flex-1 h-9 sm:h-10 text-sm sm:text-base"
+            >
+              Keep Request
+            </Button>
+            <Button
+              onClick={onConfirm}
+              disabled={isPending}
+              className="flex-1 bg-red-600 hover:bg-red-700 text-white h-9 sm:h-10 text-sm sm:text-base disabled:opacity-50"
+            >
+              {isPending ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                "Cancel Request"
+              )}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Session Request Card Component
+function SessionRequestCard({
+  request,
+  onCancel,
+  onExtend,
+  isExtending,
+}: {
+  request: SessionRequest;
+  onCancel: () => void;
+  onExtend: () => void;
+  isExtending: boolean;
+}) {
+  const subjectName = typeof request.subject === 'object' ? request.subject.name : request.subject;
+  const expiresAt = new Date(request.expiresAt);
+  const timeRemaining = expiresAt.getTime() - Date.now();
+  const isExpiringSoon = timeRemaining < 2 * 24 * 60 * 60 * 1000; // 2 days
+  // Show extend button only when 1 day or less remaining (6+ days passed) and not already extended
+  const canExtend = request.status === 'PENDING'
+    && (!request.extensionCount || request.extensionCount < 1)
+    && timeRemaining <= 1 * 24 * 60 * 60 * 1000; // 1 day or less remaining
+
+  const getStatusBadge = () => {
+    switch (request.status) {
+      case 'PENDING':
+        return <span className="text-xs px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded font-medium">Pending</span>;
+      case 'ACCEPTED':
+        return <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded font-medium">Accepted</span>;
+      case 'EXPIRED':
+        return <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded font-medium">Expired</span>;
+      case 'CANCELLED':
+        return <span className="text-xs px-2 py-0.5 bg-red-100 text-red-600 rounded font-medium">Cancelled</span>;
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 rounded-lg hover:bg-gray-50 border-2 border-[#F6F6F7] transition-colors gap-3 sm:gap-0">
+      {/* Left Content */}
+      <div className="flex-1">
+        <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
+          <h3 className="font-semibold text-sm sm:text-base text-gray-900">
+            {subjectName}
+          </h3>
+          {getStatusBadge()}
+          {request.requestType === 'TRIAL' && (
+            <span className="text-xs px-2 py-0.5 bg-orange-100 text-orange-600 rounded font-medium">
+              Trial
+            </span>
+          )}
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
+          <div className="flex items-center gap-1">
+            <FileText size={14} className="text-gray-400 flex-shrink-0" />
+            <span>{request.gradeLevel} • {request.schoolType}</span>
+          </div>
+          {request.status === 'PENDING' && (
+            <div className={`flex items-center gap-1 ${isExpiringSoon ? 'text-red-500' : ''}`}>
+              <Clock size={14} className={`flex-shrink-0 ${isExpiringSoon ? 'text-red-500' : 'text-gray-400'}`} />
+              <span>Expires {formatDistanceToNow(expiresAt, { addSuffix: true })}</span>
+            </div>
+          )}
+          {request.learningGoals && (
+            <p className="text-gray-500 truncate max-w-[200px]" title={request.learningGoals}>
+              {request.learningGoals}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      {request.status === 'PENDING' && (
+        <div className="flex gap-2 sm:ml-4">
+          {canExtend && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onExtend}
+              disabled={isExtending}
+              className="text-xs"
+            >
+              {isExtending ? (
+                <Loader2 className="w-3 h-3 animate-spin mr-1" />
+              ) : (
+                <RefreshCw className="w-3 h-3 mr-1" />
+              )}
+              Extend
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onCancel}
+            className="text-xs text-red-600 border-red-200 hover:bg-red-50"
+          >
+            <X className="w-3 h-3 mr-1" />
+            Cancel
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Session Card Component
 function SessionCard({
   session,
@@ -260,14 +421,59 @@ export default function StudentSession() {
   const [activeTab, setActiveTab] = useState("upcoming");
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [isNewRequestModalOpen, setIsNewRequestModalOpen] = useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<SessionRequest | null>(null);
+  const [extendingRequestId, setExtendingRequestId] = useState<string | null>(null);
 
   // Fetch data
   const { data: upcomingSessions, isLoading: isLoadingUpcoming } = useUpcomingSessions();
   const { data: completedSessions, isLoading: isLoadingCompleted } = useCompletedSessions();
+  const { data: myRequests, isLoading: isLoadingRequests } = useMySessionRequests();
 
-  const isLoading = activeTab === "upcoming" ? isLoadingUpcoming : isLoadingCompleted;
+  // Mutations
+  const cancelRequest = useCancelSessionRequest();
+  const extendRequest = useExtendSessionRequest();
+
+  // Filter pending requests count
+  const pendingRequestsCount = myRequests?.filter(r => r.status === 'PENDING').length || 0;
+
+  const isLoading = activeTab === "upcoming"
+    ? isLoadingUpcoming
+    : activeTab === "completed"
+      ? isLoadingCompleted
+      : isLoadingRequests;
   const sessions = activeTab === "upcoming" ? upcomingSessions : completedSessions;
+
+  // Handlers for session requests
+  const handleCancelRequest = (request: SessionRequest) => {
+    setSelectedRequest(request);
+    setIsCancelModalOpen(true);
+  };
+
+  const handleConfirmCancel = async () => {
+    if (!selectedRequest) return;
+    try {
+      await cancelRequest.mutateAsync(selectedRequest._id);
+      toast.success("Request cancelled successfully");
+      setIsCancelModalOpen(false);
+      setSelectedRequest(null);
+    } catch (error) {
+      toast.error("Failed to cancel request");
+    }
+  };
+
+  const handleExtendRequest = async (requestId: string) => {
+    setExtendingRequestId(requestId);
+    try {
+      await extendRequest.mutateAsync(requestId);
+      toast.success("Request extended by 7 days");
+    } catch (error) {
+      toast.error("Failed to extend request");
+    } finally {
+      setExtendingRequestId(null);
+    }
+  };
 
   const handleOpenFeedback = (session: Session) => {
     setSelectedSession(session);
@@ -318,9 +524,19 @@ export default function StudentSession() {
           >
             Completed ({completedSessions?.length || 0})
           </button>
+          <button
+            onClick={() => setActiveTab("requests")}
+            className={`pb-2 sm:pb-2.5 lg:pb-3 font-medium text-xs sm:text-sm whitespace-nowrap transition-colors ${
+              activeTab === "requests"
+                ? "text-[#002AC8] border-b-2 border-blue-600"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            My Requests ({pendingRequestsCount})
+          </button>
         </div>
 
-        {/* Sessions List */}
+        {/* Content */}
         <div className="space-y-3 sm:space-y-4">
           {isLoading ? (
             // Loading skeleton
@@ -334,7 +550,29 @@ export default function StudentSession() {
                 </div>
               </div>
             ))
+          ) : activeTab === "requests" ? (
+            // My Requests Tab Content
+            myRequests && myRequests.length > 0 ? (
+              myRequests.map((request) => (
+                <SessionRequestCard
+                  key={request._id}
+                  request={request}
+                  onCancel={() => handleCancelRequest(request)}
+                  onExtend={() => handleExtendRequest(request._id)}
+                  isExtending={extendingRequestId === request._id}
+                />
+              ))
+            ) : (
+              <div className="text-center py-12 text-gray-500">
+                <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                <p className="text-lg font-medium">No session requests</p>
+                <p className="text-sm mt-1">
+                  Click "New Request" to request a tutoring session
+                </p>
+              </div>
+            )
           ) : sessions && sessions.length > 0 ? (
+            // Sessions Tab Content (Upcoming/Completed)
             sessions.map((session) => (
               <SessionCard
                 key={session._id}
@@ -372,6 +610,17 @@ export default function StudentSession() {
       <NewSessionRequestModal
         isOpen={isNewRequestModalOpen}
         onClose={() => setIsNewRequestModalOpen(false)}
+      />
+
+      {/* Cancel Request Modal */}
+      <CancelRequestModal
+        isOpen={isCancelModalOpen}
+        onClose={() => {
+          setIsCancelModalOpen(false);
+          setSelectedRequest(null);
+        }}
+        onConfirm={handleConfirmCancel}
+        isPending={cancelRequest.isPending}
       />
     </>
   );

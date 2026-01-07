@@ -215,8 +215,14 @@ export default function ChatArea({
       minutes
     );
 
-    // Default session duration: 1 hour
-    const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
+    // ============================================
+    // 🧪 TEST MODE: Set to true for 5 min test sessions
+    // Set to false for production (60 min sessions)
+    // ============================================
+    const TEST_MODE = true;
+    const SESSION_DURATION_MS = TEST_MODE ? 5 * 60 * 1000 : 60 * 60 * 1000; // 5 min or 1 hour
+
+    const endTime = new Date(startTime.getTime() + SESSION_DURATION_MS);
 
     // Check if this is a counter-proposal (student suggesting alternative time)
     if (counterProposalMessageId) {
