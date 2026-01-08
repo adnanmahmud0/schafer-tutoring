@@ -32,25 +32,33 @@ export default function ChatArea({
   const { user } = useAuthStore();
   const { joinChat, leaveChat, isConnected } = useSocket();
 
-  // Check if it's a support chat (special case)
-  const isSupportChat = conversationId === "support";
+  // Get chats to find the current chat info
+  const { data: chats } = useChats();
+
+  // Check if it's a support chat (special case) - find admin chat
+  const isSupportChatView = conversationId === "support";
+
+  // Find admin chat (chat where other participant is SUPER_ADMIN)
+  const adminChat = chats?.find(c =>
+    c.participants.some(p => p._id !== user?._id && p.role === 'SUPER_ADMIN')
+  );
+
+  // Use admin chat ID if viewing support, otherwise use provided conversationId
+  const actualChatId = isSupportChatView ? (adminChat?._id || '') : conversationId;
+  const currentChat = chats?.find(c => c._id === actualChatId);
 
   // Join/leave socket room when conversation changes
   useEffect(() => {
-    if (conversationId && !isSupportChat && isConnected) {
-      joinChat(conversationId);
+    if (actualChatId && isConnected) {
+      joinChat(actualChatId);
       return () => {
-        leaveChat(conversationId);
+        leaveChat(actualChatId);
       };
     }
-  }, [conversationId, isSupportChat, isConnected, joinChat, leaveChat]);
+  }, [actualChatId, isConnected, joinChat, leaveChat]);
 
-  // Get chats to find the current chat info
-  const { data: chats } = useChats();
-  const currentChat = chats?.find(c => c._id === conversationId);
-
-  // Get messages from API (skip for support chat)
-  const { data: messages, isLoading: messagesLoading } = useMessages(isSupportChat ? '' : conversationId);
+  // Get messages from API
+  const { data: messages, isLoading: messagesLoading } = useMessages(actualChatId);
   const { mutate: sendMessage, isPending: isSending } = useSendMessage();
   const { mutate: sendMessageWithAttachment, isPending: isUploadingSending } = useSendMessageWithAttachment();
   const { mutate: markAsRead } = useMarkChatAsRead();
@@ -97,17 +105,17 @@ export default function ChatArea({
 
   // Mark chat as read when viewing
   useEffect(() => {
-    if (conversationId && !isSupportChat && currentChat?.unreadCount && currentChat.unreadCount > 0) {
-      markAsRead(conversationId);
+    if (actualChatId && currentChat?.unreadCount && currentChat.unreadCount > 0) {
+      markAsRead(actualChatId);
     }
-  }, [conversationId, isSupportChat, currentChat?.unreadCount, markAsRead]);
+  }, [actualChatId, currentChat?.unreadCount, markAsRead]);
 
   const handleSend = () => {
-    if (conversationId && !isSupportChat) {
+    if (actualChatId) {
       // If there are files selected, send with attachments
       if (selectedFiles.length > 0) {
         sendMessageWithAttachment({
-          chatId: conversationId,
+          chatId: actualChatId,
           text: message.trim() || undefined,
           files: selectedFiles,
         }, {
@@ -122,7 +130,7 @@ export default function ChatArea({
       } else if (message.trim()) {
         // Text only message
         sendMessage({
-          chatId: conversationId,
+          chatId: actualChatId,
           content: message.trim(),
           type: 'TEXT',
         });
@@ -197,7 +205,7 @@ export default function ChatArea({
   };
 
   const handleSchedule = (selectedDate: Date, time: string) => {
-    if (!conversationId) return;
+    if (!actualChatId) return;
 
     // Parse time (format: HH:MM AM/PM)
     const [timePart, period] = time.split(' ');
@@ -249,7 +257,7 @@ export default function ChatArea({
 
       proposeSession(
         {
-          chatId: conversationId,
+          chatId: actualChatId,
           subject,
           startTime: startTime.toISOString(),
           endTime: endTime.toISOString(),
@@ -301,78 +309,81 @@ export default function ChatArea({
     }
   };
 
-  // Support chat placeholder
-  if (isSupportChat) {
-    return (
-      <div className="h-full flex flex-col bg-background">
-        {/* Header */}
-        <div className="border-b border-border bg-card px-4 md:px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onMenuClick}
-              className="md:hidden h-8 w-8"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div className="flex items-center justify-center w-10 h-10 bg-primary text-white rounded-full">
-              <Headphones className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="font-semibold text-foreground">Support Chat</h2>
-              <p className="text-xs text-muted-foreground">Get help from our team</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Support Messages */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
-          <div className="flex justify-start">
-            <div className="flex gap-3">
-              <div className="flex items-center justify-center w-8 h-8 bg-primary text-white rounded-full shrink-0">
-                <Headphones className="w-4 h-4" />
+  // Support chat view - show admin conversation or placeholder
+  if (isSupportChatView) {
+    // No admin chat exists yet - show placeholder
+    if (!adminChat) {
+      return (
+        <div className="h-full flex flex-col bg-background">
+          {/* Header */}
+          <div className="border-b border-border bg-card px-4 md:px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onMenuClick}
+                className="md:hidden h-8 w-8"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <div className="flex items-center justify-center w-10 h-10 bg-primary text-white rounded-full">
+                <Headphones className="w-5 h-5" />
               </div>
               <div>
-                <div className="rounded-lg px-4 py-2 bg-card border border-border rounded-bl-none">
-                  <p className="text-sm">Welcome! How can we help you today?</p>
-                </div>
-                <span className="text-xs text-muted-foreground mt-1 block">Support Team</span>
+                <h2 className="font-semibold text-foreground">Support Chat</h2>
+                <p className="text-xs text-muted-foreground">Get help from our team</p>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Input Area */}
-        <div className="w-full flex bg-background p-4">
-          <div className="w-full">
-            <div className="bg-card border border-border rounded-lg p-4">
-              <Textarea
-                placeholder="Type your message..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                className="min-h-20 mb-3 resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none"
-              />
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" className="gap-2 text-foreground bg-transparent">
-                  <Paperclip className="w-4 h-4" />
-                </Button>
-                <div className="flex-1" />
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="shrink-0 bg-[#0B31BD] text-white"
-                  onClick={handleSend}
-                  disabled={!message.trim()}
-                >
-                  <ArrowUp className="w-4 h-4" />
-                </Button>
+          {/* Placeholder Message */}
+          <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+            <div className="flex justify-start">
+              <div className="flex gap-3">
+                <div className="flex items-center justify-center w-8 h-8 bg-primary text-white rounded-full shrink-0">
+                  <Headphones className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="rounded-lg px-4 py-2 bg-card border border-border rounded-bl-none">
+                    <p className="text-sm">Need help? Submit a support ticket and our team will get back to you soon!</p>
+                  </div>
+                  <span className="text-xs text-muted-foreground mt-1 block">Support Team</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Disabled Input Area */}
+          <div className="w-full flex bg-background p-4">
+            <div className="w-full">
+              <div className="bg-card border border-border rounded-lg p-4 opacity-60">
+                <Textarea
+                  placeholder="Submit a support ticket to start a conversation..."
+                  disabled
+                  className="min-h-20 mb-3 resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none"
+                />
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" className="gap-2 text-foreground bg-transparent" disabled>
+                    <Paperclip className="w-4 h-4" />
+                  </Button>
+                  <div className="flex-1" />
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="shrink-0 bg-[#0B31BD] text-white"
+                    disabled
+                  >
+                    <ArrowUp className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    );
+      );
+    }
+
+    // Admin chat exists - continue to show real chat below (using actualChatId)
   }
 
   // No conversation selected
@@ -397,19 +408,35 @@ export default function ChatArea({
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <Avatar className="w-10 h-10">
-            {(otherParticipant?.image || otherParticipant?.avatar) ? (
-              <AvatarImage src={otherParticipant.image || otherParticipant.avatar} alt={otherParticipant.name} />
-            ) : null}
-            <AvatarFallback className="bg-primary text-primary-foreground">
-              {getInitials(otherParticipant?.name || 'U')}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <h2 className="font-semibold text-foreground">
-              {otherParticipant?.name || 'Chat'}
-            </h2>
-          </div>
+          {isSupportChatView ? (
+            // Support Chat header
+            <>
+              <div className="flex items-center justify-center w-10 h-10 bg-primary text-white rounded-full">
+                <Headphones className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="font-semibold text-foreground">Support Chat</h2>
+                <p className="text-xs text-muted-foreground">Get help from our team</p>
+              </div>
+            </>
+          ) : (
+            // Regular chat header
+            <>
+              <Avatar className="w-10 h-10">
+                {(otherParticipant?.image || otherParticipant?.avatar) ? (
+                  <AvatarImage src={otherParticipant.image || otherParticipant.avatar} alt={otherParticipant.name} />
+                ) : null}
+                <AvatarFallback className="bg-primary text-primary-foreground">
+                  {getInitials(otherParticipant?.name || 'U')}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <h2 className="font-semibold text-foreground">
+                  {otherParticipant?.name || 'Chat'}
+                </h2>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -431,14 +458,21 @@ export default function ChatArea({
               >
                 <div className={`flex gap-3 ${isOwn ? "flex-row-reverse" : ""}`}>
                   {!isOwn && (
-                    <Avatar className="w-8 h-8 shrink-0">
-                      {(msg.sender.profilePicture || msg.sender.avatar) ? (
-                        <AvatarImage src={msg.sender.profilePicture || msg.sender.avatar} alt={msg.sender.name} />
-                      ) : null}
-                      <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                        {getInitials(msg.sender.name || 'U')}
-                      </AvatarFallback>
-                    </Avatar>
+                    isSupportChatView ? (
+                      // Support Chat: Show support icon instead of admin avatar
+                      <div className="flex items-center justify-center w-8 h-8 bg-primary text-white rounded-full shrink-0">
+                        <Headphones className="w-4 h-4" />
+                      </div>
+                    ) : (
+                      <Avatar className="w-8 h-8 shrink-0">
+                        {(msg.sender.profilePicture || msg.sender.avatar) ? (
+                          <AvatarImage src={msg.sender.profilePicture || msg.sender.avatar} alt={msg.sender.name} />
+                        ) : null}
+                        <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                          {getInitials(msg.sender.name || 'U')}
+                        </AvatarFallback>
+                      </Avatar>
+                    )
                   )}
                   <div className={isOwn ? "text-right" : ""}>
                     {msg.sessionProposal ? (

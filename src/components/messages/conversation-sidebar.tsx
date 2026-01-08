@@ -47,9 +47,28 @@ export default function ConversationSidebar({
     return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
   };
 
-  const handleSupportClick = () => {
-    onSelectConversation("support");
-  };
+  // Check if user is admin (SUPER_ADMIN)
+  const isAdmin = user?.role === 'SUPER_ADMIN';
+
+  // Filter out admin chats from regular list (for non-admin users)
+  // Admin chats will be shown in Support Chat section
+  const filteredChats = isAdmin
+    ? chats
+    : chats?.filter(chat =>
+        !chat.participants.some(p => p._id !== user?._id && p.role === 'SUPER_ADMIN')
+      );
+
+  // Check if there's an admin chat (for showing indicator on Support Chat)
+  const hasAdminChat = !isAdmin && chats?.some(chat =>
+    chat.participants.some(p => p._id !== user?._id && p.role === 'SUPER_ADMIN')
+  );
+
+  // Get unread count from admin chat
+  const adminChatUnread = !isAdmin
+    ? chats?.find(chat =>
+        chat.participants.some(p => p._id !== user?._id && p.role === 'SUPER_ADMIN')
+      )?.unreadCount || 0
+    : 0;
 
   return (
     <div className="w-full h-full bg-card flex flex-col">
@@ -59,8 +78,8 @@ export default function ConversationSidebar({
           <div className="flex items-center justify-center h-32">
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
           </div>
-        ) : chats && chats.length > 0 ? (
-          chats.map((chat) => {
+        ) : filteredChats && filteredChats.length > 0 ? (
+          filteredChats.map((chat) => {
             const otherParticipant = getOtherParticipant(chat);
             const hasUnread = chat.unreadCount > 0;
 
@@ -110,24 +129,34 @@ export default function ConversationSidebar({
         )}
       </div>
 
-      <div className="border-t border-border p-[15.2px]">
-        <button
-          onClick={handleSupportClick}
-          className={`w-full flex items-center gap-3 rounded-lg px-3 py-3 transition-colors ${
-            selectedConversation === "support"
-              ? "bg-primary text-primary-foreground"
-              : "bg-muted hover:bg-muted/80 text-foreground"
-          }`}
-        >
-          <div className="flex items-center justify-center w-8 h-8 bg-primary text-white rounded-full">
-            <Headphones className="w-4 h-4 " />
-          </div>
-          <div className="text-left flex-1">
-            <div className="font-semibold text-sm">Support Chat</div>
-            <div className="text-xs opacity-75">Get help from our team</div>
-          </div>
-        </button>
-      </div>
+      {/* Support Chat - Only show for non-admin users */}
+      {!isAdmin && (
+        <div className="border-t border-border p-[15.2px]">
+          <button
+            onClick={() => onSelectConversation("support")}
+            className={`w-full flex items-center gap-3 rounded-lg px-3 py-3 transition-colors ${
+              selectedConversation === "support"
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted hover:bg-muted/80 text-foreground"
+            }`}
+          >
+            <div className="relative flex items-center justify-center w-8 h-8 bg-primary text-white rounded-full">
+              <Headphones className="w-4 h-4" />
+              {adminChatUnread > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {adminChatUnread}
+                </span>
+              )}
+            </div>
+            <div className="text-left flex-1">
+              <div className={`font-semibold text-sm ${adminChatUnread > 0 ? 'font-bold' : ''}`}>Support Chat</div>
+              <div className="text-xs opacity-75">
+                {hasAdminChat ? 'Chat with support team' : 'Get help from our team'}
+              </div>
+            </div>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

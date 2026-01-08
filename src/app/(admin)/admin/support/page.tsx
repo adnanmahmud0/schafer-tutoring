@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Search,
   MoreVertical,
@@ -12,6 +13,7 @@ import {
   Loader2,
   Eye,
   MessageSquare,
+  MessageCircle,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -60,6 +62,8 @@ import {
   useUpdateTicketStatus,
   useUpdateTicketPriority,
   useAddAdminNotes,
+  useCreateChat,
+  useSendMessage,
   TICKET_STATUS,
   TICKET_PRIORITY,
   TICKET_CATEGORY_LABELS,
@@ -71,6 +75,7 @@ import {
 } from '@/hooks/api';
 
 const SupportTicketManagement = () => {
+  const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | TICKET_STATUS>('all');
@@ -99,6 +104,8 @@ const SupportTicketManagement = () => {
   const updateStatusMutation = useUpdateTicketStatus();
   const updatePriorityMutation = useUpdateTicketPriority();
   const addNotesMutation = useAddAdminNotes();
+  const createChatMutation = useCreateChat();
+  const sendMessageMutation = useSendMessage();
 
   const tickets = data?.data || [];
   const pagination = data?.pagination;
@@ -170,6 +177,27 @@ const SupportTicketManagement = () => {
     setSelectedTicket(ticket);
     setAdminNotes(ticket.adminNotes || '');
     setShowNotesModal(true);
+  };
+
+  const handleStartChat = async (userId: string, ticketMessage?: string, ticketNumber?: string, category?: string) => {
+    try {
+      const chat = await createChatMutation.mutateAsync(userId);
+
+      // Send the ticket message as the first message if provided
+      if (ticketMessage) {
+        const categoryLabel = category ? TICKET_CATEGORY_LABELS[category as keyof typeof TICKET_CATEGORY_LABELS] : '';
+        const formattedMessage = `📩 Support Ticket ${ticketNumber ? `#${ticketNumber}` : ''}\n${categoryLabel ? `Category: ${categoryLabel}\n` : ''}\n${ticketMessage}`;
+
+        await sendMessageMutation.mutateAsync({
+          chatId: chat._id,
+          content: formattedMessage,
+        });
+      }
+
+      router.push(`/admin/messages?chatId=${chat._id}`);
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Failed to start chat');
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -415,6 +443,14 @@ const SupportTicketManagement = () => {
                                     <MessageSquare className="w-4 h-4 mr-2" />
                                     Add Response
                                   </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    onClick={() => handleStartChat(ticket.user._id, ticket.message, ticket.ticketNumber, ticket.category)}
+                                    disabled={createChatMutation.isPending || sendMessageMutation.isPending}
+                                  >
+                                    <MessageCircle className="w-4 h-4 mr-2" />
+                                    Chat with User
+                                  </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             </td>
@@ -550,9 +586,18 @@ const SupportTicketManagement = () => {
             </div>
           )}
 
-          <DialogFooter className="gap-2">
+          <DialogFooter className="gap-2 flex-wrap">
             <Button variant="outline" onClick={() => setSelectedTicket(null)}>
               Close
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => selectedTicket && handleStartChat(selectedTicket.user._id, selectedTicket.message, selectedTicket.ticketNumber, selectedTicket.category)}
+              disabled={createChatMutation.isPending || sendMessageMutation.isPending}
+              className="gap-2"
+            >
+              <MessageCircle className="w-4 h-4" />
+              Chat with User
             </Button>
             <Button onClick={() => selectedTicket && openStatusModal(selectedTicket)}>
               Update Status
