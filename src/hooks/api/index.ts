@@ -300,3 +300,18 @@ export type {
   EarningsHistoryItem,
   EarningsHistoryResponse,
 } from './use-tutor-earnings';
+
+// Legal Policy Hooks
+export {
+  useLegalPolicies,
+  useLegalPolicy,
+  usePublicLegalPolicy,
+  usePublicLegalPolicies,
+  useUpsertLegalPolicy,
+  useUpdateLegalPolicy,
+  useDeleteLegalPolicy,
+  useInitializeLegalPolicies,
+  POLICY_TYPE,
+  POLICY_TYPE_LABELS,
+} from './use-legal-policies';
+export type { LegalPolicy, UpsertPolicyPayload } from './use-legal-policies';

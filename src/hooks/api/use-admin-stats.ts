@@ -328,3 +328,87 @@ export function useApplicationStats() {
     staleTime: 60 * 1000, // 1 minute cache
   });
 }
+
+// ============ TRANSACTIONS ============
+
+export interface Transaction {
+  _id: string;
+  transactionId: string;
+  type: 'STUDENT_PAYMENT' | 'TUTOR_PAYOUT';
+  amount: number;
+  userName: string;
+  userEmail: string;
+  userType: 'student' | 'tutor';
+  status: 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED' | 'PROCESSING';
+  date: string;
+  description: string;
+  sessions?: number;
+  hours?: number;
+}
+
+export interface TransactionsResponse {
+  data: Transaction[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPage: number;
+  };
+}
+
+export interface TransactionStats {
+  totalTransactions: number;
+  totalAmount: number;
+  studentPayments: {
+    count: number;
+    total: number;
+  };
+  tutorPayouts: {
+    count: number;
+    total: number;
+  };
+}
+
+// Transactions Hook
+export function useTransactions(options?: {
+  page?: number;
+  limit?: number;
+  type?: 'STUDENT_PAYMENT' | 'TUTOR_PAYOUT' | 'all';
+  status?: string;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}) {
+  const { isAuthenticated, user } = useAuthStore();
+  const isAdmin = user?.role === 'SUPER_ADMIN';
+
+  return useQuery({
+    queryKey: ['admin-transactions', options],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/admin/transactions', {
+        params: options,
+      });
+      return {
+        data: data.data as Transaction[],
+        meta: data.meta,
+      } as TransactionsResponse;
+    },
+    enabled: isAuthenticated && isAdmin,
+  });
+}
+
+// Transaction Stats Hook
+export function useTransactionStats() {
+  const { isAuthenticated, user } = useAuthStore();
+  const isAdmin = user?.role === 'SUPER_ADMIN';
+
+  return useQuery({
+    queryKey: ['admin-transaction-stats'],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/admin/transaction-stats');
+      return data.data as TransactionStats;
+    },
+    enabled: isAuthenticated && isAdmin,
+    staleTime: 60 * 1000, // 1 minute cache
+  });
+}

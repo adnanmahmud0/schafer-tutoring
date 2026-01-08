@@ -23,7 +23,7 @@ const menuItems = [
   { label: "Transaction",  href: "/admin/transaction" },
   { label: "Meeting List",  href: "/admin/meeting-list" },
   { label: "Available Slot",  href: "/admin/available-slot" },
-  { label: "Terms & Conditions",  href: "/admin/terms-conditions" },
+  { label: "Legal Policies",  href: "/admin/terms-conditions" },
   { label: "Support",  href: "/admin/support" },
 ];
 
