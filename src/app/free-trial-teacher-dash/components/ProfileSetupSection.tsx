@@ -134,7 +134,7 @@ export function ProfileSetupSection({ userEmail, userName }: ProfileSetupSection
   const isStripeComplete = stripeStatus?.isOnboardingComplete ?? false;
   const hasStripeAccount = stripeStatus?.hasStripeAccount ?? false;
   const isStripeLoading = isCreatingAccount || isGettingLink || isRedirecting;
-  const stripeAccountId = stripeStatus?.stripeAccountId || '';
+  const stripeAccountId = stripeStatus?.accountId || '';
 
   const canStartTutoring = agreedToTerms && agreedToTax && profileImage && isStripeComplete;
 
