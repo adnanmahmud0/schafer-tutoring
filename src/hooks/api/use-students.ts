@@ -9,6 +9,8 @@ export interface Student {
   email: string;
   profilePicture?: string;
   phone?: string;
+  dateOfBirth?: string;
+  location?: string;
   status: 'ACTIVE' | 'INACTIVE' | 'RESTRICTED';
   studentProfile?: {
     hasCompletedTrial: boolean;
@@ -55,17 +57,17 @@ export function useStudents(filters: StudentFilters = {}) {
   });
 }
 
-// Get Single Student (Protected)
+// Get Single Student - Admin Only (Protected)
 export function useStudent(studentId: string) {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
 
   return useQuery({
     queryKey: ['students', studentId],
     queryFn: async () => {
-      const { data } = await apiClient.get(`/user/${studentId}/user`);
+      const { data } = await apiClient.get(`/user/${studentId}`);
       return data.data as Student;
     },
-    enabled: isAuthenticated && !!studentId,
+    enabled: isAuthenticated && user?.role === 'SUPER_ADMIN' && !!studentId,
   });
 }
 
@@ -95,6 +97,36 @@ export function useUnblockStudent() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['students'] });
+    },
+  });
+}
+
+// Admin Update Student Profile - Admin Only
+export interface AdminUpdateStudentProfilePayload {
+  name?: string;
+  email?: string;
+  phone?: string;
+  dateOfBirth?: string;
+  location?: string;
+}
+
+export function useAdminUpdateStudentProfile() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      studentId,
+      payload,
+    }: {
+      studentId: string;
+      payload: AdminUpdateStudentProfilePayload;
+    }) => {
+      const { data } = await apiClient.patch(`/user/students/${studentId}/profile`, payload);
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['students'] });
+      queryClient.invalidateQueries({ queryKey: ['students', variables.studentId] });
     },
   });
 }

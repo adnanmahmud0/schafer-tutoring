@@ -474,7 +474,7 @@ export default function ChatArea({
                       </Avatar>
                     )
                   )}
-                  <div className={isOwn ? "text-right" : ""}>
+                  <div className={isOwn && !msg.sessionProposal ? "text-right" : ""}>
                     {msg.sessionProposal ? (
                       <SessionProposal
                         date={new Date((msg.sessionProposal as any).startTime || msg.sessionProposal.scheduledAt).toLocaleDateString()}

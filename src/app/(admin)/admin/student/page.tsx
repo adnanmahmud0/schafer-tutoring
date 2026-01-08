@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Search, MoreVertical, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -23,11 +24,12 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { useStudents, useBlockStudent, useUnblockStudent } from '@/hooks/api';
+import { useStudents, useBlockStudent, useUnblockStudent, Student } from '@/hooks/api';
 
 type StudentStatus = 'all' | 'ACTIVE' | 'RESTRICTED';
 
 const StudentManagement = () => {
+  const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<StudentStatus>('all');
@@ -78,6 +80,10 @@ const StudentManagement = () => {
         toast.error(error?.getFullMessage?.() || error?.message || 'Failed to unblock student');
       },
     });
+  };
+
+  const handleViewDetails = (student: Student) => {
+    router.push(`/admin/student-details?id=${student._id}`);
   };
 
   const formatDate = (dateString: string) => {
@@ -244,7 +250,9 @@ const StudentManagement = () => {
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                  <DropdownMenuItem>View Details</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleViewDetails(student)}>
+                                    View Details
+                                  </DropdownMenuItem>
                                   {student.status === 'ACTIVE' ? (
                                     <DropdownMenuItem
                                       className="text-red-600"
@@ -338,6 +346,7 @@ const StudentManagement = () => {
           </CardContent>
         </Card>
       </Tabs>
+
     </div>
   );
 };

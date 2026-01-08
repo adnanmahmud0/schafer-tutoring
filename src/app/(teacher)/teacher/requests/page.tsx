@@ -16,7 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Download, FileText, Check, Loader2 } from "lucide-react";
+import { Download, FileText, Loader2 } from "lucide-react";
 import {
   useMatchingRequests,
   useMyAcceptedTrialRequests,
@@ -48,7 +48,6 @@ export default function RequestsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<UnifiedRequest | null>(null);
   const [introMessage, setIntroMessage] = useState("");
-  const [showSuccess, setShowSuccess] = useState(false);
   const [isInfoOnly, setIsInfoOnly] = useState(false);
   const itemsPerPage = 6;
 
@@ -85,7 +84,6 @@ export default function RequestsPage() {
     setSelectedRequest(request);
     setIsInfoOnly(infoOnly);
     setIsModalOpen(true);
-    setShowSuccess(false);
     setIntroMessage("");
   };
 
@@ -101,21 +99,18 @@ export default function RequestsPage() {
       { id: selectedRequest._id, introductoryMessage: introMessage },
       {
         onSuccess: () => {
-          setShowSuccess(true);
           toast.success("Request accepted successfully!");
+          setIsModalOpen(false);
+          setIntroMessage("");
+          setSelectedRequest(null);
+          setActiveTab("accepted");
+          setCurrentPage(1);
         },
         onError: (error: any) => {
           toast.error(error?.response?.data?.message || "Failed to accept request");
         },
       }
     );
-  };
-
-  const handleBackToDashboard = () => {
-    setIsModalOpen(false);
-    setShowSuccess(false);
-    setIntroMessage("");
-    setSelectedRequest(null);
   };
 
   return (
@@ -301,142 +296,124 @@ export default function RequestsPage() {
       {/* Request Details Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="max-w-md">
-          {!showSuccess ? (
-            <>
-              <DialogHeader>
-                <DialogTitle className="text-base font-semibold text-gray-900 border-b pb-4">
-                  Student Information
-                </DialogTitle>
-              </DialogHeader>
+          <DialogHeader>
+            <DialogTitle className="text-base font-semibold text-gray-900 border-b pb-4">
+              Student Information
+            </DialogTitle>
+          </DialogHeader>
 
-              <div className="space-y-6 py-4">
-                {/* Student Info Grid */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Name</p>
-                    <p className="text-sm text-gray-900">{selectedRequest ? getStudentName(selectedRequest) : "Unknown"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Subject</p>
-                    <p className="text-sm text-gray-900">{selectedRequest?.subject?.name || "Unknown"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">School Type</p>
-                    <p className="text-sm text-gray-900">{selectedRequest?.schoolType || "Unknown"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Grade</p>
-                    <p className="text-sm text-gray-900">Grade {selectedRequest?.gradeLevel || "Unknown"}</p>
-                  </div>
-                </div>
-
-                {/* Description */}
-                <div>
-                  <p className="text-sm font-semibold text-gray-900 mb-2">Description</p>
-                  <p className="text-sm text-gray-700">
-                    {selectedRequest?.description || "No description provided"}
-                  </p>
-                </div>
-
-                {/* Learning Goals */}
-                {selectedRequest?.learningGoals && (
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900 mb-2">Learning Goals</p>
-                    <p className="text-sm text-gray-700">{selectedRequest.learningGoals}</p>
-                  </div>
-                )}
-
-                {/* Documents */}
-                {selectedRequest?.documents && selectedRequest.documents.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-sm font-semibold text-gray-900">Documents</p>
-                    {selectedRequest.documents.map((doc, index) => (
-                      <div key={index} className="bg-gray-50 rounded-lg p-4 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <FileText className="w-5 h-5 text-[#002AC8]" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-900">Document {index + 1}</p>
-                          </div>
-                        </div>
-                        <a href={doc} target="_blank" rel="noopener noreferrer" className="text-[#002AC8] hover:text-[#0024a8]">
-                          <Download className="w-5 h-5" />
-                        </a>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {!isInfoOnly && (
-                  <>
-                    {/* Introduction Message */}
-                    <div>
-                      <label className="text-sm font-medium text-gray-900 mb-2 block">
-                        Introduction Message*
-                      </label>
-                      <textarea
-                        value={introMessage}
-                        onChange={(e) => setIntroMessage(e.target.value)}
-                        placeholder="Write your introduction message here..."
-                        className="w-full h-32 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#002AC8] focus:border-transparent resize-none"
-                      />
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex gap-3 pt-2">
-                      <button
-                        onClick={() => setIsModalOpen(false)}
-                        disabled={isAccepting}
-                        className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={handleSendAccept}
-                        disabled={isAccepting}
-                        className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-[#002AC8] rounded-lg hover:bg-[#0024a8] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                      >
-                        {isAccepting ? (
-                          <>
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            Accepting...
-                          </>
-                        ) : (
-                          "Send & Accept"
-                        )}
-                      </button>
-                    </div>
-                  </>
-                )}
-
-                {isInfoOnly && (
-                  <div className="pt-2">
-                    <button
-                      onClick={() => setIsModalOpen(false)}
-                      className="w-full px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      Close
-                    </button>
-                  </div>
-                )}
+          <div className="space-y-6 py-4">
+            {/* Student Info Grid */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs text-gray-500 mb-1">Name</p>
+                <p className="text-sm text-gray-900">{selectedRequest ? getStudentName(selectedRequest) : "Unknown"}</p>
               </div>
-            </>
-          ) : (
-            <div className="py-8 px-4 text-center">
-              <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Check className="w-10 h-10 text-white" strokeWidth={3} />
+              <div>
+                <p className="text-xs text-gray-500 mb-1">Subject</p>
+                <p className="text-sm text-gray-900">{selectedRequest?.subject?.name || "Unknown"}</p>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Success!</h3>
-              <p className="text-sm text-gray-600 mb-6">Message sent to the student</p>
-              <button
-                onClick={handleBackToDashboard}
-                className="w-full px-4 py-2.5 text-sm font-medium text-white bg-[#002AC8] rounded-lg hover:bg-[#0024a8] transition-colors"
-              >
-                Back to Dashboard
-              </button>
+              <div>
+                <p className="text-xs text-gray-500 mb-1">School Type</p>
+                <p className="text-sm text-gray-900">{selectedRequest?.schoolType || "Unknown"}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 mb-1">Grade</p>
+                <p className="text-sm text-gray-900">Grade {selectedRequest?.gradeLevel || "Unknown"}</p>
+              </div>
             </div>
-          )}
+
+            {/* Description */}
+            <div>
+              <p className="text-sm font-semibold text-gray-900 mb-2">Description</p>
+              <p className="text-sm text-gray-700">
+                {selectedRequest?.description || "No description provided"}
+              </p>
+            </div>
+
+            {/* Learning Goals */}
+            {selectedRequest?.learningGoals && (
+              <div>
+                <p className="text-sm font-semibold text-gray-900 mb-2">Learning Goals</p>
+                <p className="text-sm text-gray-700">{selectedRequest.learningGoals}</p>
+              </div>
+            )}
+
+            {/* Documents */}
+            {selectedRequest?.documents && selectedRequest.documents.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm font-semibold text-gray-900">Documents</p>
+                {selectedRequest.documents.map((doc, index) => (
+                  <div key={index} className="bg-gray-50 rounded-lg p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <FileText className="w-5 h-5 text-[#002AC8]" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Document {index + 1}</p>
+                      </div>
+                    </div>
+                    <a href={doc} target="_blank" rel="noopener noreferrer" className="text-[#002AC8] hover:text-[#0024a8]">
+                      <Download className="w-5 h-5" />
+                    </a>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {!isInfoOnly && (
+              <>
+                {/* Introduction Message */}
+                <div>
+                  <label className="text-sm font-medium text-gray-900 mb-2 block">
+                    Introduction Message*
+                  </label>
+                  <textarea
+                    value={introMessage}
+                    onChange={(e) => setIntroMessage(e.target.value)}
+                    placeholder="Write your introduction message here..."
+                    className="w-full h-32 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#002AC8] focus:border-transparent resize-none"
+                  />
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => setIsModalOpen(false)}
+                    disabled={isAccepting}
+                    className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSendAccept}
+                    disabled={isAccepting}
+                    className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-[#002AC8] rounded-lg hover:bg-[#0024a8] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {isAccepting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Accepting...
+                      </>
+                    ) : (
+                      "Send & Accept"
+                    )}
+                  </button>
+                </div>
+              </>
+            )}
+
+            {isInfoOnly && (
+              <div className="pt-2">
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="w-full px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>

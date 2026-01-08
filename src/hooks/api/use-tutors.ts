@@ -150,3 +150,42 @@ export function useUpdateTutorSubjects() {
     },
   });
 }
+
+// Admin Update Tutor Profile - Admin Only
+export interface AdminUpdateTutorProfilePayload {
+  name?: string;
+  email?: string;
+  phone?: string;
+  dateOfBirth?: string;
+  location?: string;
+  tutorProfile?: {
+    address?: string;
+    birthDate?: string;
+    bio?: string;
+    languages?: string[];
+    teachingExperience?: string;
+    education?: string;
+    subjects?: string[];
+  };
+}
+
+export function useAdminUpdateTutorProfile() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      tutorId,
+      payload,
+    }: {
+      tutorId: string;
+      payload: AdminUpdateTutorProfilePayload;
+    }) => {
+      const { data } = await apiClient.patch(`/user/tutors/${tutorId}/profile`, payload);
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['tutors'] });
+      queryClient.invalidateQueries({ queryKey: ['tutor', variables.tutorId] });
+    },
+  });
+}

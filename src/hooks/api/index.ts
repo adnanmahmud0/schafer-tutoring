@@ -74,6 +74,7 @@ export {
   useStudent,
   useBlockStudent,
   useUnblockStudent,
+  useAdminUpdateStudentProfile,
 } from './use-students';
 
 // Tutor Hooks
@@ -84,6 +85,7 @@ export {
   useBlockTutor,
   useUnblockTutor,
   useUpdateTutorSubjects,
+  useAdminUpdateTutorProfile,
 } from './use-tutors';
 
 // Bookmark Hooks
@@ -215,6 +217,9 @@ export {
   useTutorReviewStats,
   useReview,
   useToggleReviewVisibility,
+  useAdminCreateReview,
+  useAdminUpdateReview,
+  useAdminDeleteReview,
 } from './use-reviews';
 
 // Tutor Feedback Hooks
@@ -245,7 +250,7 @@ export type { Subject, SubjectFilters, SubjectsResponse } from './use-subjects';
 export type { Grade, GradeFilters, GradesResponse } from './use-grades';
 export type { SchoolType, SchoolTypeFilters, SchoolTypesResponse } from './use-school-types';
 export type { Session, SessionFilters, UnifiedSession, UnifiedSessionFilters } from './use-sessions';
-export type { Student, StudentFilters } from './use-students';
+export type { Student, StudentFilters, AdminUpdateStudentProfilePayload } from './use-students';
 export type { Tutor, TutorFilters, TutorsResponse } from './use-tutors';
 export type { Bookmark } from './use-bookmarks';
 export type { Chat, Message } from './use-chats';
@@ -285,7 +290,9 @@ export type {
   UpdateReviewData,
   ReviewStats,
   ReviewsResponse,
+  AdminCreateReviewData,
 } from './use-reviews';
+export type { AdminUpdateTutorProfilePayload } from './use-tutors';
 export type {
   TutorSessionFeedback,
   SubmitFeedbackData,

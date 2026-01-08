@@ -212,3 +212,64 @@ export function useToggleReviewVisibility() {
     },
   });
 }
+
+// Admin Create Review (without session requirement)
+export interface AdminCreateReviewData {
+  tutorId: string;
+  overallRating: number;
+  teachingQuality: number;
+  communication: number;
+  punctuality: number;
+  preparedness: number;
+  comment?: string;
+  wouldRecommend: boolean;
+  isPublic?: boolean;
+  reviewerName?: string;
+}
+
+export function useAdminCreateReview() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: AdminCreateReviewData) => {
+      const { data: response } = await apiClient.post('/reviews/admin', data);
+      return response.data as SessionReview;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['tutor-reviews', variables.tutorId] });
+      queryClient.invalidateQueries({ queryKey: ['tutor-review-stats', variables.tutorId] });
+    },
+  });
+}
+
+// Admin Update Any Review
+export function useAdminUpdateReview() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: UpdateReviewData & { reviewerName?: string } }) => {
+      const { data: response } = await apiClient.patch(`/reviews/admin/${id}`, data);
+      return response.data as SessionReview;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tutor-reviews'] });
+      queryClient.invalidateQueries({ queryKey: ['tutor-review-stats'] });
+    },
+  });
+}
+
+// Admin Delete Any Review
+export function useAdminDeleteReview() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data } = await apiClient.delete(`/reviews/admin/${id}`);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tutor-reviews'] });
+      queryClient.invalidateQueries({ queryKey: ['tutor-review-stats'] });
+    },
+  });
+}
