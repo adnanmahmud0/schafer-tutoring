@@ -1,11 +1,64 @@
 "use client";
 import React, { useState } from 'react';
-import { Plus, Paperclip, Send } from 'lucide-react';
+import { Plus, Paperclip, Send, Loader2, Clock, CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
+import { toast } from 'sonner';
+import { formatDistanceToNow } from 'date-fns';
+import {
+  useCreateSupportTicket,
+  useMyTickets,
+  TICKET_CATEGORY,
+  TICKET_CATEGORY_LABELS,
+  TICKET_STATUS,
+  TICKET_STATUS_LABELS,
+  TICKET_STATUS_COLORS,
+  SupportTicket,
+} from '@/hooks/api';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const getStatusIcon = (status: TICKET_STATUS) => {
+  switch (status) {
+    case TICKET_STATUS.OPEN:
+      return <AlertCircle className="w-4 h-4" />;
+    case TICKET_STATUS.IN_PROGRESS:
+      return <Clock className="w-4 h-4" />;
+    case TICKET_STATUS.RESOLVED:
+      return <CheckCircle2 className="w-4 h-4" />;
+    case TICKET_STATUS.CLOSED:
+      return <XCircle className="w-4 h-4" />;
+    default:
+      return null;
+  }
+};
 
 export default function SupportPage() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [showTicketModal, setShowTicketModal] = useState(false);
+  const [ticketCategory, setTicketCategory] = useState<TICKET_CATEGORY | ''>('');
   const [ticketMessage, setTicketMessage] = useState('');
+  const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
+
+  const createTicketMutation = useCreateSupportTicket();
+  const { data: ticketsData, isLoading: ticketsLoading } = useMyTickets({ limit: 10 });
 
   const faqs = [
     {
@@ -40,13 +93,38 @@ export default function SupportPage() {
     },
   ];
 
-  const handleSubmitTicket = () => {
-    if (ticketMessage.trim()) {
-      // Handle ticket submission logic here
-      console.log('Ticket submitted:', ticketMessage);
+  const handleSubmitTicket = async () => {
+    if (!ticketCategory) {
+      toast.error('Please select a category');
+      return;
+    }
+    if (!ticketMessage.trim()) {
+      toast.error('Please enter your message');
+      return;
+    }
+
+    try {
+      await createTicketMutation.mutateAsync({
+        category: ticketCategory,
+        subject: TICKET_CATEGORY_LABELS[ticketCategory],
+        message: ticketMessage.trim(),
+      });
+
+      toast.success('Support ticket submitted successfully!');
+      setTicketCategory('');
       setTicketMessage('');
       setShowTicketModal(false);
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Failed to submit ticket');
     }
+  };
+
+  const handleCloseModal = (open: boolean) => {
+    if (!open) {
+      setTicketCategory('');
+      setTicketMessage('');
+    }
+    setShowTicketModal(open);
   };
 
   return (
@@ -62,7 +140,7 @@ export default function SupportPage() {
 
           <div className='bg-white p-8 rounded-[12px] mb-10 shadow'>
             <div>
-              <h2 className="text-2xl font-bold  mb-6">
+              <h2 className="text-2xl font-bold mb-6">
                 Frequently Asked Questions
               </h2>
             </div>
@@ -85,14 +163,12 @@ export default function SupportPage() {
                         {faq.question}
                       </span>
                       <Plus
-                        className={`w-5 h-5 text-gray-400 transition-transform duration-300 shrink-0 ${isOpen ? "rotate-45" : ""
-                          }`}
+                        className={`w-5 h-5 text-gray-400 transition-transform duration-300 shrink-0 ${isOpen ? "rotate-45" : ""}`}
                       />
                     </button>
 
                     <div
-                      className={`overflow-hidden transition-all duration-500 ease-in-out ${isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-                        }`}
+                      className={`overflow-hidden transition-all duration-500 ease-in-out ${isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}
                       style={{
                         transition:
                           "max-height 0.5s ease-in-out, opacity 0.4s ease-in-out, padding 0.5s ease-in-out",
@@ -118,51 +194,242 @@ export default function SupportPage() {
             <p className="text-gray-600 text-sm sm:text-base mb-6">
               If you couldn't find the information you need, our support team is ready to assist you. Submit a ticket, and we'll get back to you as soon as possible.
             </p>
-            <button
+            <Button
               onClick={() => setShowTicketModal(true)}
-              className="bg-[#0B31BD] text-white px-8 py-3 rounded-lg font-medium hover:bg-[#0a2aa0] transition-colors duration-200"
+              className="bg-[#0B31BD] hover:bg-[#0a2aa0]"
             >
               Submit Ticket
-            </button>
+            </Button>
+          </div>
+
+          {/* My Tickets Section */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sm:p-8 mt-6">
+            <h3 className="text-xl font-semibold text-gray-900 mb-6">
+              My Support Tickets
+            </h3>
+
+            {ticketsLoading ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="border rounded-lg p-4">
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-3 w-48" />
+                      </div>
+                      <Skeleton className="h-6 w-20" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : ticketsData?.data && ticketsData.data.length > 0 ? (
+              <div className="space-y-4">
+                {ticketsData.data.map((ticket) => (
+                  <Card
+                    key={ticket._id}
+                    className="cursor-pointer hover:shadow-md transition-shadow"
+                    onClick={() => setSelectedTicket(ticket)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-medium text-sm text-gray-500">
+                              {ticket.ticketNumber}
+                            </span>
+                            <Badge variant="outline" className="text-xs">
+                              {TICKET_CATEGORY_LABELS[ticket.category]}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-gray-700 line-clamp-2">
+                            {ticket.message}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-2">
+                            {formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true })}
+                          </p>
+                        </div>
+                        <Badge className={`${TICKET_STATUS_COLORS[ticket.status]} flex items-center gap-1 shrink-0`}>
+                          {getStatusIcon(ticket.status)}
+                          {TICKET_STATUS_LABELS[ticket.status]}
+                        </Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <AlertCircle className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                <p>No support tickets yet</p>
+                <p className="text-sm">Submit a ticket if you need help</p>
+              </div>
+            )}
           </div>
         </div>
       </section>
 
-      {/* Ticket Modal */}
-      {showTicketModal && (
-        <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl border w-full max-w-md">
-            <div className=" text-white px-4 py-3 rounded-t-lg flex items-center justify-end">
-              <button
-                onClick={() => setShowTicketModal(false)}
-                className='text-black'
+      {/* Submit Ticket Modal */}
+      <Dialog open={showTicketModal} onOpenChange={handleCloseModal}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Submit Support Ticket</DialogTitle>
+            <DialogDescription>
+              Select a category and describe your issue. Our team will get back to you soon.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {/* Category Dropdown */}
+            <div className="space-y-2">
+              <Label htmlFor="category">
+                Category <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value={ticketCategory}
+                onValueChange={(value) => setTicketCategory(value as TICKET_CATEGORY)}
               >
-                ×
-              </button>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.values(TICKET_CATEGORY).map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {TICKET_CATEGORY_LABELS[category]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            <div className="p-4">
-              <textarea
+
+            {/* Message Textarea */}
+            <div className="space-y-2">
+              <Label htmlFor="message">
+                Message <span className="text-red-500">*</span>
+              </Label>
+              <Textarea
+                id="message"
                 value={ticketMessage}
                 onChange={(e) => setTicketMessage(e.target.value)}
-                placeholder="Describe your issue or request here..."
-                className="w-full h-32 p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#0B31BD] focus:border-transparent text-sm"
+                placeholder="Describe your issue or request in detail..."
+                className="min-h-[120px] resize-none"
+                maxLength={2000}
               />
-              <div className="flex items-center justify-between mt-4">
-                <button className="flex items-center gap-2 text-gray-600 hover:text-gray-800 text-sm">
-                  <Paperclip className="w-4 h-4" />
-                  Attach file
-                </button>
-                <button
-                  onClick={handleSubmitTicket}
-                  className="text-[#0B31BD] hover:text-[#0a2aa0]"
-                >
-                  <Send className="w-5 h-5" />
-                </button>
-              </div>
+              <p className="text-xs text-muted-foreground text-right">
+                {ticketMessage.length}/2000
+              </p>
             </div>
           </div>
-        </div>
-      )}
+
+          <DialogFooter className="flex-row justify-between sm:justify-between">
+            <Button variant="ghost" size="sm" className="gap-2">
+              <Paperclip className="w-4 h-4" />
+              Attach file
+            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => handleCloseModal(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSubmitTicket}
+                disabled={createTicketMutation.isPending}
+                className="bg-[#0B31BD] hover:bg-[#0a2aa0] gap-2"
+              >
+                {createTicketMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    Submit
+                  </>
+                )}
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Ticket Details Modal */}
+      <Dialog open={!!selectedTicket} onOpenChange={(open) => !open && setSelectedTicket(null)}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              Ticket Details
+              {selectedTicket && (
+                <Badge className={TICKET_STATUS_COLORS[selectedTicket.status]}>
+                  {TICKET_STATUS_LABELS[selectedTicket.status]}
+                </Badge>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+
+          {selectedTicket && (
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-gray-500">Ticket Number</p>
+                  <p className="font-medium">{selectedTicket.ticketNumber}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500">Category</p>
+                  <p className="font-medium">{TICKET_CATEGORY_LABELS[selectedTicket.category]}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500">Submitted</p>
+                  <p className="font-medium">
+                    {new Date(selectedTicket.createdAt).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </p>
+                </div>
+                {selectedTicket.resolvedAt && (
+                  <div>
+                    <p className="text-gray-500">Resolved</p>
+                    <p className="font-medium">
+                      {new Date(selectedTicket.resolvedAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <p className="text-gray-500 text-sm mb-1">Message</p>
+                <div className="bg-gray-50 rounded-lg p-4 text-sm">
+                  {selectedTicket.message}
+                </div>
+              </div>
+
+              {selectedTicket.adminNotes && (
+                <div>
+                  <p className="text-gray-500 text-sm mb-1">Admin Response</p>
+                  <div className="bg-blue-50 rounded-lg p-4 text-sm border border-blue-100">
+                    {selectedTicket.adminNotes}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSelectedTicket(null)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

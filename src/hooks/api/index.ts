@@ -315,3 +315,34 @@ export {
   POLICY_TYPE_LABELS,
 } from './use-legal-policies';
 export type { LegalPolicy, UpsertPolicyPayload } from './use-legal-policies';
+
+// Support Ticket Hooks
+export {
+  useTicketCategories,
+  useCreateSupportTicket,
+  useMyTickets,
+  useMyTicket,
+  useAdminTickets,
+  useAdminTicket,
+  useTicketStats,
+  useUpdateTicketStatus,
+  useUpdateTicketPriority,
+  useAssignTicket,
+  useAddAdminNotes,
+  TICKET_CATEGORY,
+  TICKET_STATUS,
+  TICKET_PRIORITY,
+  TICKET_CATEGORY_LABELS,
+  TICKET_STATUS_LABELS,
+  TICKET_PRIORITY_LABELS,
+  TICKET_STATUS_COLORS,
+  TICKET_PRIORITY_COLORS,
+} from './use-support-tickets';
+export type {
+  SupportTicket,
+  TicketCategory,
+  CreateTicketData,
+  TicketFilters,
+  TicketsResponse,
+  TicketStats,
+} from './use-support-tickets';
