@@ -61,14 +61,15 @@ export function useInterviewSlots(filters: InterviewSlotFilters = {}) {
       if (filters.endDate) params.append('endDate', filters.endDate);
 
       const { data } = await apiClient.get(`/interview-slots?${params}`);
-      return data as {
-        data: InterviewSlot[];
-        meta: {
+      // Map pagination to meta for consistency
+      return {
+        data: data.data as InterviewSlot[],
+        meta: data.pagination as {
           total: number;
           page: number;
           limit: number;
           totalPage: number;
-        };
+        },
       };
     },
     enabled: isAuthenticated && user?.role === 'SUPER_ADMIN',
@@ -195,14 +196,15 @@ export function useAvailableInterviewSlots() {
       params.append('status', 'AVAILABLE');
 
       const { data } = await apiClient.get(`/interview-slots?${params}`);
-      return data as {
-        data: InterviewSlot[];
-        meta: {
+      // Map pagination to meta for consistency
+      return {
+        data: data.data as InterviewSlot[],
+        meta: data.pagination as {
           total: number;
           page: number;
           limit: number;
           totalPage: number;
-        };
+        },
       };
     },
     enabled: isAuthenticated && user?.role === 'APPLICANT',

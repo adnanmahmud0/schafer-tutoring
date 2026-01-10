@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { useAuthStore, type User } from '@/store/auth-store';
 
@@ -44,6 +44,7 @@ export interface ApplicationResponse {
 export type ApplicationStatus =
   | 'SUBMITTED'
   | 'REVISION'
+  | 'RESUBMITTED'
   | 'SELECTED_FOR_INTERVIEW'
   | 'APPROVED'
   | 'REJECTED';
@@ -66,6 +67,8 @@ export interface TutorApplication {
   status: ApplicationStatus;
   rejectionReason?: string;
   revisionNote?: string;
+  interviewCancelledReason?: string;
+  interviewCancelledAt?: string;
   submittedAt: string;
   selectedForInterviewAt?: string;
   approvedAt?: string;
@@ -132,16 +135,72 @@ export const useSubmitApplication = () => {
 /**
  * Get my application (Protected - APPLICANT role required)
  * Fetches the current user's tutor application
+ * Auto-updates auth token if user was approved as TUTOR
  */
 export const useMyApplication = (options?: { enabled?: boolean }) => {
+  const setAuth = useAuthStore((state) => state.setAuth);
+  const currentUser = useAuthStore((state) => state.user);
+
   return useQuery({
     queryKey: ['myApplication'],
     queryFn: async () => {
-      const { data } = await apiClient.get('/applications/my-application');
-      return data.data as TutorApplication;
+      const response = await apiClient.get('/applications/my-application');
+      const { data, accessToken } = response.data;
+
+      // If new token is provided (user was approved), update auth store
+      if (accessToken && currentUser) {
+        setAuth({ ...currentUser, role: 'TUTOR' }, accessToken);
+      }
+
+      return data as TutorApplication;
     },
     staleTime: 2 * 60 * 1000, // 2 min cache
     retry: false, // Don't retry on 404
     enabled: options?.enabled ?? true,
+  });
+};
+
+export interface UpdateMyApplicationData {
+  cv?: File;
+  abiturCertificate?: File;
+  officialId?: File;
+}
+
+/**
+ * Update my application (Protected - APPLICANT role required)
+ * Can only be used when application is in REVISION status
+ * After update, application status changes to SUBMITTED
+ */
+export const useUpdateMyApplication = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: UpdateMyApplicationData) => {
+      const formData = new FormData();
+
+      if (data.cv) {
+        formData.append('cv', data.cv);
+      }
+      if (data.abiturCertificate) {
+        formData.append('abiturCertificate', data.abiturCertificate);
+      }
+      if (data.officialId) {
+        formData.append('officialId', data.officialId);
+      }
+
+      const response = await apiClient.patch(
+        '/applications/my-application',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['myApplication'] });
+    },
   });
 };

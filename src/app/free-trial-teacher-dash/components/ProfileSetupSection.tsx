@@ -123,7 +123,7 @@ export function ProfileSetupSection({ userEmail, userName }: ProfileSetupSection
       // TODO: Call API to mark profile as complete and start tutoring
       await new Promise((resolve) => setTimeout(resolve, 1000));
       toast.success('Welcome! You can now start tutoring.');
-      router.push('/teacher/dashboard');
+      router.push('/teacher/overview');
     } catch (error) {
       toast.error('Failed to complete setup');
     } finally {
@@ -315,7 +315,12 @@ export function ProfileSetupSection({ userEmail, userName }: ProfileSetupSection
           />
           <label htmlFor="terms" className="text-sm text-gray-700 leading-relaxed cursor-pointer">
             I have read and agree to the{' '}
-            <a href="/terms" className="text-gray-900 underline hover:text-[#0B31BD]">
+            <a
+              href="/terms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-900 underline hover:text-[#0B31BD]"
+            >
               Terms and Conditions
             </a>
           </label>

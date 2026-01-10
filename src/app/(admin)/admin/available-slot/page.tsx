@@ -12,10 +12,21 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -48,6 +59,7 @@ import {
   INTERVIEW_SLOT_STATUS,
   InterviewSlot,
 } from '@/hooks/api';
+import { ApiError } from '@/lib/api-client';
 
 const AvailableSlots = () => {
   // Calendar state
@@ -57,11 +69,13 @@ const AvailableSlots = () => {
   // Modal states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<InterviewSlot | null>(null);
+  const [slotToDelete, setSlotToDelete] = useState<InterviewSlot | null>(null);
   const [cancellationReason, setCancellationReason] = useState('');
 
-  // Create slot form state - selectedHour is the starting hour (0-23)
-  const [selectedHour, setSelectedHour] = useState<string>('9');
+  // Create slot form state - selectedHours is an array of starting hours (0-23) for multi-select
+  const [selectedHours, setSelectedHours] = useState<string[]>([]);
 
   // Generate 24 hourly time slots for dropdown
   const timeSlots = Array.from({ length: 24 }, (_, i) => {
@@ -84,7 +98,7 @@ const AvailableSlots = () => {
   const [page, setPage] = useState(1);
 
   // API Hooks
-  const { data: slotsData, isLoading, refetch } = useInterviewSlots({
+  const { data: slotsData, isLoading, isFetching, refetch } = useInterviewSlots({
     page,
     limit: 10,
     status: statusFilter !== 'all' ? statusFilter : undefined,
@@ -120,51 +134,90 @@ const AvailableSlots = () => {
     return getSlotsForDate(date).length > 0;
   };
 
-  // Handle create slot
-  const handleCreateSlot = () => {
+  // Toggle hour selection for multi-select
+  const toggleHourSelection = (hour: string) => {
+    setSelectedHours((prev) =>
+      prev.includes(hour)
+        ? prev.filter((h) => h !== hour)
+        : [...prev, hour]
+    );
+  };
+
+  // Handle create slot - creates multiple slots if multiple hours selected
+  const handleCreateSlot = async () => {
     if (!selectedDate) {
       toast.error('Please select a date');
       return;
     }
 
-    const hour = parseInt(selectedHour, 10);
+    if (selectedHours.length === 0) {
+      toast.error('Please select at least one time slot');
+      return;
+    }
 
-    const startDateTime = new Date(selectedDate);
-    startDateTime.setHours(hour, 0, 0, 0);
+    // Sort hours for consistent creation order
+    const sortedHours = [...selectedHours].sort((a, b) => parseInt(a) - parseInt(b));
 
-    const endDateTime = new Date(selectedDate);
-    endDateTime.setHours(hour + 1, 0, 0, 0);
+    let successCount = 0;
+    let errorCount = 0;
 
-    createSlot(
-      {
-        startTime: startDateTime.toISOString(),
-        endTime: endDateTime.toISOString(),
-      },
-      {
-        onSuccess: () => {
-          toast.success('Interview slot created successfully');
-          setIsCreateModalOpen(false);
-          resetForm();
-          refetch();
-        },
-        onError: (error: any) => {
-          toast.error(error?.response?.data?.message || 'Failed to create slot');
-        },
-      }
-    );
+    for (const hourStr of sortedHours) {
+      const hour = parseInt(hourStr, 10);
+
+      const startDateTime = new Date(selectedDate);
+      startDateTime.setHours(hour, 0, 0, 0);
+
+      const endDateTime = new Date(selectedDate);
+      endDateTime.setHours(hour + 1, 0, 0, 0);
+
+      await new Promise<void>((resolve) => {
+        createSlot(
+          {
+            startTime: startDateTime.toISOString(),
+            endTime: endDateTime.toISOString(),
+          },
+          {
+            onSuccess: () => {
+              successCount++;
+              resolve();
+            },
+            onError: (error: unknown) => {
+              errorCount++;
+              const errorMessage = error instanceof ApiError
+                ? error.getFullMessage()
+                : 'Failed to create slot';
+              toast.error(`Failed to create slot at ${timeSlots[hour].label}: ${errorMessage}`);
+              resolve();
+            },
+          }
+        );
+      });
+    }
+
+    if (successCount > 0) {
+      toast.success(`${successCount} interview slot${successCount > 1 ? 's' : ''} created successfully`);
+      setIsCreateModalOpen(false);
+      resetForm();
+      refetch();
+    }
   };
 
   // Handle delete slot
-  const handleDeleteSlot = (slotId: string) => {
-    if (!confirm('Are you sure you want to delete this slot?')) return;
+  const handleDeleteSlot = () => {
+    if (!slotToDelete) return;
 
-    deleteSlot(slotId, {
+    deleteSlot(slotToDelete._id, {
       onSuccess: () => {
         toast.success('Slot deleted successfully');
+        setIsDeleteModalOpen(false);
+        setSlotToDelete(null);
         refetch();
       },
-      onError: (error: any) => {
-        toast.error(error?.response?.data?.message || 'Failed to delete slot');
+      onError: (error: unknown) => {
+        const errorMessage = error instanceof ApiError
+          ? error.getFullMessage()
+          : 'Failed to delete slot';
+        toast.error(errorMessage);
       },
     });
   };
@@ -176,8 +229,11 @@ const AvailableSlots = () => {
         toast.success('Interview marked as completed');
         refetch();
       },
-      onError: (error: any) => {
-        toast.error(error?.response?.data?.message || 'Failed to complete slot');
+      onError: (error: unknown) => {
+        const errorMessage = error instanceof ApiError
+          ? error.getFullMessage()
+          : 'Failed to complete slot';
+        toast.error(errorMessage);
       },
     });
   };
@@ -199,8 +255,11 @@ const AvailableSlots = () => {
           setCancellationReason('');
           refetch();
         },
-        onError: (error: any) => {
-          toast.error(error?.response?.data?.message || 'Failed to cancel slot');
+        onError: (error: unknown) => {
+          const errorMessage = error instanceof ApiError
+            ? error.getFullMessage()
+            : 'Failed to cancel slot';
+          toast.error(errorMessage);
         },
       }
     );
@@ -208,7 +267,7 @@ const AvailableSlots = () => {
 
   // Reset form
   const resetForm = () => {
-    setSelectedHour('9');
+    setSelectedHours([]);
   };
 
   // Get status badge color
@@ -387,11 +446,33 @@ const AvailableSlots = () => {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+              // Skeleton loader for table
+              <div className="space-y-3">
+                {/* Table header skeleton */}
+                <div className="flex items-center gap-4 py-3 border-b">
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-4 w-16 ml-auto" />
+                </div>
+                {/* Table rows skeleton */}
+                {Array.from({ length: 10 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-4 py-3">
+                    <div className="space-y-1.5">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-3 w-32" />
+                    </div>
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-6 w-16 rounded-full" />
+                    <div className="flex gap-1 ml-auto">
+                      <Skeleton className="h-8 w-8 rounded" />
+                      <Skeleton className="h-8 w-8 rounded" />
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : (
-              <>
+              <div className={isFetching ? 'opacity-50 pointer-events-none' : ''}>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -447,8 +528,7 @@ const AvailableSlots = () => {
                                     </TooltipContent>
                                   </Tooltip>
                                 )}
-                                {(slot.status === INTERVIEW_SLOT_STATUS.AVAILABLE ||
-                                  slot.status === INTERVIEW_SLOT_STATUS.BOOKED) && (
+                                {slot.status === INTERVIEW_SLOT_STATUS.BOOKED && (
                                   <Tooltip>
                                     <TooltipTrigger asChild>
                                       <Button
@@ -474,7 +554,10 @@ const AvailableSlots = () => {
                                       <Button
                                         size="icon"
                                         variant="ghost"
-                                        onClick={() => handleDeleteSlot(slot._id)}
+                                        onClick={() => {
+                                          setSlotToDelete(slot);
+                                          setIsDeleteModalOpen(true);
+                                        }}
                                         disabled={isDeleting}
                                         className="hover:bg-red-50"
                                       >
@@ -502,32 +585,73 @@ const AvailableSlots = () => {
                 </Table>
 
                 {/* Pagination */}
-                {slotsData?.meta && slotsData.meta.totalPage > 1 && (
+                {slotsData?.meta && slotsData.meta.totalPage > 0 && (
                   <div className="flex items-center justify-between mt-4 pt-4 border-t">
                     <span className="text-sm text-gray-500">
-                      Page {slotsData.meta.page} of {slotsData.meta.totalPage}
+                      Showing {((slotsData.meta.page - 1) * slotsData.meta.limit) + 1} - {Math.min(slotsData.meta.page * slotsData.meta.limit, slotsData.meta.total)} of {slotsData.meta.total} slots
                     </span>
                     <div className="flex items-center gap-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setPage((p) => Math.max(1, p - 1))}
-                        disabled={page === 1}
+                        disabled={page === 1 || isFetching}
                       >
+                        <ChevronLeft className="w-4 h-4 mr-1" />
                         Previous
                       </Button>
+
+                      {/* Page Numbers */}
+                      <div className="flex items-center gap-1">
+                        {(() => {
+                          const totalPages = slotsData.meta.totalPage;
+                          const currentPage = page;
+                          const pages: (number | string)[] = [];
+
+                          if (totalPages <= 5) {
+                            for (let i = 1; i <= totalPages; i++) pages.push(i);
+                          } else {
+                            if (currentPage <= 3) {
+                              pages.push(1, 2, 3, '...', totalPages);
+                            } else if (currentPage >= totalPages - 2) {
+                              pages.push(1, '...', totalPages - 2, totalPages - 1, totalPages);
+                            } else {
+                              pages.push(1, '...', currentPage, '...', totalPages);
+                            }
+                          }
+
+                          return pages.map((p, idx) => (
+                            p === '...' ? (
+                              <span key={`ellipsis-${idx}`} className="px-2 text-gray-400">...</span>
+                            ) : (
+                              <Button
+                                key={p}
+                                variant={page === p ? 'default' : 'outline'}
+                                size="sm"
+                                onClick={() => setPage(p as number)}
+                                disabled={isFetching}
+                                className={`px-3 min-w-[36px] ${page === p ? 'bg-[#0B31BD] hover:bg-blue-800' : ''}`}
+                              >
+                                {p}
+                              </Button>
+                            )
+                          ));
+                        })()}
+                      </div>
+
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setPage((p) => p + 1)}
-                        disabled={page >= slotsData.meta.totalPage}
+                        disabled={page >= slotsData.meta.totalPage || isFetching}
                       >
                         Next
+                        <ChevronRight className="w-4 h-4 ml-1" />
                       </Button>
                     </div>
                   </div>
                 )}
-              </>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -556,25 +680,59 @@ const AvailableSlots = () => {
                 />
               </div>
 
-              {/* Time Slot Selection - Grid Layout */}
+              {/* Time Slot Selection - Grid Layout (Multi-Select) */}
               <div>
-                <Label className="text-sm font-medium text-gray-700">Select Time Slot (1 Hour)</Label>
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-medium text-gray-700">Select Time Slots (1 Hour Each)</Label>
+                  {selectedHours.length > 0 && (
+                    <span className="text-xs text-[#0B31BD] font-medium">
+                      {selectedHours.length} slot{selectedHours.length > 1 ? 's' : ''} selected
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500 mt-1 mb-3">Click to select multiple time slots</p>
 
-                {/* Morning Slots */}
+                {/* Night/Early Morning Slots (12 AM - 6 AM) */}
                 <div className="mt-3">
                   <p className="text-xs font-medium text-gray-500 mb-2 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-indigo-400"></span>
+                    Night / Early Morning (12 AM - 6 AM)
+                  </p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {timeSlots.slice(0, 6).map((slot) => (
+                      <button
+                        key={slot.value}
+                        type="button"
+                        onClick={() => toggleHourSelection(slot.value)}
+                        className={`
+                          px-3 py-2.5 text-xs font-medium rounded-lg border transition-all
+                          ${selectedHours.includes(slot.value)
+                            ? 'bg-[#0B31BD] text-white border-[#0B31BD] shadow-sm'
+                            : 'bg-white text-gray-700 border-gray-200 hover:border-[#0B31BD] hover:bg-blue-50'
+                          }
+                        `}
+                      >
+                        {slot.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Morning Slots (6 AM - 12 PM) */}
+                <div className="mt-4">
+                  <p className="text-xs font-medium text-gray-500 mb-2 flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-yellow-400"></span>
-                    Morning
+                    Morning (6 AM - 12 PM)
                   </p>
                   <div className="grid grid-cols-3 gap-2">
                     {timeSlots.slice(6, 12).map((slot) => (
                       <button
                         key={slot.value}
                         type="button"
-                        onClick={() => setSelectedHour(slot.value)}
+                        onClick={() => toggleHourSelection(slot.value)}
                         className={`
                           px-3 py-2.5 text-xs font-medium rounded-lg border transition-all
-                          ${selectedHour === slot.value
+                          ${selectedHours.includes(slot.value)
                             ? 'bg-[#0B31BD] text-white border-[#0B31BD] shadow-sm'
                             : 'bg-white text-gray-700 border-gray-200 hover:border-[#0B31BD] hover:bg-blue-50'
                           }
@@ -586,21 +744,21 @@ const AvailableSlots = () => {
                   </div>
                 </div>
 
-                {/* Afternoon Slots */}
+                {/* Afternoon Slots (12 PM - 6 PM) */}
                 <div className="mt-4">
                   <p className="text-xs font-medium text-gray-500 mb-2 flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-orange-400"></span>
-                    Afternoon
+                    Afternoon (12 PM - 6 PM)
                   </p>
                   <div className="grid grid-cols-3 gap-2">
                     {timeSlots.slice(12, 18).map((slot) => (
                       <button
                         key={slot.value}
                         type="button"
-                        onClick={() => setSelectedHour(slot.value)}
+                        onClick={() => toggleHourSelection(slot.value)}
                         className={`
                           px-3 py-2.5 text-xs font-medium rounded-lg border transition-all
-                          ${selectedHour === slot.value
+                          ${selectedHours.includes(slot.value)
                             ? 'bg-[#0B31BD] text-white border-[#0B31BD] shadow-sm'
                             : 'bg-white text-gray-700 border-gray-200 hover:border-[#0B31BD] hover:bg-blue-50'
                           }
@@ -612,21 +770,21 @@ const AvailableSlots = () => {
                   </div>
                 </div>
 
-                {/* Evening Slots */}
+                {/* Evening Slots (6 PM - 12 AM) */}
                 <div className="mt-4">
                   <p className="text-xs font-medium text-gray-500 mb-2 flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-purple-400"></span>
-                    Evening
+                    Evening (6 PM - 12 AM)
                   </p>
                   <div className="grid grid-cols-3 gap-2">
                     {timeSlots.slice(18, 24).map((slot) => (
                       <button
                         key={slot.value}
                         type="button"
-                        onClick={() => setSelectedHour(slot.value)}
+                        onClick={() => toggleHourSelection(slot.value)}
                         className={`
                           px-3 py-2.5 text-xs font-medium rounded-lg border transition-all
-                          ${selectedHour === slot.value
+                          ${selectedHours.includes(slot.value)
                             ? 'bg-[#0B31BD] text-white border-[#0B31BD] shadow-sm'
                             : 'bg-white text-gray-700 border-gray-200 hover:border-[#0B31BD] hover:bg-blue-50'
                           }
@@ -637,32 +795,6 @@ const AvailableSlots = () => {
                     ))}
                   </div>
                 </div>
-
-                {/* Night/Early Morning Slots (Collapsible) */}
-                <details className="mt-4">
-                  <summary className="text-xs font-medium text-gray-400 cursor-pointer hover:text-gray-600 flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-gray-400"></span>
-                    Night / Early Morning (12 AM - 6 AM)
-                  </summary>
-                  <div className="grid grid-cols-3 gap-2 mt-2">
-                    {timeSlots.slice(0, 6).map((slot) => (
-                      <button
-                        key={slot.value}
-                        type="button"
-                        onClick={() => setSelectedHour(slot.value)}
-                        className={`
-                          px-3 py-2.5 text-xs font-medium rounded-lg border transition-all
-                          ${selectedHour === slot.value
-                            ? 'bg-[#0B31BD] text-white border-[#0B31BD] shadow-sm'
-                            : 'bg-white text-gray-700 border-gray-200 hover:border-[#0B31BD] hover:bg-blue-50'
-                          }
-                        `}
-                      >
-                        {slot.label}
-                      </button>
-                    ))}
-                  </div>
-                </details>
               </div>
             </div>
           </ScrollArea>
@@ -679,7 +811,7 @@ const AvailableSlots = () => {
             </Button>
             <Button
               onClick={handleCreateSlot}
-              disabled={isCreating}
+              disabled={isCreating || selectedHours.length === 0}
               className="bg-[#0B31BD] hover:bg-blue-800"
             >
               {isCreating ? (
@@ -688,7 +820,7 @@ const AvailableSlots = () => {
                   Creating...
                 </>
               ) : (
-                'Create Slot'
+                `Create ${selectedHours.length > 1 ? `${selectedHours.length} Slots` : 'Slot'}`
               )}
             </Button>
           </DialogFooter>
@@ -763,6 +895,53 @@ const AvailableSlots = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Slot Confirmation Modal */}
+      <AlertDialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Interview Slot</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this interview slot? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          {slotToDelete && (
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <p className="font-medium">
+                {format(new Date(slotToDelete.startTime), 'EEEE, MMMM d, yyyy')}
+              </p>
+              <p className="text-sm text-gray-500">
+                {formatSlotTime(slotToDelete.startTime, slotToDelete.endTime)}
+              </p>
+            </div>
+          )}
+
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => {
+                setSlotToDelete(null);
+              }}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteSlot}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete Slot'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

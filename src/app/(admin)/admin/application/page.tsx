@@ -124,6 +124,8 @@ const ApplicationManagement = () => {
         return 'bg-red-100 text-red-800';
       case 'REVISION':
         return 'bg-orange-100 text-orange-800';
+      case 'RESUBMITTED':
+        return 'bg-cyan-100 text-cyan-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -141,6 +143,8 @@ const ApplicationManagement = () => {
         return 'Rejected';
       case 'REVISION':
         return 'Revision';
+      case 'RESUBMITTED':
+        return 'Resubmitted';
       default:
         return status;
     }
@@ -273,7 +277,7 @@ const ApplicationManagement = () => {
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <Card>
           <CardHeader className="pb-4">
-            <TabsList className="grid w-full grid-cols-6 bg-transparent p-0 h-auto">
+            <TabsList className="grid w-full grid-cols-7 bg-transparent p-0 h-auto">
               <TabsTrigger
                 value="all"
                 className="bg-transparent border-0 rounded-none border-b-2 border-transparent data-[state=active]:border-b-2 data-[state=active]:border-black"
@@ -309,6 +313,12 @@ const ApplicationManagement = () => {
                 className="bg-transparent border-0 rounded-none border-b-2 border-transparent data-[state=active]:border-b-2 data-[state=active]:border-black"
               >
                 Revision
+              </TabsTrigger>
+              <TabsTrigger
+                value="RESUBMITTED"
+                className="bg-transparent border-0 rounded-none border-b-2 border-transparent data-[state=active]:border-b-2 data-[state=active]:border-black"
+              >
+                Resubmitted
               </TabsTrigger>
             </TabsList>
           </CardHeader>
@@ -390,8 +400,8 @@ const ApplicationManagement = () => {
                                     <DropdownMenuItem>View Details</DropdownMenuItem>
                                   </Link>
 
-                                  {/* Show Select for Interview for SUBMITTED/REVISION */}
-                                  {(app.status === 'SUBMITTED' || app.status === 'REVISION') && (
+                                  {/* Show Select for Interview for SUBMITTED/REVISION/RESUBMITTED */}
+                                  {(app.status === 'SUBMITTED' || app.status === 'REVISION' || app.status === 'RESUBMITTED') && (
                                     <DropdownMenuItem
                                       className="text-blue-600"
                                       onClick={() => handleSelectForInterview(app._id)}

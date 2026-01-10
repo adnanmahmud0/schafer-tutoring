@@ -416,8 +416,8 @@ export function useTrialSession(trialRequestId: string | undefined) {
           trialRequestId,
         },
       });
-      // Return the first matching session
-      return data.data?.[0] as Session | null;
+      // Return the first matching session or null (not undefined)
+      return data.data?.[0] ?? null;
     },
     enabled: isAuthenticated && !!trialRequestId,
   });

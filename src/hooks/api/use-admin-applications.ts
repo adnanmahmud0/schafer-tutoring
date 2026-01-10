@@ -6,6 +6,7 @@ import { apiClient } from '@/lib/api-client';
 export type AdminApplicationStatus =
   | 'SUBMITTED'
   | 'REVISION'
+  | 'RESUBMITTED'
   | 'SELECTED_FOR_INTERVIEW'
   | 'APPROVED'
   | 'REJECTED';

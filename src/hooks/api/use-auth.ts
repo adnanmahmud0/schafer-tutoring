@@ -108,11 +108,26 @@ export function useLogin() {
         throw new Error('Invalid token');
       }
 
+      // Fetch profile to get full user data including name
+      let userName = '';
+      let userAvatar = '';
+      try {
+        const { data: profileData } = await apiClient.get<{ success: boolean; data: { name: string; profilePicture?: string } }>('/user/profile', {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        userName = profileData.data?.name || '';
+        userAvatar = profileData.data?.profilePicture || '';
+      } catch {
+        // If profile fetch fails, continue without name
+        console.warn('Failed to fetch profile data');
+      }
+
       const user: User = {
         _id: decoded.id,
         email: decoded.email,
         role: decoded.role as User['role'],
-        name: '', // Will be fetched from profile
+        name: userName,
+        avatar: userAvatar,
         isVerified: true,
       };
 
@@ -336,7 +351,7 @@ export function useRefreshToken() {
       const { data } = await apiClient.post<AuthResponse>('/auth/refresh-token');
       return data;
     },
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       const { accessToken } = response.data;
 
       // Decode token to get updated user data (with new role)
@@ -345,11 +360,25 @@ export function useRefreshToken() {
         throw new Error('Invalid token');
       }
 
+      // Fetch profile to get full user data including name
+      let userName = '';
+      let userAvatar = '';
+      try {
+        const { data: profileData } = await apiClient.get<{ success: boolean; data: { name: string; profilePicture?: string } }>('/user/profile', {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        userName = profileData.data?.name || '';
+        userAvatar = profileData.data?.profilePicture || '';
+      } catch {
+        console.warn('Failed to fetch profile data');
+      }
+
       const user: User = {
         _id: decoded.id,
         email: decoded.email,
         role: decoded.role as User['role'],
-        name: '',
+        name: userName,
+        avatar: userAvatar,
         isVerified: true,
       };
 

@@ -39,7 +39,7 @@ const Banner = () => {
 
   return (
     <div className="bg-linear-to-r from-[#0B31BD] to-[#4B71FF] relative overflow-hidden">
-      <div className="max-w-7xl mx-auto h-full mt-16 md:mt-20 md:h-[749px] flex items-center relative px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto h-full md:h-[749px] flex items-center relative px-4 sm:px-6 lg:px-8">
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 w-full py-12 md:py-0">
 

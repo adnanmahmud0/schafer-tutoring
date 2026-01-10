@@ -176,27 +176,58 @@ export function InterviewBookingSection({ applicationId }: InterviewBookingSecti
     );
   }
 
+  // Show completed interview UI
+  if (bookedInterview && bookedInterview.status === 'COMPLETED') {
+    const { date, time } = formatSlotTime(bookedInterview);
+    return (
+      <div className="space-y-4">
+        {/* Completed Interview Card */}
+        <Card className="border border-gray-200 shadow-sm">
+          <CardContent className="p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">Interview Completed</h2>
+
+            {/* Date */}
+            <div className="flex items-start gap-3 mb-4">
+              <CalendarIcon className="h-5 w-5 text-green-500 mt-0.5" />
+              <div>
+                <p className="text-sm text-gray-500">Date</p>
+                <p className="font-medium text-gray-900">{date}</p>
+              </div>
+            </div>
+
+            {/* Time */}
+            <div className="flex items-start gap-3 mb-4">
+              <Clock className="h-5 w-5 text-gray-400 mt-0.5" />
+              <div>
+                <p className="text-sm text-gray-500">Time</p>
+                <p className="font-medium text-gray-900">{time}</p>
+              </div>
+            </div>
+
+            {/* Status Badge */}
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+              <CheckCircle className="h-4 w-4" />
+              Completed
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Info Banner */}
+        <div className="border border-[#0B31BD] bg-[#E2E6F5] rounded-xl p-4">
+          <p className="text-[#0B31BD] text-sm">
+            The admin will review your interview and update your application status. You will be notified once a decision is made.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   // Show booked interview if exists (and not rescheduling)
-  if (bookedInterview && !isRescheduling) {
+  if (bookedInterview && bookedInterview.status === 'BOOKED' && !isRescheduling) {
     const { date, time } = formatSlotTime(bookedInterview);
     return (
       <>
         <div className="space-y-4">
-          {/* Success Banner */}
-          <div className="border-2 border-[#FFB800] bg-[#FFF9E6] rounded-xl p-4">
-            <div className="flex items-start gap-3">
-              <CheckCircle className="h-5 w-5 text-[#FFB800] flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="font-semibold text-gray-800">
-                  Your interview appointment has been scheduled successfully.
-                </p>
-                <p className="text-sm text-gray-600 mt-1">
-                  You will receive an E-Mail with the meeting link.
-                </p>
-              </div>
-            </div>
-          </div>
-
           {/* Scheduled Interview Card */}
           <Card className="border border-gray-200 shadow-sm">
             <CardContent className="p-6">

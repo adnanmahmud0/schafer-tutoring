@@ -729,6 +729,8 @@ const FreeTrialTeacher = () => {
                         I have read and agree to the{" "}
                         <Link
                           href="/privacy"
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="text-blue-600 underline"
                         >
                           Privacy Policy

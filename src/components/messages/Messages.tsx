@@ -18,7 +18,7 @@ export default function Messages() {
   }, [chats, selectedConversation]);
 
   return (
-    <div className="flex h-[calc(100vh-150px)] bg-background overflow-hidden">
+    <div className="flex h-full bg-background overflow-hidden">
       {/* Sidebar Container */}
       <div
         className={`

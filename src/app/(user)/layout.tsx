@@ -10,7 +10,7 @@ export default function RootLayout({
       <nav>
         <Navbar />
       </nav>
-      <main>{children}</main>
+      <main className="pt-16 md:pt-20">{children}</main>
       <footer>
         <Footer />
       </footer>

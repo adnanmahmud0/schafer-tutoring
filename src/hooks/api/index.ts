@@ -88,9 +88,6 @@ export {
   useAdminUpdateTutorProfile,
 } from './use-tutors';
 
-// Bookmark Hooks
-export { useBookmarks, useToggleBookmark, useIsBookmarked } from './use-bookmarks';
-
 // Chat Hooks
 export {
   useChats,
@@ -109,7 +106,7 @@ export {
 } from './use-notifications';
 
 // Application Hooks (Applicant)
-export { useSubmitApplication, useMyApplication } from './use-applications';
+export { useSubmitApplication, useMyApplication, useUpdateMyApplication } from './use-applications';
 
 // Admin Application Hooks
 export {
@@ -252,10 +249,9 @@ export type { SchoolType, SchoolTypeFilters, SchoolTypesResponse } from './use-s
 export type { Session, SessionFilters, UnifiedSession, UnifiedSessionFilters } from './use-sessions';
 export type { Student, StudentFilters, AdminUpdateStudentProfilePayload } from './use-students';
 export type { Tutor, TutorFilters, TutorsResponse } from './use-tutors';
-export type { Bookmark } from './use-bookmarks';
 export type { Chat, Message } from './use-chats';
 export type { Notification } from './use-notifications';
-export type { SubmitApplicationData, ApplicationResponse, TutorApplication, ApplicationStatus } from './use-applications';
+export type { SubmitApplicationData, ApplicationResponse, TutorApplication, ApplicationStatus, UpdateMyApplicationData } from './use-applications';
 export type { AdminApplication, AdminApplicationStatus, ApplicationFilters, AdminApplicationsResponse } from './use-admin-applications';
 export type { TrialRequest, AcceptedTutor, CreateTrialRequestData, StudentInfo, GuardianInfo } from './use-trial-requests';
 export type { InterviewSlot, InterviewSlotFilters, ScheduledMeeting, ScheduledMeetingsFilters, MeetingTokenResponse } from './use-interview-slots';

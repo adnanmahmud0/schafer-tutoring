@@ -171,7 +171,12 @@ export const Step3PersonalInfo = ({ formData, setFormData }: Step3Props) => {
         />
         <label className="ml-2 text-sm text-gray-700">
           I have read and agree to the{" "}
-          <Link href="/privacy" className="text-blue-600 underline">
+          <Link
+            href="/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 underline"
+          >
             Privacy Policy
           </Link>{" "}
           <span className="text-red-500">*</span>
