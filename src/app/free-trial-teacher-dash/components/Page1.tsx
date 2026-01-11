@@ -365,7 +365,6 @@ const Page1 = () => {
           <div className="mb-6">
             <ProfileSetupSection
               userEmail={application.email}
-              userName={application.name}
             />
           </div>
         )}

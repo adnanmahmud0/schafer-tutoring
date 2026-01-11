@@ -42,6 +42,7 @@ interface ProfileResponse {
     role: string;
     studentProfile?: {
       hasCompletedTrial?: boolean;
+      hasActiveSubscription?: boolean;
     };
   };
 }
@@ -65,24 +66,24 @@ const REDIRECT_MAP: Record<string, string> = {
   APPLICANT: '/free-trial-teacher-dash',
 };
 
-// Helper function to get redirect path for students based on trial status
+// Helper function to get redirect path for students based on subscription status
 const getStudentRedirectPath = async (accessToken: string): Promise<string> => {
   try {
-    // Fetch profile to check trial status
-    const { data } = await apiClient.get<ProfileResponse>('/user/profile', {
+    // Check if student has an active subscription
+    const { data: subscriptionData } = await apiClient.get('/subscriptions/my-subscription', {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
 
-    // If student hasn't completed trial, redirect to free trial dashboard
-    if (data.data?.studentProfile?.hasCompletedTrial === false) {
-      return '/free-trial-student-dash';
+    // Student has an active subscription - can access regular dashboard
+    if (subscriptionData.data && subscriptionData.data.status === 'ACTIVE') {
+      return '/student/session';
     }
 
-    // Otherwise, redirect to regular student dashboard
-    return '/student/session';
+    // No active subscription - redirect to free trial dashboard
+    return '/free-trial-student-dash';
   } catch {
-    // If profile fetch fails, default to regular student dashboard
-    return '/student/session';
+    // If subscription fetch fails (no subscription), redirect to free trial dashboard
+    return '/free-trial-student-dash';
   }
 };
 

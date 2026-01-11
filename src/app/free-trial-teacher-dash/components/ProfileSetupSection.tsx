@@ -12,15 +12,20 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { useStripeConnect } from '@/hooks/api/use-stripe';
+import { useQueryClient } from '@tanstack/react-query';
+import { apiClient } from '@/lib/api-client';
+import { useAuthStore } from '@/store/auth-store';
 
 interface ProfileSetupSectionProps {
   userEmail: string;
-  userName: string;
 }
 
-export function ProfileSetupSection({ userEmail, userName }: ProfileSetupSectionProps) {
+export function ProfileSetupSection({ userEmail }: ProfileSetupSectionProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const queryClient = useQueryClient();
+  const setAuth = useAuthStore((state) => state.setAuth);
+  const currentUser = useAuthStore((state) => state.user);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
@@ -120,8 +125,18 @@ export function ProfileSetupSection({ userEmail, userName }: ProfileSetupSection
 
     setIsStarting(true);
     try {
-      // TODO: Call API to mark profile as complete and start tutoring
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Fetch application to get new token with TUTOR role
+      const response = await apiClient.get('/applications/my-application');
+      const { accessToken } = response.data;
+
+      // If new token is provided, update auth store with TUTOR role
+      if (accessToken && currentUser) {
+        setAuth({ ...currentUser, role: 'TUTOR' }, accessToken);
+      }
+
+      // Invalidate all queries to refetch with new role
+      await queryClient.invalidateQueries();
+
       toast.success('Welcome! You can now start tutoring.');
       router.push('/teacher/overview');
     } catch (error) {

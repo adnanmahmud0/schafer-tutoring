@@ -24,7 +24,7 @@ function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-[328px] h-full bg-white flex flex-col overflow-auto">
+    <aside className="w-[328px] h-full bg-white flex flex-col overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
 
       {/* Centered Menu Items (248px width) */}
       <nav className="flex-1 flex flex-col items-center py-5 space-y-4">

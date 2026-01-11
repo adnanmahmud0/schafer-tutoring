@@ -20,9 +20,10 @@ export interface Notification {
   createdAt: string;
 }
 
-// Get All Notifications (Protected)
+// Get All Notifications (Protected - STUDENT or TUTOR only)
 export function useNotifications() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
+  const isStudentOrTutor = user?.role === 'STUDENT' || user?.role === 'TUTOR';
 
   return useQuery({
     queryKey: ['notifications'],
@@ -30,7 +31,8 @@ export function useNotifications() {
       const { data } = await apiClient.get('/notifications');
       return data.data as Notification[];
     },
-    enabled: isAuthenticated,
+    // Only fetch if user is a STUDENT or TUTOR
+    enabled: isAuthenticated && isStudentOrTutor,
   });
 }
 

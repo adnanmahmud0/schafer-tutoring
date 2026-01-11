@@ -123,9 +123,10 @@ export const CARD_BRAND_ICONS: Record<string, string> = {
 
 // Subscription Hooks
 
-// Get Current Subscription
+// Get Current Subscription (STUDENT only)
 export function useMySubscription() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
+  const isStudent = user?.role === 'STUDENT';
 
   return useQuery({
     queryKey: ['my-subscription'],
@@ -133,13 +134,15 @@ export function useMySubscription() {
       const { data } = await apiClient.get('/subscriptions/my-subscription');
       return data.data as Subscription | null;
     },
-    enabled: isAuthenticated,
+    // Only fetch if user is a STUDENT
+    enabled: isAuthenticated && isStudent,
   });
 }
 
-// Get Plan Usage
+// Get Plan Usage (STUDENT only)
 export function usePlanUsage() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
+  const isStudent = user?.role === 'STUDENT';
 
   return useQuery({
     queryKey: ['plan-usage'],
@@ -147,13 +150,15 @@ export function usePlanUsage() {
       const { data } = await apiClient.get('/subscriptions/my-plan-usage');
       return data.data as PlanUsage;
     },
-    enabled: isAuthenticated,
+    // Only fetch if user is a STUDENT
+    enabled: isAuthenticated && isStudent,
   });
 }
 
-// Get Payment History
+// Get Payment History (STUDENT only)
 export function usePaymentHistory(page = 1, limit = 10) {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
+  const isStudent = user?.role === 'STUDENT';
 
   return useQuery({
     queryKey: ['payment-history', page, limit],
@@ -172,7 +177,8 @@ export function usePaymentHistory(page = 1, limit = 10) {
         },
       } as PaymentHistoryResponse;
     },
-    enabled: isAuthenticated,
+    // Only fetch if user is a STUDENT
+    enabled: isAuthenticated && isStudent,
   });
 }
 

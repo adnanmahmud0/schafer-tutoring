@@ -277,6 +277,9 @@ export function useMyAcceptedTrialRequests(filters?: {
   page?: number;
   limit?: number;
 }) {
+  const { isAuthenticated, user } = useAuthStore();
+  const isTutor = user?.role === 'TUTOR';
+
   return useQuery({
     queryKey: ['trial-requests', 'my-accepted', filters],
     queryFn: async () => {
@@ -285,6 +288,8 @@ export function useMyAcceptedTrialRequests(filters?: {
       });
       return data;
     },
+    // Only fetch if user is authenticated and is a TUTOR
+    enabled: isAuthenticated && isTutor,
   });
 }
 

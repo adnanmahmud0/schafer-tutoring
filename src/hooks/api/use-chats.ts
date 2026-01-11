@@ -70,9 +70,10 @@ export interface Message {
   createdAt: string;
 }
 
-// Get All Chats (Protected)
+// Get All Chats (Protected - STUDENT, TUTOR, or ADMIN only)
 export function useChats() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
+  const hasAccess = user?.role === 'STUDENT' || user?.role === 'TUTOR' || user?.role === 'SUPER_ADMIN';
 
   return useQuery({
     queryKey: ['chats'],
@@ -80,7 +81,8 @@ export function useChats() {
       const { data } = await apiClient.get('/chats');
       return data.data as Chat[];
     },
-    enabled: isAuthenticated,
+    // Only fetch if user has proper role
+    enabled: isAuthenticated && hasAccess,
   });
 }
 
@@ -99,9 +101,10 @@ export function useCreateChat() {
   });
 }
 
-// Get Messages for a Chat (Protected)
+// Get Messages for a Chat (Protected - STUDENT, TUTOR, or ADMIN only)
 export function useMessages(chatId: string) {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
+  const hasAccess = user?.role === 'STUDENT' || user?.role === 'TUTOR' || user?.role === 'SUPER_ADMIN';
 
   return useQuery({
     queryKey: ['messages', chatId],
@@ -109,7 +112,8 @@ export function useMessages(chatId: string) {
       const { data } = await apiClient.get(`/messages/chat/${chatId}`);
       return data.data as Message[];
     },
-    enabled: isAuthenticated && !!chatId,
+    // Only fetch if user has proper role
+    enabled: isAuthenticated && hasAccess && !!chatId,
   });
 }
 

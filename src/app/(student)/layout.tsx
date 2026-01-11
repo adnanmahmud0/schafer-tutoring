@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "./components/Sidebar";
 import TopNavbar from "./components/TopNavbar";
-import { useProfile } from "@/hooks/api/use-auth";
+import { useMySubscription } from "@/hooks/api/use-subscription";
 
 interface StudentLayoutProps {
   children: React.ReactNode;
@@ -12,22 +12,20 @@ interface StudentLayoutProps {
 
 export default function StudentLayout({ children }: StudentLayoutProps) {
   const router = useRouter();
-  const { data: profile, isLoading } = useProfile();
+  const { data: subscription, isLoading } = useMySubscription();
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    if (!isLoading && profile) {
-      // If student hasn't completed trial, redirect to free trial dashboard
-      const studentProfile = profile as unknown as {
-        studentProfile?: { hasCompletedTrial?: boolean };
-      };
-      if (studentProfile?.studentProfile?.hasCompletedTrial === false) {
+    if (!isLoading) {
+      // Student must have an active subscription to access regular dashboard
+      // If no active subscription, redirect to free trial dashboard
+      if (!subscription || subscription.status !== 'ACTIVE') {
         router.replace("/free-trial-student-dash");
       } else {
         setIsChecking(false);
       }
     }
-  }, [profile, isLoading, router]);
+  }, [subscription, isLoading, router]);
 
   // Show loading while checking trial status
   if (isLoading || isChecking) {

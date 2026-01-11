@@ -439,10 +439,6 @@ const SupportTicketManagement = () => {
                                     <CheckCircle className="w-4 h-4 mr-2" />
                                     Update Status
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => openNotesModal(ticket)}>
-                                    <MessageSquare className="w-4 h-4 mr-2" />
-                                    Add Response
-                                  </DropdownMenuItem>
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem
                                     onClick={() => handleStartChat(ticket.user._id, ticket.message, ticket.ticketNumber, ticket.category)}
@@ -587,9 +583,6 @@ const SupportTicketManagement = () => {
           )}
 
           <DialogFooter className="gap-2 flex-wrap">
-            <Button variant="outline" onClick={() => setSelectedTicket(null)}>
-              Close
-            </Button>
             <Button
               variant="outline"
               onClick={() => selectedTicket && handleStartChat(selectedTicket.user._id, selectedTicket.message, selectedTicket.ticketNumber, selectedTicket.category)}
@@ -601,9 +594,6 @@ const SupportTicketManagement = () => {
             </Button>
             <Button onClick={() => selectedTicket && openStatusModal(selectedTicket)}>
               Update Status
-            </Button>
-            <Button variant="secondary" onClick={() => selectedTicket && openNotesModal(selectedTicket)}>
-              Add Response
             </Button>
           </DialogFooter>
         </DialogContent>

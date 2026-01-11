@@ -79,6 +79,12 @@ export default function ChatArea({
 
   const otherParticipant = currentChat ? getOtherParticipant(currentChat) : null;
 
+  // Check if the other participant is a student (schedule button should only show for student chats)
+  const isOtherParticipantStudent = otherParticipant?.role === 'STUDENT';
+
+  // Schedule button should only appear if tutor is chatting with a student
+  const canShowScheduleButton = isTutor && isOtherParticipantStudent;
+
   // Get initials from name
   const getInitials = (name: string) => {
     const names = name.split(' ');
@@ -655,7 +661,7 @@ export default function ChatArea({
                 <Paperclip className="w-4 h-4" />
               </Button>
 
-              {isTutor && (
+              {canShowScheduleButton && (
                 <Button
                   variant="outline"
                   size="sm"

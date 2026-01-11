@@ -16,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Download, FileText, Loader2 } from "lucide-react";
 import {
   useMatchingRequests,
@@ -295,13 +296,15 @@ export default function RequestsPage() {
 
       {/* Request Details Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
+        <DialogContent className="max-w-md p-0">
+          <DialogHeader className="px-6 pt-6 pb-4">
             <DialogTitle className="text-base font-semibold text-gray-900 border-b pb-4">
               Student Information
             </DialogTitle>
           </DialogHeader>
 
+          <ScrollArea className="max-h-[calc(90vh-100px)]">
+            <div className="px-6 pb-6">
           <div className="space-y-6 py-4">
             {/* Student Info Grid */}
             <div className="grid grid-cols-2 gap-4">
@@ -414,6 +417,8 @@ export default function RequestsPage() {
               </div>
             )}
           </div>
+            </div>
+          </ScrollArea>
         </DialogContent>
       </Dialog>
     </div>

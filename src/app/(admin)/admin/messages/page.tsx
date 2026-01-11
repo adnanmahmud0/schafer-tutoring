@@ -4,7 +4,7 @@ import Messages from "@/components/messages/Messages";
 
 export default function AdminMessagesPage() {
   return (
-    <div>
+    <div className="h-full">
       <Messages />
     </div>
   );

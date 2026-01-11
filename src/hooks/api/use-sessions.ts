@@ -198,9 +198,10 @@ export function useUnifiedSessions(filters: UnifiedSessionFilters = {}) {
 
 // ============ STUDENT/TUTOR HOOKS ============
 
-// Get Upcoming Sessions (Protected)
+// Get Upcoming Sessions (Protected - STUDENT or TUTOR only)
 export function useUpcomingSessions() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
+  const isStudentOrTutor = user?.role === 'STUDENT' || user?.role === 'TUTOR';
 
   return useQuery({
     queryKey: ['sessions', 'upcoming'],
@@ -208,13 +209,15 @@ export function useUpcomingSessions() {
       const { data } = await apiClient.get('/sessions/my-upcoming');
       return data.data as Session[];
     },
-    enabled: isAuthenticated,
+    // Only fetch if user is authenticated AND is a STUDENT or TUTOR
+    enabled: isAuthenticated && isStudentOrTutor,
   });
 }
 
-// Get Completed Sessions (Protected)
+// Get Completed Sessions (Protected - STUDENT or TUTOR only)
 export function useCompletedSessions() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
+  const isStudentOrTutor = user?.role === 'STUDENT' || user?.role === 'TUTOR';
 
   return useQuery({
     queryKey: ['sessions', 'completed'],
@@ -222,13 +225,15 @@ export function useCompletedSessions() {
       const { data } = await apiClient.get('/sessions/my-completed');
       return data.data as Session[];
     },
-    enabled: isAuthenticated,
+    // Only fetch if user is authenticated AND is a STUDENT or TUTOR
+    enabled: isAuthenticated && isStudentOrTutor,
   });
 }
 
-// Get Single Session (Protected)
+// Get Single Session (Protected - STUDENT, TUTOR, or ADMIN)
 export function useSession(sessionId: string) {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
+  const hasAccess = user?.role === 'STUDENT' || user?.role === 'TUTOR' || user?.role === 'SUPER_ADMIN';
 
   return useQuery({
     queryKey: ['sessions', sessionId],
@@ -236,7 +241,7 @@ export function useSession(sessionId: string) {
       const { data } = await apiClient.get(`/sessions/${sessionId}`);
       return data.data as Session;
     },
-    enabled: isAuthenticated && !!sessionId,
+    enabled: isAuthenticated && hasAccess && !!sessionId,
   });
 }
 
